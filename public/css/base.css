@@ -1,0 +1,100 @@
+/* ─────────────────────────────────────────────────────
+   base.css — shared design tokens & reset
+   Loaded on every page.
+───────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Light mode tokens ── */
+:root {
+  --bg:           #F7F5F2;
+  --surface:      #FFFFFF;
+  --surface-2:    #F0EDE8;
+  --border:       #E2DDD7;
+  --border-soft:  #EDE9E4;
+  --text:         #1C1917;
+  --text-2:       #6B6560;
+  --text-3:       #A09890;
+  --gold:         #B8965A;
+  --gold-light:   #D4B483;
+  --gold-bg:      #F9F4EC;
+  --gold-border:  #E8D5B0;
+  --green:        #3D7A5F;
+  --green-bg:     #EEF5F1;
+  --green-border: #BDD9CC;
+  --nav-bg:       rgba(247, 245, 242, 0.85);
+  --card-hover:   #FDFCFB;
+  --btn-p-hover:  #333333;
+}
+
+/* ── Dark mode tokens ── */
+html[data-theme="dark"] {
+  --bg:           #0F0D0B;
+  --surface:      #1A1714;
+  --surface-2:    #221F1B;
+  --border:       #2E2A25;
+  --border-soft:  #252119;
+  --text:         #EDE9E3;
+  --text-2:       #9A9088;
+  --text-3:       #6B625A;
+  --gold:         #C9A96E;
+  --gold-light:   #D4B483;
+  --gold-bg:      #1E1A14;
+  --gold-border:  #3A3020;
+  --green:        #4A9070;
+  --green-bg:     #0D1F18;
+  --green-border: #1A3D2C;
+  --nav-bg:       rgba(15, 13, 11, 0.88);
+  --card-hover:   #1E1B17;
+  --btn-p-hover:  #D4B070;
+}
+
+/* ── Smooth theme transition ── */
+html {
+  transition: background 0.25s, color 0.25s;
+}
+
+html, body {
+  min-height: 100vh;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Theme toggle button (shared) ── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  border-color: var(--text-3);
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.theme-toggle svg {
+  display: block;
+}
+
+.icon-moon { display: none; }
+
+html[data-theme="dark"] .icon-sun  { display: none; }
+html[data-theme="dark"] .icon-moon { display: block; }

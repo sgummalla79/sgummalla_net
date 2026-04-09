@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal</title>
+  <script src="/js/theme.js"></script>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/home.css">
+</head>
+<body>
+<div class="shell">
+
+  <nav>
+    <div class="nav-brand">
+      MyPortal
+      <div class="nav-brand-rule"></div>
+      <span class="nav-brand-sub">Identity Gateway</span>
+    </div>
+    <div class="nav-right">
+      <span class="nav-email"><%= email %></span>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="2" x2="12" y2="4"/>
+          <line x1="12" y1="20" x2="12" y2="22"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="2" y1="12" x2="4" y2="12"/>
+          <line x1="20" y1="12" x2="22" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+      <a href="/logout" class="btn-signout">Sign out</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container">
+
+      <div class="top-rule">
+        <div class="top-rule-line"></div>
+        <span class="top-rule-text">Authenticated Session</span>
+        <div class="top-rule-line"></div>
+      </div>
+
+      <div class="hero">
+        <div class="hero-text">
+          <p class="hero-eyebrow">Welcome back</p>
+          <h1 class="hero-name">Good to see you,<br><em><%= firstName %>.</em></h1>
+          <p class="hero-body">
+            You are signed in via Auth0. Any Salesforce Experience Cloud
+            page you visit will authenticate you automatically — no second
+            login required.
+          </p>
+        </div>
+        <div class="avatar-col">
+          <div class="avatar">
+            <% if (picture) { %>
+              <img src="<%= picture %>" alt="<%= displayName %>" referrerpolicy="no-referrer">
+            <% } else { %>
+              <span class="avatar-initials"><%= initials %></span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">Session Status</div>
+          <div class="card-value">
+            <span class="status-pip">
+              <span class="pip"></span>
+              <span class="status-label">Active</span>
+            </span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-label">Signed in as</div>
+          <div class="card-value"><%= email %></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Identity Provider</div>
+          <div class="card-value">Auth0 via SAML 2.0</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="<%= sfUrl %>" target="_blank" rel="noopener" class="btn-primary">
+          Open Experience Cloud <span class="btn-arrow">↗</span>
+        </a>
+        <a href="/saml/metadata" target="_blank" rel="noopener" class="btn-secondary">
+          View SAML Metadata
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <span class="footer-left">SAML 2.0 SP-Initiated SSO · Node.js IdP</span>
+    <div class="footer-right">
+      <div class="footer-dot"></div>
+      Session active
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
