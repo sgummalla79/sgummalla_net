@@ -3,66 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In · vZen Solutions</title>
+  <title>Sign In — vZen Solutions</title>
   <script src="/js/theme.js"></script>
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/login.css">
 </head>
 <body>
-<div class="layout">
+<div class="login-page">
 
-  <!-- Left decorative panel -->
-  <div class="panel-left">
-    <div class="arc arc-1"></div>
-    <div class="arc arc-2"></div>
-    <div class="arc arc-3"></div>
+  <!-- Pi background symbol -->
+  <div class="pi-bg">π</div>
 
-    <div class="left-top">
-      <div class="left-logo">vZen Solutions</div>
-    </div>
-
-    <div class="left-middle">
-      <p class="left-tagline">Identity Gateway</p>
-      <h1 class="left-headline">Secure access,<br><em>seamlessly.</em></h1>
-      <div class="left-rule"></div>
-      <p class="left-body">
-        Sign in once. Access Salesforce Experience Cloud
-        automatically — no second login required.
-      </p>
-    </div>
-
-    <div class="left-bottom">
-      <p class="left-footer">SAML 2.0 · Auth0 · Node.js</p>
-    </div>
-  </div>
-
-  <!-- Right form panel -->
-  <div class="panel-right">
-
+  <!-- Top bar -->
+  <div class="login-bar">
+    <div class="login-logo">vZen Solutions</div>
     <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-      <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="12" cy="12" r="5"/>
-        <line x1="12" y1="2" x2="12" y2="4"/>
-        <line x1="12" y1="20" x2="12" y2="22"/>
-        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-        <line x1="2" y1="12" x2="4" y2="12"/>
-        <line x1="20" y1="12" x2="22" y2="12"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
       </svg>
-      <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
       </svg>
     </button>
+  </div>
 
-    <div class="form-wrap">
-      <h2 class="form-title">Welcome back.</h2>
-      <p class="form-sub">Sign in to your account to continue.</p>
-
+  <!-- Form -->
+  <div class="login-center">
+    <div class="login-card">
       <% if (error) { %>
-      <div class="error-banner">
-        <svg class="error-icon" width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <div class="login-error">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;margin-top:1px">
           <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
           <path d="M8 5v3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           <circle cx="8" cy="11" r=".75" fill="currentColor"/>
@@ -73,42 +47,34 @@
 
       <form action="/auth/credentials" method="POST">
         <div class="field">
-          <label class="field-label" for="email">Email address</label>
-          <input
-            class="field-input"
-            id="email"
-            name="email"
-            type="email"
-            placeholder="you@company.com"
-            autocomplete="email"
-            required>
+          <input class="field-input" name="email" type="email"
+                 placeholder="Email address" autocomplete="email" required>
         </div>
         <div class="field">
-          <label class="field-label" for="password">Password</label>
-          <input
-            class="field-input"
-            id="password"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required>
+          <input class="field-input" name="password" type="password"
+                 placeholder="Password" autocomplete="current-password" required>
         </div>
-        <button class="btn-main" type="submit">Sign In</button>
+        <button class="btn-signin" type="submit">Sign In</button>
       </form>
 
-      <div class="divider">
-        <div class="divider-line"></div>
-        <span class="divider-text">or</span>
-        <div class="divider-line"></div>
+      <div class="login-or">
+        <div class="login-or-line"></div>
+        <span class="login-or-text">or</span>
+        <div class="login-or-line"></div>
       </div>
 
       <a href="/auth/auth0" class="btn-auth0">
-        <div class="auth0-mark"></div>
+        <div class="auth0-dot"></div>
         Continue with Auth0
       </a>
-    </div>
 
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="login-footer">
+    <span>SAML 2.0 · OAuth 2.0 · OIDC</span>
+    <span>vZen Solutions</span>
   </div>
 
 </div>

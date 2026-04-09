@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Auths — vZen Solutions</title>
+  <script src="/js/theme.js"></script>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/auths.css">
+</head>
+<body>
+<div class="shell">
+
+  <div class="pi-bg">π</div>
+
+  <!-- Nav -->
+  <nav>
+    <a href="/" class="nav-brand">
+      <div class="nav-live-dot"></div>
+      vZen Solutions
+    </a>
+
+    <div class="nav-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/auths" class="nav-link nav-link--active">Available Auths</a>
+    </div>
+
+    <div class="nav-right">
+      
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+      <a href="/logout" class="btn-signout">Sign out</a>
+    </div>
+  </nav>
+
+  <main class="auths-main">
+    <div class="auths-container">
+
+      <!-- ── Section: Available Portals ── -->
+      <div class="section-header">
+        <p class="section-eyebrow">Identity Gateway</p>
+        <h1 class="section-title">Available Auths</h1>
+        <p class="section-sub">All configured authentication protocols and their entry points.</p>
+        <p class="section-sub">Access any connected Salesforce Experience Cloud site seamlessly — no additional login required.</p>
+      </div>
+
+      <div class="auth-grid">
+
+        <!-- JWT Bearer -->
+        <div class="auth-card">
+          <div class="auth-card-top">
+            <span class="tag tag-jwt">JWT Bearer</span>
+            <span class="auth-card-status">
+              <span class="status-dot"></span> Active
+            </span>
+          </div>
+          <div class="auth-card-title">Experience Cloud</div>
+          <div class="auth-card-desc">Server-side JWT assertion exchanged for a domain-scoped Salesforce session via the singleaccess endpoint.</div>
+          <button class="auth-card-btn btn-jwt" onclick="
+            this.textContent = 'Launching…';
+            window.open('/launch-portal', '_blank', 'noopener,noreferrer');
+            setTimeout(() => this.textContent = 'Open Experience Cloud ↗', 3000);
+          ">Open Experience Cloud ↗</button>
+        </div>
+
+        <!-- OIDC -->
+        <div class="auth-card">
+          <div class="auth-card-top">
+            <span class="tag tag-oidc">OIDC</span>
+            <span class="auth-card-status">
+              <span class="status-dot"></span> Active
+            </span>
+          </div>
+          <div class="auth-card-title">Support Portal</div>
+          <div class="auth-card-desc">OpenID Connect authorization code flow via the vZen OAuth server, used as an Auth Provider for support.sgummalla.net.</div>
+          <a href="https://support.sgummalla.net/login" target="_blank" rel="noopener noreferrer" class="auth-card-btn btn-oidc">Open Support Portal ↗</a>
+        </div>
+
+        <!-- SAML -->
+        <div class="auth-card">
+          <div class="auth-card-top">
+            <span class="tag tag-saml">SAML 2.0</span>
+            <span class="auth-card-status">
+              <span class="status-dot"></span> Active
+            </span>
+          </div>
+          <div class="auth-card-title">Help Portal</div>
+          <div class="auth-card-desc">SP-initiated SAML 2.0 SSO. Salesforce redirects to /sso, assertion is signed with the IdP RSA key and posted back to the ACS URL.</div>
+          <a href="http://help.sgummalla.net/login" target="_blank" rel="noopener noreferrer" class="auth-card-btn btn-saml">Open Help Portal ↗</a>
+        </div>
+
+      </div>
+
+      <!-- ── Section: Protocol Metadata ── -->
+      <div class="section-divider"></div>
+
+      <div class="section-header">
+        <p class="section-eyebrow">Configuration</p>
+        <h2 class="section-title sm">Protocol Metadata</h2>
+        <p class="section-sub">Inspect the raw configuration documents for each protocol.</p>
+      </div>
+
+      <div class="meta-row">
+        <button class="meta-btn btn-saml-ghost" onclick="loadMeta('/saml/metadata', 'xml', this)">
+          SAML Metadata
+        </button>
+        <button class="meta-btn btn-oidc-ghost" onclick="loadMeta('/.well-known/openid-configuration', 'json', this)">
+          OAuth / OIDC Config
+        </button>
+        <button class="meta-btn btn-clear" id="meta-clear" onclick="clearMeta()" style="display:none">
+          Clear ✕
+        </button>
+      </div>
+
+      <div class="meta-viewer" id="meta-viewer" style="display:none">
+        <div class="meta-viewer-header">
+          <span class="meta-viewer-label" id="meta-label"></span>
+          <button class="meta-copy-btn" onclick="copyMeta()">Copy</button>
+        </div>
+        <textarea class="meta-textarea" id="meta-textarea" readonly spellcheck="false"></textarea>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <span class="footer-left">vZen Solutions · Identity Gateway</span>
+    <div class="footer-right">
+      <div class="nav-live-dot"></div>
+      Live
+    </div>
+  </footer>
+
+</div>
+
+<script>
+async function loadMeta(url, type, btn) {
+  const viewer  = document.getElementById('meta-viewer');
+  const textarea = document.getElementById('meta-textarea');
+  const label   = document.getElementById('meta-label');
+  const clear   = document.getElementById('meta-clear');
+  const orig    = btn.textContent;
+
+  btn.textContent = 'Loading…';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch(url);
+    const text = await res.text();
+
+    let display = text;
+    if (type === 'json') {
+      try { display = JSON.stringify(JSON.parse(text), null, 2); } catch {}
+    }
+
+    textarea.value = display;
+    label.textContent = url;
+    viewer.style.display = 'flex';
+    clear.style.display  = 'inline-flex';
+
+    // Scroll to viewer
+    viewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (err) {
+    textarea.value = 'Error loading metadata: ' + err.message;
+    viewer.style.display = 'flex';
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+function clearMeta() {
+  document.getElementById('meta-viewer').style.display = 'none';
+  document.getElementById('meta-clear').style.display  = 'none';
+  document.getElementById('meta-textarea').value = '';
+}
+
+function copyMeta() {
+  const ta  = document.getElementById('meta-textarea');
+  const btn = document.querySelector('.meta-copy-btn');
+  navigator.clipboard.writeText(ta.value).then(() => {
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => btn.textContent = 'Copy', 1800);
+  });
+}
+</script>
+</body>
+</html>

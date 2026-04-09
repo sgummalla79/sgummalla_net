@@ -72,6 +72,7 @@ app.use(require('./routes/oauth'));   // /.well-known/openid-configuration, /oau
 app.use(require('./routes/saml'));    // /saml/metadata, /sso
 app.use(require('./routes/auth'));    // /login, /auth/credentials, /logout
 app.use(require('./routes/portal')); // /launch-portal  (JWT Bearer flow)
+app.use(require('./routes/auths'));   // /auths
 app.use(require('./routes/home'));    // /
 
 // ─────────────────────────────────────────────────────────────────────────────
