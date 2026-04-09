@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal</title>
+  <title>vZen Solutions · Portal</title>
   <script src="/js/theme.js"></script>
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/home.css">
@@ -13,7 +13,7 @@
 
   <nav>
     <div class="nav-brand">
-      MyPortal
+      vZen Solutions
       <div class="nav-brand-rule"></div>
       <span class="nav-brand-sub">Identity Gateway</span>
     </div>
@@ -53,9 +53,9 @@
           <p class="hero-eyebrow">Welcome back</p>
           <h1 class="hero-name">Good to see you,<br><em><%= firstName %>.</em></h1>
           <p class="hero-body">
-            You are signed in via Auth0. Any Salesforce Experience Cloud
-            page you visit will authenticate you automatically — no second
-            login required.
+            You're signed in through the vZen Solutions identity gateway.
+            Your session is active across all connected Salesforce Experience
+            Cloud sites — no additional logins needed.
           </p>
         </div>
         <div class="avatar-col">
@@ -84,8 +84,14 @@
           <div class="card-value"><%= email %></div>
         </div>
         <div class="card">
-          <div class="card-label">Identity Provider</div>
-          <div class="card-value">Auth0 via SAML 2.0</div>
+          <div class="card-label">Protocols</div>
+          <div class="card-value">
+            <span class="protocol-badges">
+              <span class="badge">SAML 2.0</span>
+              <span class="badge">OAuth 2.0</span>
+              <span class="badge">Token Exchange</span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -94,7 +100,10 @@
           Open Experience Cloud <span class="btn-arrow">↗</span>
         </a>
         <a href="/saml/metadata" target="_blank" rel="noopener" class="btn-secondary">
-          View SAML Metadata
+          SAML Metadata
+        </a>
+        <a href="/.well-known/openid-configuration" target="_blank" rel="noopener" class="btn-secondary">
+          OAuth Metadata
         </a>
       </div>
 
@@ -102,7 +111,7 @@
   </main>
 
   <footer>
-    <span class="footer-left">SAML 2.0 SP-Initiated SSO · Node.js IdP</span>
+    <span class="footer-left">vZen Solutions · SAML 2.0 · OAuth 2.0 · OIDC</span>
     <div class="footer-right">
       <div class="footer-dot"></div>
       Session active

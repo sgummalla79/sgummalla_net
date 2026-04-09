@@ -12,4 +12,4 @@ if [ -n "$SAML_CERTIFICATE" ]; then
   printf '%s' "$SAML_CERTIFICATE" > certs/idp.crt
 fi
 
-exec node server.js
+exec node src/server.js

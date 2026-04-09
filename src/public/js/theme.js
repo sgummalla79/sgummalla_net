@@ -4,7 +4,7 @@
  * before first paint to prevent flash of wrong theme.
  */
 (function () {
-  var saved = localStorage.getItem('portal-theme') || 'light';
+  var saved = localStorage.getItem('portal-theme') || 'dark';
   document.documentElement.dataset.theme = saved;
 })();
 
