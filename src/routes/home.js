@@ -16,14 +16,16 @@ router.get('/', requiresLogin, (req, res) => {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+  const error = req.query.error || '';
 
-  // Strip the SAML-specific path suffix to get the base Salesforce URL
-  const sfUrl = (process.env.SALESFORCE_ACS_URL || '')
-    .replace('/services/auth/saml/sgummalla_net_idp', '')
-    .replace('/services/auth/saml/EC_SSO', '')
-    || '#';
+  res.render('home', { displayName, firstName, email, picture, initials, error });
+});
 
-  res.render('home', { displayName, firstName, email, picture, initials, sfUrl });
+router.get('/debug-session', requiresLogin, (req, res) => {
+  res.json({
+    email:       req.session.user.email,
+    sf_accounts: req.session.user.sf_accounts || 'NOT FOUND — re-login needed',
+  });
 });
 
 module.exports = router;

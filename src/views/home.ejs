@@ -48,6 +48,17 @@
         <div class="top-rule-line"></div>
       </div>
 
+      <% if (typeof error !== 'undefined' && error) { %>
+      <div class="launch-error">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M8 5v3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="8" cy="11" r=".75" fill="currentColor"/>
+        </svg>
+        <%= error %>
+      </div>
+      <% } %>
+
       <div class="hero">
         <div class="hero-text">
           <p class="hero-eyebrow">Welcome back</p>
@@ -96,9 +107,13 @@
       </div>
 
       <div class="actions">
-        <a href="<%= sfUrl %>" target="_blank" rel="noopener" class="btn-primary">
+        <button class="btn-primary" onclick="
+          this.textContent = 'Opening…';
+          window.open('/launch-portal', '_blank', 'noopener,noreferrer');
+          setTimeout(() => this.innerHTML = 'Open Experience Cloud <span class=\'btn-arrow\'>↗</span>', 3000);
+        ">
           Open Experience Cloud <span class="btn-arrow">↗</span>
-        </a>
+        </button>
         <a href="/saml/metadata" target="_blank" rel="noopener" class="btn-secondary">
           SAML Metadata
         </a>
