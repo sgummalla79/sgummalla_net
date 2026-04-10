@@ -13,13 +13,6 @@ html, body { height: 100%; overflow: hidden; }
   overflow: hidden;
 }
 
-/* Pi symbol — center right, large and visible */
-.pi-bg {
-  right: -120px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
 /* Top bar */
 .login-bar {
   position: relative; z-index: 2;
@@ -180,4 +173,17 @@ html[data-theme="light"] .login-error { border-color: rgba(184,50,50,0.18); }
   html, body { overflow: auto; }
   .login-page { height: auto; min-height: 100vh; overflow: visible; }
   .pi-bg { font-size: 360px; right: -60px; }
+}
+/* ── Infinity symbol ── */
+.inf-bg {
+  right: -120px;
+  top: 60%;
+  transform: translateY(-50%) rotate(-15deg);
+}
+
+/* Pi symbol — center right, large and visible */
+.pi-bg {
+  left: -100px;
+  top: -20%;
+  transform: rotate(-10deg);
 }

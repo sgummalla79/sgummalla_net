@@ -216,3 +216,17 @@ html[data-theme="light"] .btn-clear      { background: var(--surface-2); color: 
   .auth-grid { grid-template-columns: 1fr; }
   .auths-main { padding: 2rem 1.25rem 3rem; }
 }
+
+/* ── Infinity symbol ── */
+.inf-bg {
+  right: -120px;
+  top: 60%;
+  transform: translateY(-50%) rotate(-15deg);
+}
+
+/* Pi symbol — center right, large and visible */
+.pi-bg {
+  left: -100px;
+  top: -20%;
+  transform: rotate(-10deg);
+}

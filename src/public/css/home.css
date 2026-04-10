@@ -13,13 +13,6 @@ html, body { height: 100%; overflow: hidden; }
   overflow: hidden;
 }
 
-/* Pi symbol — center right, large and visible */
-.pi-bg {
-  right: -120px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
 /* ── Nav ── */
 nav {
   position: relative; z-index: 10;
@@ -389,4 +382,18 @@ footer {
   color: #F5C842;
   animation: pulse 2.5s ease-in-out infinite;
   display: inline;
+}
+
+/* ── Infinity symbol ── */
+.inf-bg {
+  right: -120px;
+  top: 60%;
+  transform: translateY(-50%) rotate(-15deg);
+}
+
+/* Pi symbol — center right, large and visible */
+.pi-bg {
+  left: -100px;
+  top: -20%;
+  transform: rotate(-10deg);
 }

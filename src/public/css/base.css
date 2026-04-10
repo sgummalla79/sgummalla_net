@@ -2,7 +2,7 @@
    base.css — shared tokens, Pi-symbol themed
 ───────────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Geist+Mono:wght@400;700&family=Bebas+Neue&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -62,14 +62,32 @@ html, body {
 /* ── Pi symbol background — shared mixin via class ── */
 .pi-bg {
   position: absolute;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Bebas Neue', cursive;
+  font-style: normal;
   font-size: 680px;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--pi-color);
   line-height: 1;
   pointer-events: none;
   user-select: none;
   z-index: 0;
+  transform: rotate(-30deg);
+  transform-origin: center center;
+}
+
+.inf-bg {
+  position: absolute;
+  font-family: 'Bebas Neue', cursive;
+  font-style: normal;
+  font-size: 800px;
+  font-weight: 400;
+  color: var(--pi-color);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  transform: rotate(-30deg);
+  transform-origin: center center;
 }
 
 /* ── Theme toggle ── */
