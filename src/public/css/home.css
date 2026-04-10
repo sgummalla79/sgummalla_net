@@ -383,3 +383,10 @@ footer {
   transition: opacity 0.15s, transform 0.15s;
 }
 .btn-auths:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ── Headline heartbeat dot ── */
+.headline-dot {
+  color: #F5C842;
+  animation: pulse 2.5s ease-in-out infinite;
+  display: inline;
+}

@@ -22,7 +22,7 @@
     </a>
 
     <div class="nav-links">
-      <a href="/" class="nav-link nav-link--active">Home</a>
+      <a href="/" class="nav-link nav-link--active">Dashboard</a>
       <a href="/auths" class="nav-link">Available Auths</a>
     </div>
 
@@ -60,8 +60,8 @@
       <% } %>
 
       <p class="eyebrow">Welcome back</p>
-      <h1 class="headline"><%= fullName %>.</h1>
-      <p class="subline">Your session is active.</p>
+      <h1 class="headline"><%= fullName %><span class="headline-dot">.</span></h1>
+      <p class="subline">Your session is active. Access any connected Salesforce Experience Cloud site seamlessly — no additional login required.</p>
 
       <div class="status-strip">
         <div class="status-item">
@@ -82,7 +82,7 @@
 
   <!-- Footer -->
   <footer>
-    <span class="footer-left">vZen Solutions</span>
+    <span class="footer-left">vZen Solutions · Identity Gateway</span>
     <div class="footer-right">
       <div class="nav-live-dot"></div>
       Live
