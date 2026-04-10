@@ -220,13 +220,26 @@ html[data-theme="light"] .btn-clear      { background: var(--surface-2); color: 
 /* ── Infinity symbol ── */
 .inf-bg {
   right: -120px;
-  top: 60%;
-  transform: translateY(-50%) rotate(-15deg);
+  top: 80%;
+  transform: translateY(-50%) rotate(-30deg);
 }
 
 /* Pi symbol — center right, large and visible */
 .pi-bg {
-  left: -100px;
+  left: -120px;
   top: -20%;
   transform: rotate(-10deg);
+}
+
+.phi-bg {
+  font-size: 280px;
+  left: 150px;
+  bottom: -40px;
+}
+
+.atom-bg {
+  width: 260px;
+  height: 260px;
+  right: 150px;
+  top: 0px;
 }

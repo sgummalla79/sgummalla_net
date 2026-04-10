@@ -90,6 +90,56 @@ html, body {
   transform-origin: center center;
 }
 
+/* ── Golden Ratio symbol background — shared ── */
+.phi-bg {
+  position: absolute;
+  font-family: 'Bebas Neue', cursive;
+  font-style: normal;
+  font-size: 520px;
+  font-weight: 400;
+  color: var(--pi-color);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  bottom: -80px;
+  left: -40px;
+  transform: rotate(-10deg);
+}
+
+/* ── Quantum wave function symbol background — shared ── */
+.psi-bg {
+  position: absolute;
+  font-family: 'Bebas Neue', cursive;
+  font-style: normal;
+  font-size: 560px;
+  font-weight: 400;
+  color: var(--pi-color);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  top: -60px;
+  right: -60px;
+  transform: rotate(12deg);
+}
+
+/* ── Atom illustration background — shared ── */
+.atom-bg {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 480px;
+  height: 480px;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  transform: rotate(15deg);
+  opacity: 0.13;
+}
+
+html[data-theme="light"] .atom-bg { opacity: 0.07; }
+
 /* ── Theme toggle ── */
 .theme-toggle {
   display: inline-flex;
