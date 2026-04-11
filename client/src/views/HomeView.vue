@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout, NavLink, Button, ThemeToggle } from "@vzen/ui";
 import { useAuthStore } from "../stores/auth";
+import { useThemeToggle } from "../composables/useThemeToggle";
 
 const router = useRouter();
 const auth = useAuthStore();
-const themeMode = ref<"dark" | "light">("dark");
-
-function toggleTheme() {
-  themeMode.value = themeMode.value === "dark" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", themeMode.value);
-}
+const { mode: themeMode, toggle: toggleTheme } = useThemeToggle();
 
 async function handleLogout() {
   await auth.logout();
@@ -31,7 +26,6 @@ async function handleLogout() {
       <Button variant="ghost" @click="handleLogout">Sign out</Button>
     </template>
 
-    <!-- Main content -->
     <div class="vz-home">
       <p class="vz-home__eyebrow">Welcome back</p>
       <h1 class="vz-home__headline">
@@ -45,16 +39,16 @@ async function handleLogout() {
           Session active
         </div>
         <div class="vz-home__status-item">
-          <span class="vz-home__status-provider">
-            via {{ auth.user?.provider ?? "—" }}
-          </span>
+          <span class="vz-home__status-provider"
+            >via {{ auth.user?.provider ?? "—" }}</span
+          >
         </div>
       </div>
 
       <div class="vz-home__actions">
-        <Button @click="$router.push({ name: 'auths' })">
-          View Available Auths ↗
-        </Button>
+        <Button @click="$router.push({ name: 'auths' })"
+          >View Available Auths ↗</Button
+        >
       </div>
     </div>
   </AppLayout>

@@ -1,153 +1,66 @@
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    /** Show or hide individual symbols */
-    showPi?: boolean;
-    showInfinity?: boolean;
-    showPhi?: boolean;
-    showAtom?: boolean;
-  }>(),
-  {
-    showPi: true,
-    showInfinity: true,
-    showPhi: true,
-    showAtom: true,
-  },
-);
+  const SYMBOLS = {
+    pi: `<line x1="10" y1="18" x2="90" y2="18" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+       <path d="M30 18 Q28 55 22 82" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>
+       <path d="M70 18 Q72 55 78 82" stroke="currentColor" stroke-width="7" fill="none" stroke-linecap="round"/>`,
+
+    phi: `<circle cx="50" cy="50" r="28" stroke="currentColor" stroke-width="7" fill="none"/>
+        <line x1="50" y1="8" x2="50" y2="92" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>`,
+
+    infinity: `<path d="M50 50 C50 32 38 22 26 22 C14 22 8 32 8 50 C8 68 14 78 26 78 C38 78 50 68 50 50 C50 32 62 22 74 22 C86 22 92 32 92 50 C92 68 86 78 74 78 C62 78 50 68 50 50 Z"
+              stroke="currentColor" stroke-width="7" fill="none" stroke-linejoin="round"/>`,
+
+    atom: `<ellipse cx="50" cy="50" rx="42" ry="14" fill="none" stroke="currentColor" stroke-width="5"/>
+         <ellipse cx="50" cy="50" rx="42" ry="14" fill="none" stroke="currentColor" stroke-width="5" transform="rotate(60 50 50)"/>
+         <ellipse cx="50" cy="50" rx="42" ry="14" fill="none" stroke="currentColor" stroke-width="5" transform="rotate(120 50 50)"/>
+         <circle cx="50" cy="50" r="7" fill="currentColor"/>
+         <circle cx="50" cy="36" r="4" fill="currentColor"/>
+         <circle cx="62" cy="57" r="4" fill="currentColor"/>
+         <circle cx="38" cy="57" r="4" fill="currentColor"/>`,
+  }
+
+  // Asymmetric layout — creates diagonal tension across the page
+  const symbols = [
+    // π — large, top-left, bleeds off top edge
+    { svg: SYMBOLS.pi, size: 380, rotation: -10, style: 'top:-60px; left:-80px' },
+    // ∞ — mid-right, floats in the right third
+    { svg: SYMBOLS.infinity, size: 320, rotation: -15, style: 'top:38%; right:-90px' },
+    // atom — lower-right, bleeds off bottom
+    { svg: SYMBOLS.atom, size: 260, rotation: 22, style: 'bottom:-60px; right:8%' },
+    // φ — left side, lower-mid, smaller — creates asymmetry
+    { svg: SYMBOLS.phi, size: 200, rotation: -8, style: 'bottom:18%; left:-50px' },
+  ]
 </script>
 
 <template>
-  <!-- π — top left -->
-  <div v-if="showPi" class="vz-symbol vz-symbol--pi" aria-hidden="true">π</div>
-
-  <!-- ∞ — middle right -->
-  <div
-    v-if="showInfinity"
-    class="vz-symbol vz-symbol--infinity"
-    aria-hidden="true"
-  >
-    ∞
-  </div>
-
-  <!-- φ — bottom left -->
-  <div v-if="showPhi" class="vz-symbol vz-symbol--phi" aria-hidden="true">
-    φ
-  </div>
-
-  <!-- atom — top right (SVG) -->
-  <div v-if="showAtom" class="vz-symbol vz-symbol--atom" aria-hidden="true">
-    <svg
-      viewBox="0 0 200 200"
-      xmlns="http://www.w3.org/2000/svg"
-      width="100%"
-      height="100%"
+  <div class="vz-symbol-layer" aria-hidden="true">
+    <div
+      v-for="(s, i) in symbols"
+      :key="i"
+      class="vz-symbol"
+      :style="`${s.style}; width:${s.size}px; height:${s.size}px; transform:rotate(${s.rotation}deg)`"
     >
-      <ellipse
-        cx="100"
-        cy="100"
-        rx="90"
-        ry="30"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="5"
-      />
-      <ellipse
-        cx="100"
-        cy="100"
-        rx="90"
-        ry="30"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="5"
-        transform="rotate(60 100 100)"
-      />
-      <ellipse
-        cx="100"
-        cy="100"
-        rx="90"
-        ry="30"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="5"
-        transform="rotate(120 100 100)"
-      />
-      <circle cx="100" cy="100" r="14" fill="currentColor" />
-      <circle cx="100" cy="70" r="7" fill="currentColor" />
-      <circle cx="178" cy="145" r="7" fill="currentColor" />
-      <circle cx="22" cy="145" r="7" fill="currentColor" />
-    </svg>
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <g v-html="s.svg" />
+      </svg>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.vz-symbol {
-  position: absolute;
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
-  font-family: var(--vz-font-display);
-  line-height: 1;
-  color: var(--vz-symbol-color);
-}
-
-/* π — top left */
-.vz-symbol--pi {
-  font-size: 680px;
-  left: -100px;
-  top: -20%;
-  transform: rotate(-10deg);
-}
-
-/* ∞ — middle right */
-.vz-symbol--infinity {
-  font-size: 680px;
-  right: -120px;
-  top: 60%;
-  transform: translateY(-50%) rotate(-15deg);
-}
-
-/* φ — bottom left */
-.vz-symbol--phi {
-  font-size: 520px;
-  bottom: -80px;
-  left: -40px;
-  transform: rotate(-10deg);
-}
-
-/* atom — top right */
-.vz-symbol--atom {
-  width: 480px;
-  height: 480px;
-  top: -60px;
-  right: -60px;
-  transform: rotate(15deg);
-  opacity: 0.13;
-  color: var(--vz-text);
-}
-
-/* Responsive */
-@media (max-width: 680px) {
-  .vz-symbol--pi {
-    font-size: 360px;
-    left: -60px;
+  .vz-symbol-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
   }
 
-  .vz-symbol--infinity {
-    font-size: 360px;
-    right: -60px;
+  .vz-symbol {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    color: var(--vz-symbol-color, rgba(255, 255, 255, 0.13));
   }
-
-  .vz-symbol--phi {
-    font-size: 280px;
-    left: -30px;
-    bottom: -40px;
-  }
-
-  .vz-symbol--atom {
-    width: 260px;
-    height: 260px;
-    right: -30px;
-    top: -30px;
-  }
-}
 </style>

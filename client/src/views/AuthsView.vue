@@ -3,20 +3,16 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout, NavLink, AuthCard, Button, ThemeToggle } from "@vzen/ui";
 import { useAuthStore } from "../stores/auth";
+import { useThemeToggle } from "../composables/useThemeToggle";
 import { getPortals, launchExperienceCloud, type Portal } from "../api/portals";
 
 const router = useRouter();
 const auth = useAuthStore();
-const themeMode = ref<"dark" | "light">("dark");
+const { mode: themeMode, toggle: toggleTheme } = useThemeToggle();
 const portals = ref<Portal[]>([]);
 const launching = ref<string | null>(null);
 const metaContent = ref<string | null>(null);
 const metaLabel = ref("");
-
-function toggleTheme() {
-  themeMode.value = themeMode.value === "dark" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", themeMode.value);
-}
 
 async function handleLogout() {
   await auth.logout();
@@ -45,15 +41,16 @@ async function fetchMeta(type: "saml" | "oidc") {
   try {
     const res = await fetch(url, { credentials: "include" });
     const text = await res.text();
-    if (type === "oidc") {
-      try {
-        metaContent.value = JSON.stringify(JSON.parse(text), null, 2);
-      } catch {
-        metaContent.value = text;
-      }
-    } else {
-      metaContent.value = text;
-    }
+    metaContent.value =
+      type === "oidc"
+        ? (() => {
+            try {
+              return JSON.stringify(JSON.parse(text), null, 2);
+            } catch {
+              return text;
+            }
+          })()
+        : text;
   } catch {
     metaContent.value = "Error loading metadata";
   }
@@ -65,7 +62,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <AppLayout brand="vZen Solutions" :user-label="auth.email">
+  <AppLayout brand="vZen Solutions" :user-label="auth.email" :scrollable="true">
     <template #nav-links>
       <NavLink href="/home">Home</NavLink>
       <NavLink href="/auths" :active="true">Available Auths</NavLink>

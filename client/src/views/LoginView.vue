@@ -9,19 +9,14 @@ import {
   ThemeToggle,
 } from "@vzen/ui";
 import { useAuthStore } from "../stores/auth";
-import { initiateAuth0, initiateSaml, initiateOidc } from "../api/auth";
+import { initiateAuth0 } from "../api/auth";
+import { useThemeToggle } from "../composables/useThemeToggle";
 
 const router = useRouter();
 const auth = useAuthStore();
-
 const email = ref("");
 const password = ref("");
-const themeMode = ref<"dark" | "light">("dark");
-
-function toggleTheme() {
-  themeMode.value = themeMode.value === "dark" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", themeMode.value);
-}
+const { mode: themeMode, toggle: toggleTheme } = useThemeToggle();
 
 async function handleLogin() {
   try {
@@ -36,20 +31,14 @@ async function handleLogin() {
 <template>
   <LoginLayout brand="vZen Solutions">
     <div class="vz-login-card">
-      <!-- Brand header -->
       <div class="vz-login-card__brand">
         <StatusDot color="red" :pulse="true" :size="8" />
         <span class="vz-login-card__brand-name">vZen Solutions</span>
-        <ThemeToggle
-          :mode="themeMode"
-          class="vz-login-card__theme"
-          @toggle="toggleTheme"
-        />
+        <ThemeToggle :mode="themeMode" @toggle="toggleTheme" />
       </div>
 
       <p class="vz-login-card__sub">Identity Gateway · Sign in to continue</p>
 
-      <!-- Error -->
       <div v-if="auth.error" class="vz-login-card__error" role="alert">
         <svg
           width="13"
@@ -76,7 +65,6 @@ async function handleLogin() {
         {{ auth.error }}
       </div>
 
-      <!-- Credential form -->
       <form class="vz-login-card__form" @submit.prevent="handleLogin">
         <TextInput
           v-model="email"
@@ -101,26 +89,16 @@ async function handleLogin() {
         >
       </form>
 
-      <!-- Divider -->
       <div class="vz-login-card__divider">
         <span class="vz-login-card__divider-line" />
         <span class="vz-login-card__divider-text">or</span>
         <span class="vz-login-card__divider-line" />
       </div>
 
-      <!-- Federated auth -->
-      <div class="vz-login-card__federated">
-        <Button variant="ghost" :full-width="true" @click="initiateAuth0">
-          <span class="vz-auth0-dot" />
-          Continue with Auth0
-        </Button>
-        <Button variant="ghost" :full-width="true" @click="initiateSaml">
-          Continue with SAML
-        </Button>
-        <Button variant="ghost" :full-width="true" @click="initiateOidc">
-          Continue with OIDC
-        </Button>
-      </div>
+      <Button variant="ghost" :full-width="true" @click="initiateAuth0">
+        <span class="vz-auth0-dot" />
+        Continue with Auth0
+      </Button>
     </div>
 
     <template #footer>
@@ -163,10 +141,6 @@ async function handleLogin() {
   text-transform: uppercase;
   color: var(--vz-text);
   flex: 1;
-}
-
-.vz-login-card__theme {
-  margin-left: auto;
 }
 
 .vz-login-card__sub {
@@ -218,12 +192,6 @@ async function handleLogin() {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--vz-text3);
-}
-
-.vz-login-card__federated {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
 }
 
 .vz-auth0-dot {

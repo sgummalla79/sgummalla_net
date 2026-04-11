@@ -12,7 +12,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/vzen-ui.js",
       "require": "./dist/vzen-ui.umd.cjs"
-    }
+    },
+    "./styles": "./dist/style.css"
   },
   "files": [
     "dist"

@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import SymbolLayer from "../components/SymbolLayer.vue";
 
-defineProps<{
-  brand?: string;
-  themeMode?: "dark" | "light";
-}>();
-
-defineEmits<{ "toggle-theme": [] }>();
+withDefaults(
+  defineProps<{
+    brand?: string;
+  }>(),
+  {
+    brand: "vZen Solutions",
+  },
+);
 </script>
 
 <template>
   <div class="vz-login-page">
     <SymbolLayer />
-
     <div class="vz-login-page__main">
       <slot />
     </div>
-
     <div class="vz-login-page__footer">
       <slot name="footer">
         <span>SAML 2.0 · OAuth 2.0 · OIDC</span>
-        <span>{{ brand ?? "vZen Solutions" }}</span>
+        <span>{{ brand }}</span>
       </slot>
     </div>
   </div>
@@ -31,7 +31,8 @@ defineEmits<{ "toggle-theme": [] }>();
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--vz-bg);
+  background: var(--vz-bg, #0c0c0c);
+  color: var(--vz-text, #efefef);
   position: relative;
   overflow: hidden;
 }
@@ -43,34 +44,21 @@ defineEmits<{ "toggle-theme": [] }>();
   justify-content: center;
   padding: 2rem;
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
 
 .vz-login-page__footer {
   position: relative;
-  z-index: 2;
+  z-index: 1;
   padding: 1rem 2rem;
-  font-family: var(--vz-font-mono);
+  font-family: "Geist Mono", monospace;
   font-size: 0.69rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--vz-text3);
+  color: var(--vz-text3, rgba(255, 255, 255, 0.3));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid var(--vz-border);
-}
-
-@media (max-width: 520px) {
-  .vz-login-page {
-    height: auto;
-    min-height: 100vh;
-    overflow: visible;
-  }
-
-  .vz-login-page__main {
-    padding: 1.5rem 1.25rem;
-    align-items: flex-start;
-  }
+  border-top: 1px solid var(--vz-border, rgba(255, 255, 255, 0.08));
 }
 </style>

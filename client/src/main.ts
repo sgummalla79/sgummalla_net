@@ -9,14 +9,8 @@ import router from "./router/index";
 
 const app = createApp(App);
 
-// ── Pinia ─────────────────────────────────────────────────────────────────────
 app.use(createPinia());
-
-// ── Theme ─────────────────────────────────────────────────────────────────────
-// Swap defaultTheme for any VzenTheme to change the entire app appearance
 app.use(ThemePlugin, { theme: defaultTheme });
-
-// ── Router ────────────────────────────────────────────────────────────────────
 app.use(router);
 
 app.mount("#app");

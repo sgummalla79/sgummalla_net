@@ -7,13 +7,16 @@ export default defineConfig({
   plugins: [vue(), UnoCSS()],
 
   resolve: {
-    alias: { "@": resolve(__dirname, "src") },
+    alias: {
+      // Resolve @vzen/ui from source in dev — no build step required
+      "@vzen/ui": resolve(__dirname, "../packages/ui/src/index.ts"),
+      "@": resolve(__dirname, "src"),
+    },
   },
 
   server: {
     port: 5173,
     proxy: {
-      // Proxy API calls to Express in dev — avoids CORS issues
       "/api": {
         target: "http://localhost:3000",
         changeOrigin: true,

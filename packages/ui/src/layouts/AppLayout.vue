@@ -6,25 +6,23 @@ const props = withDefaults(
   defineProps<{
     brand?: string;
     activePage?: string;
-    userLabel?: string;
     themeMode?: "dark" | "light";
+    userLabel?: string;
+    scrollable?: boolean;
   }>(),
   {
     brand: "vZen Solutions",
     activePage: "",
-
     themeMode: "dark",
+    scrollable: false,
   },
 );
 
-defineEmits<{
-  "toggle-theme": [];
-  logout: [];
-}>();
+defineEmits<{ "toggle-theme": []; logout: [] }>();
 </script>
 
 <template>
-  <div class="vz-shell">
+  <div class="vz-shell" :class="{ 'vz-shell--scrollable': props.scrollable }">
     <SymbolLayer />
 
     <NavBar
@@ -66,9 +64,16 @@ defineEmits<{
   height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  background: var(--vz-bg);
+  background: var(--vz-bg, #0c0c0c);
   position: relative;
   overflow: hidden;
+}
+
+/* Scrollable variant — for pages like AuthsView */
+.vz-shell--scrollable {
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
 }
 
 .vz-shell__main {
@@ -81,10 +86,16 @@ defineEmits<{
   overflow: hidden;
 }
 
+.vz-shell--scrollable .vz-shell__main {
+  overflow: visible;
+  align-items: flex-start;
+  padding: 3rem 2rem 4rem;
+}
+
 .vz-shell__user-label {
-  font-family: var(--vz-font-mono);
+  font-family: var(--vz-font-mono, monospace);
   font-size: 0.82rem;
-  color: var(--vz-text);
+  color: var(--vz-text, #efefef);
 }
 
 .vz-shell__footer {
@@ -94,33 +105,33 @@ defineEmits<{
   align-items: center;
   justify-content: space-between;
   padding: 0.85rem 2rem;
-  border-top: 1px solid var(--vz-border);
+  border-top: 1px solid var(--vz-border, rgba(255, 255, 255, 0.08));
 }
 
 .vz-shell__footer-left {
-  font-family: var(--vz-font-mono);
+  font-family: var(--vz-font-mono, monospace);
   font-size: 0.69rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--vz-text3);
+  color: var(--vz-text3, rgba(255, 255, 255, 0.3));
 }
 
 .vz-shell__footer-right {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-family: var(--vz-font-mono);
+  font-family: var(--vz-font-mono, monospace);
   font-size: 0.69rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--vz-text3);
+  color: var(--vz-text3, rgba(255, 255, 255, 0.3));
 }
 
 .vz-shell__footer-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--vz-green);
+  background: var(--vz-green, #5ae89a);
   animation: vz-pulse 2.5s ease-in-out infinite;
 }
 
@@ -140,12 +151,10 @@ defineEmits<{
     min-height: 100vh;
     overflow: visible;
   }
-
   .vz-shell__main {
     padding: 1.75rem 1.25rem;
     align-items: flex-start;
   }
-
   .vz-shell__footer {
     padding: 0.85rem 1.25rem;
   }
