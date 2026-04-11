@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { fileURLToPath } from "node:url";
+import { join, dirname } from "node:path";
 import healthRouter from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import auth0Router from "./routes/auth0.js";
@@ -9,29 +11,32 @@ import samlRouter from "./routes/saml.js";
 import oidcRouter from "./routes/oidc.js";
 import portalsRouter from "./routes/portals.js";
 
-// ── App ───────────────────────────────────────────────────────────────────────
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app: express.Application = express();
 const PORT = Number(process.env.PORT ?? 3000);
 const CLIENT_URL = process.env.CLIENT_URL ?? "http://localhost:5173";
+const isProd = process.env.NODE_ENV === "production";
 
-// ── Middleware ────────────────────────────────────────────────────────────────
-
-app.use(
-  cors({
-    origin: CLIENT_URL,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
+// ── CORS ──────────────────────────────────────────────────────────────────────
+// In production the client is served by Express itself — no CORS needed.
+// In dev the client is on :5173 — CORS required.
+if (!isProd) {
+  app.use(
+    cors({
+      origin: CLIENT_URL,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    }),
+  );
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ── Routes ────────────────────────────────────────────────────────────────────
-
+// ── API routes ────────────────────────────────────────────────────────────────
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/auth0", auth0Router);
@@ -39,14 +44,25 @@ app.use("/api/saml", samlRouter);
 app.use("/api/oidc", oidcRouter);
 app.use("/api/portals", portalsRouter);
 
-// ── 404 handler ───────────────────────────────────────────────────────────────
+// ── Static files (production only) ───────────────────────────────────────────
+if (isProd) {
+  const publicPath = join(__dirname, "../../public");
+  app.use(express.static(publicPath));
 
-app.use((_req, res) => {
-  res.status(404).json({ error: "Not Found" });
-});
+  // SPA fallback — Vue Router handles all non-API routes
+  app.get("*", (_req, res) => {
+    res.sendFile(join(publicPath, "index.html"));
+  });
+}
+
+// ── 404 (dev only — prod handled by SPA fallback above) ───────────────────────
+if (!isProd) {
+  app.use((_req, res) => {
+    res.status(404).json({ error: "Not Found" });
+  });
+}
 
 // ── Global error handler ──────────────────────────────────────────────────────
-
 app.use(
   (
     err: Error,
@@ -57,16 +73,13 @@ app.use(
     console.error("[vZen]", err.message);
     res.status(500).json({
       error: "Internal Server Error",
-      message: process.env.NODE_ENV === "development" ? err.message : undefined,
+      message: isProd ? undefined : err.message,
     });
   },
 );
 
-// ── Start ─────────────────────────────────────────────────────────────────────
-
 app.listen(PORT, () => {
   console.log(`[vZen] Server running on http://localhost:${PORT}`);
-  console.log(`[vZen] Client origin: ${CLIENT_URL}`);
   console.log(`[vZen] Environment: ${process.env.NODE_ENV ?? "development"}`);
 });
 

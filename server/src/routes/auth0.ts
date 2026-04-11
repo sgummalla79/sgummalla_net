@@ -1,87 +1,111 @@
-import { Router, type Request, type Response } from 'express'
-import { Issuer, generators, type TokenSet, type UserinfoResponse } from 'openid-client'
-import { signToken, cookieOptions, getCookieName, type AuthUser } from '../lib/jwt.js'
+import { Router, type Request, type Response } from "express";
+import {
+  Issuer,
+  generators,
+  type TokenSet,
+  type UserinfoResponse,
+} from "openid-client";
+import {
+  signToken,
+  cookieOptions,
+  getCookieName,
+  type AuthUser,
+} from "../lib/jwt.js";
 
-const router: import('express').Router = Router()
+const router: import("express").Router = Router();
 
-type Auth0Client = InstanceType<InstanceType<typeof Issuer>['Client']>
-let auth0Client: Auth0Client | null = null
+type Auth0Client = InstanceType<InstanceType<typeof Issuer>["Client"]>;
+let auth0Client: Auth0Client | null = null;
 
 async function getClient(): Promise<Auth0Client> {
-  if (auth0Client) return auth0Client
+  if (auth0Client) return auth0Client;
 
-  const domain = process.env.AUTH0_DOMAIN
-  if (!domain) throw new Error('AUTH0_DOMAIN is not set')
+  const domain = process.env.AUTH0_DOMAIN;
+  if (!domain) throw new Error("AUTH0_DOMAIN is not set");
 
-  const issuer = await Issuer.discover(`https://${domain}`)
+  const issuer = await Issuer.discover(`https://${domain}`);
 
   auth0Client = new issuer.Client({
-    client_id: process.env.AUTH0_CLIENT_ID ?? '',
-    client_secret: process.env.AUTH0_CLIENT_SECRET ?? '',
-    redirect_uris: [process.env.AUTH0_CALLBACK_URL ?? 'http://localhost:3000/api/auth0/callback'],
-    response_types: ['code'],
-  })
+    client_id: process.env.AUTH0_CLIENT_ID ?? "",
+    client_secret: process.env.AUTH0_CLIENT_SECRET ?? "",
+    redirect_uris: [
+      process.env.AUTH0_CALLBACK_URL ??
+        "http://localhost:3000/api/auth0/callback",
+    ],
+    response_types: ["code"],
+  });
 
-  return auth0Client
+  return auth0Client;
 }
 
 // ── GET /api/auth0/initiate ───────────────────────────────────────────────────
 
-router.get('/initiate', async (_req: Request, res: Response) => {
+router.get("/initiate", async (_req: Request, res: Response) => {
   try {
-    const client = await getClient()
-    const state = generators.state()
+    const client = await getClient();
+    const state = generators.state();
 
-    res.cookie('auth0_state', state, {
+    res.cookie("auth0_state", state, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 5 * 60 * 1000,
-    })
+    });
 
-    const url = client.authorizationUrl({ scope: 'openid profile email', state })
-    res.redirect(url)
+    const url = client.authorizationUrl({
+      scope: "openid profile email",
+      state,
+    });
+    res.redirect(url);
   } catch (err) {
-    console.error('[vZen Auth0]', err)
+    console.error("[vZen Auth0]", err);
     res.redirect(
-      `${process.env.CLIENT_URL ?? 'http://localhost:5173'}/login?error=auth0_unavailable`,
-    )
+      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=auth0_unavailable`,
+    );
   }
-})
+});
 
 // ── GET /api/auth0/callback ───────────────────────────────────────────────────
 
-router.get('/callback', async (req: Request, res: Response) => {
+router.get("/callback", async (req: Request, res: Response) => {
   try {
-    const client = await getClient()
-    const params = client.callbackParams(req)
-    const callbackUrl = process.env.AUTH0_CALLBACK_URL ?? 'http://localhost:3000/api/auth0/callback'
+    const client = await getClient();
+    const params = client.callbackParams(req);
+    const callbackUrl =
+      process.env.AUTH0_CALLBACK_URL ??
+      "http://localhost:3000/api/auth0/callback";
 
-    const storedState = req.cookies['auth0_state'] as string | undefined
-    res.clearCookie('auth0_state')
+    const storedState = req.cookies["auth0_state"] as string | undefined;
+    res.clearCookie("auth0_state");
 
-    const checks = storedState ? { state: storedState } : {}
-    const tokenSet: TokenSet = await client.callback(callbackUrl, params, checks)
-    const userinfo: UserinfoResponse = await client.userinfo(tokenSet)
+    const checks = storedState ? { state: storedState } : {};
+    const tokenSet: TokenSet = await client.callback(
+      callbackUrl,
+      params,
+      checks,
+    );
+    const userinfo: UserinfoResponse = await client.userinfo(tokenSet);
 
     const user: AuthUser = {
       id: userinfo.sub,
-      email: (userinfo.email as string) ?? '',
+      email: (userinfo.email as string) ?? "",
       name:
         (userinfo.name as string) ??
         (userinfo.nickname as string) ??
         (userinfo.email as string) ??
-        '',
-      provider: 'auth0',
-    }
+        "",
+      provider: "auth0",
+    };
 
-    const token = signToken(user)
-    res.cookie(getCookieName(), token, cookieOptions())
-    res.redirect(`${process.env.CLIENT_URL ?? 'http://localhost:5173'}/home`)
+    const token = signToken(user);
+    res.cookie(getCookieName(), token, cookieOptions());
+    res.redirect(`${process.env.CLIENT_URL ?? "http://localhost:5173"}/home`);
   } catch (err) {
-    console.error('[vZen Auth0]', err)
-    res.redirect(`${process.env.CLIENT_URL ?? 'http://localhost:5173'}/login?error=auth0_failed`)
+    console.error("[vZen Auth0]", err);
+    res.redirect(
+      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=auth0_failed`,
+    );
   }
-})
+});
 
-export default router
+export default router;
