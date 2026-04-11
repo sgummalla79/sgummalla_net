@@ -9,9 +9,9 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/vzen-ui.js",
-      "require": "./dist/vzen-ui.umd.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/vzen-ui.umd.cjs"
     }
   },
   "files": [
@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build && vue-tsc --emitDeclarationOnly",
+    "build": "vite build && vue-tsc --project tsconfig.build.json",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint src --ext .ts,.vue"
   },

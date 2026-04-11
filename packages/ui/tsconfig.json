@@ -5,7 +5,11 @@
     "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": { "@/*": ["./src/*"] },
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "declaration": true,
+    "declarationDir": "dist",
+    "declarationMap": true,
+    "emitDeclarationOnly": false
   },
   "vueCompilerOptions": {
     "target": 3.4

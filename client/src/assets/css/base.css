@@ -1,0 +1,36 @@
+/* ── Resets ───────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+html,
+body {
+  height: 100%;
+  font-family: var(--vz-font-sans);
+  background: var(--vz-bg);
+  color: var(--vz-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+/* ── App mount ────────────────────────────────────────────────────────────── */
+#app {
+  height: 100%;
+}
+
+/* ── Transitions ─────────────────────────────────────────────────────────── */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+}

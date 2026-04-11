@@ -11,6 +11,5 @@
     "target": 3.4
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts", "env.d.ts"],
-  "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../packages/ui" }]
+  "exclude": ["node_modules", "dist"]
 }

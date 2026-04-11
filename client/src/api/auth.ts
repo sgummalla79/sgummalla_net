@@ -1,0 +1,51 @@
+import client from "./client";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+export interface ApiUser {
+  id: string;
+  email: string;
+  name: string;
+  provider: "credentials" | "auth0" | "saml" | "oidc";
+}
+
+interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+interface AuthResponse {
+  user: ApiUser;
+}
+
+// ── Calls ─────────────────────────────────────────────────────────────────────
+
+export async function login(payload: LoginPayload): Promise<ApiUser> {
+  const { data } = await client.post<AuthResponse>("/auth/login", payload);
+  return data.user;
+}
+
+export async function logout(): Promise<void> {
+  await client.post("/auth/logout");
+}
+
+export async function me(): Promise<ApiUser> {
+  const { data } = await client.get<AuthResponse>("/auth/me");
+  return data.user;
+}
+
+// ── Federated auth initiators — browser redirects ─────────────────────────────
+// These are not Axios calls — the browser navigates directly to the server
+// which handles the redirect to the identity provider.
+
+export function initiateAuth0(): void {
+  window.location.href = `${import.meta.env.VITE_API_URL ?? ""}/api/auth0/initiate`;
+}
+
+export function initiateSaml(): void {
+  window.location.href = `${import.meta.env.VITE_API_URL ?? ""}/api/saml/initiate`;
+}
+
+export function initiateOidc(): void {
+  window.location.href = `${import.meta.env.VITE_API_URL ?? ""}/api/oidc/initiate`;
+}
