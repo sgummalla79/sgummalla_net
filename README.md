@@ -133,10 +133,10 @@ Complete each module fully before starting the next.
 | 1   | Monorepo Scaffold         | root           | ✅ Complete    | `feat/module-1-scaffold`         |
 | 2   | UI — Theme System         | `@vzen/ui`     | ✅ Complete    | `feat/module-2-ui-theme`         |
 | 3   | UI — Primitive Components | `@vzen/ui`     | ✅ Complete    | `feat/module-3-ui-primitives`    |
-| 4   | UI — Layout Components    | `@vzen/ui`     | ⬜ Not started | `feat/module-4-ui-layouts`       |
-| 5   | Server — Core             | `@vzen/server` | ⬜ Not started | `feat/module-5-server-core`      |
-| 6   | Server — Credential Auth  | `@vzen/server` | ⬜ Not started | `feat/module-6-server-auth`      |
-| 7   | Server — Federated Auth   | `@vzen/server` | ⬜ Not started | `feat/module-7-server-federated` |
+| 4   | UI — Layout Components    | `@vzen/ui`     | ✅ Complete    | `feat/module-4-ui-layouts`       |
+| 5   | Server — Core             | `@vzen/server` | ✅ Complete    | `feat/module-5-server-core`      |
+| 6   | Server — Credential Auth  | `@vzen/server` | ✅ Complete    | `feat/module-6-server-auth`      |
+| 7   | Server — Federated Auth   | `@vzen/server` | ✅ Complete    | `feat/module-7-server-federated` |
 | 8   | Client — Scaffold         | `@vzen/client` | ⬜ Not started | `feat/module-8-client-scaffold`  |
 | 9   | Client — Auth Layer       | `@vzen/client` | ⬜ Not started | `feat/module-9-client-auth`      |
 | 10  | Client — Views            | `@vzen/client` | ⬜ Not started | `feat/module-10-client-views`    |
@@ -234,4 +234,4 @@ VITE_API_URL=http://localhost:3000
 
 ---
 
-_Last updated: Module 3 — UI Primitive Components complete_
+_Last updated: Module 7 — Server Federated Auth complete_

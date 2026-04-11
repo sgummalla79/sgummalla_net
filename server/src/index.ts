@@ -3,6 +3,11 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import healthRouter from "./routes/health.js";
+import authRouter from "./routes/auth.js";
+import auth0Router from "./routes/auth0.js";
+import samlRouter from "./routes/saml.js";
+import oidcRouter from "./routes/oidc.js";
+import portalsRouter from "./routes/portals.js";
 
 // ── App ───────────────────────────────────────────────────────────────────────
 
@@ -15,7 +20,7 @@ const CLIENT_URL = process.env.CLIENT_URL ?? "http://localhost:5173";
 app.use(
   cors({
     origin: CLIENT_URL,
-    credentials: true, // required for httpOnly cookie exchange
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
@@ -28,9 +33,11 @@ app.use(cookieParser());
 // ── Routes ────────────────────────────────────────────────────────────────────
 
 app.use("/api", healthRouter);
-
-// Auth routes added in Module 6
-// Federated auth routes added in Module 7
+app.use("/api/auth", authRouter);
+app.use("/api/auth0", auth0Router);
+app.use("/api/saml", samlRouter);
+app.use("/api/oidc", oidcRouter);
+app.use("/api/portals", portalsRouter);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 
