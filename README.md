@@ -132,7 +132,7 @@ Complete each module fully before starting the next.
 | --- | ------------------------- | -------------- | -------------- | -------------------------------- |
 | 1   | Monorepo Scaffold         | root           | ✅ Complete    | `feat/module-1-scaffold`         |
 | 2   | UI — Theme System         | `@vzen/ui`     | ✅ Complete    | `feat/module-2-ui-theme`         |
-| 3   | UI — Primitive Components | `@vzen/ui`     | ⬜ Not started | `feat/module-3-ui-primitives`    |
+| 3   | UI — Primitive Components | `@vzen/ui`     | ✅ Complete    | `feat/module-3-ui-primitives`    |
 | 4   | UI — Layout Components    | `@vzen/ui`     | ⬜ Not started | `feat/module-4-ui-layouts`       |
 | 5   | Server — Core             | `@vzen/server` | ⬜ Not started | `feat/module-5-server-core`      |
 | 6   | Server — Credential Auth  | `@vzen/server` | ⬜ Not started | `feat/module-6-server-auth`      |
@@ -234,4 +234,4 @@ VITE_API_URL=http://localhost:3000
 
 ---
 
-_Last updated: Module 2 — UI Theme System complete_
+_Last updated: Module 3 — UI Primitive Components complete_

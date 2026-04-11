@@ -8,5 +8,5 @@ export { default as ThemeProvider } from "./theme/ThemeProvider.vue";
 // ── Components ───────────────────────────────────────────────────────────────
 export * from "./components/index";
 
-// ── Layouts (added in Module 4) ───────────────────────────────────────────────
-// export * from './layouts/index'
+// ── Layouts ───────────────────────────────────────────────────────────────────
+export * from "./layouts/index";
