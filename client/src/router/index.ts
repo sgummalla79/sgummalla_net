@@ -42,6 +42,19 @@ const router = createRouter({
 // ── Navigation guard ──────────────────────────────────────────────────────────
 
 router.beforeEach(async (to) => {
+  // If a SAMLRequest lands on any Vue route, forward it to the server SSO endpoint
+  if (to.query["SAMLRequest"]) {
+    const params = new URLSearchParams();
+    params.set("SAMLRequest", to.query["SAMLRequest"] as string);
+    if (to.query["RelayState"])
+      params.set("RelayState", to.query["RelayState"] as string);
+    if (to.query["SigAlg"]) params.set("SigAlg", to.query["SigAlg"] as string);
+    if (to.query["Signature"])
+      params.set("Signature", to.query["Signature"] as string);
+    window.location.href = `/api/saml/sso?${params.toString()}`;
+    return false;
+  }
+
   const auth = useAuthStore();
 
   // Bootstrap once — checks existing session cookie silently

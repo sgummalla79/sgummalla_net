@@ -14,8 +14,19 @@ import {
 
 const router: import("express").Router = Router();
 
-// ── Keep a reference to the strategy for metadata generation ──────────────────
 let samlStrategy: SamlStrategy | null = null;
+
+function isSamlConfigured(): boolean {
+  console.log(
+    "[vZen SAML] SAML_ENTRY_POINT:",
+    JSON.stringify(process.env.SAML_ENTRY_POINT),
+  );
+  console.log(
+    "[vZen SAML] SAML_ISSUER:",
+    JSON.stringify(process.env.SAML_ISSUER),
+  );
+  return !!(process.env.SAML_ENTRY_POINT && process.env.SAML_ISSUER);
+}
 
 function buildVerify(): VerifyWithoutRequest {
   return (
@@ -72,13 +83,23 @@ router.use(passport.initialize());
 // ── GET /api/saml/initiate ────────────────────────────────────────────────────
 
 router.get("/initiate", (req, res, next) => {
+  if (!isSamlConfigured()) {
+    res.status(503).json({ error: "SAML is not configured on this server" });
+    return;
+  }
   ensureStrategy();
   passport.authenticate("saml", { session: false })(req, res, next);
 });
 
-// ── POST /api/saml/callback — ACS endpoint ────────────────────────────────────
+// ── POST /api/saml/callback ───────────────────────────────────────────────────
 
 router.post("/callback", (req, res, next) => {
+  if (!isSamlConfigured()) {
+    res.redirect(
+      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=saml_not_configured`,
+    );
+    return;
+  }
   ensureStrategy();
 
   passport.authenticate(
@@ -103,14 +124,23 @@ router.post("/callback", (req, res, next) => {
 // ── GET /api/saml/metadata ────────────────────────────────────────────────────
 
 router.get("/metadata", (_req, res) => {
-  const strategy = ensureStrategy();
-  res.type("application/xml");
-  res.send(
-    strategy.generateServiceProviderMetadata(
-      null,
-      process.env.SAML_CERT ?? null,
-    ),
-  );
+  if (!isSamlConfigured()) {
+    res.status(503).json({ error: "SAML is not configured on this server" });
+    return;
+  }
+  try {
+    const strategy = ensureStrategy();
+    res.type("application/xml");
+    res.send(
+      strategy.generateServiceProviderMetadata(
+        null,
+        process.env.SAML_CERT ?? null,
+      ),
+    );
+  } catch (err) {
+    console.error("[vZen SAML metadata]", err);
+    res.status(500).json({ error: "Failed to generate SAML metadata" });
+  }
 });
 
 export default router;

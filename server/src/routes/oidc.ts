@@ -9,8 +9,6 @@ import {
 
 const router: import("express").Router = Router();
 
-// ── OIDC client (built lazily) ────────────────────────────────────────────────
-
 type OidcClient = InstanceType<InstanceType<typeof Issuer>["Client"]>;
 let oidcClient: OidcClient | null = null;
 
@@ -35,6 +33,23 @@ async function getOidcClient(): Promise<OidcClient> {
 
   return oidcClient;
 }
+
+// ── GET /api/oidc/config — expose discovery document ─────────────────────────
+
+router.get("/config", async (_req: Request, res: Response) => {
+  try {
+    const issuerUrl = process.env.OIDC_ISSUER;
+    if (!issuerUrl) {
+      res.status(503).json({ error: "OIDC not configured" });
+      return;
+    }
+    const issuer = await Issuer.discover(issuerUrl);
+    res.json(issuer.metadata);
+  } catch (err) {
+    console.error("[vZen OIDC config]", err);
+    res.status(500).json({ error: "Failed to fetch OIDC configuration" });
+  }
+});
 
 // ── GET /api/oidc/initiate ────────────────────────────────────────────────────
 

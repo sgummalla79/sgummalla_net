@@ -33,14 +33,22 @@ async function launch(portal: Portal) {
 }
 
 async function fetchMeta(type: "saml" | "oidc") {
-  const url =
-    type === "saml"
-      ? "/api/saml/metadata"
-      : "/api/.well-known/openid-configuration";
+  const url = type === "saml" ? "/api/saml/idp-metadata" : "/api/oidc/config";
   metaLabel.value = url;
   try {
     const res = await fetch(url, { credentials: "include" });
     const text = await res.text();
+
+    if (!res.ok) {
+      try {
+        const json = JSON.parse(text) as { error?: string };
+        metaContent.value = `⚠ ${json.error ?? "Server error"}`;
+      } catch {
+        metaContent.value = `⚠ Error ${res.status}`;
+      }
+      return;
+    }
+
     metaContent.value =
       type === "oidc"
         ? (() => {
@@ -52,7 +60,7 @@ async function fetchMeta(type: "saml" | "oidc") {
           })()
         : text;
   } catch {
-    metaContent.value = "Error loading metadata";
+    metaContent.value = "⚠ Failed to connect to server";
   }
 }
 
