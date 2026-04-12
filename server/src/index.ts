@@ -8,9 +8,9 @@ import healthRouter from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import auth0Router from "./routes/auth0.js";
 import samlRouter from "./routes/saml.js";
-import oidcRouter from "./routes/oidc.js";
 import portalsRouter from "./routes/portals.js";
 import samlIdpRouter from "./routes/samlIdp.js";
+import oidcIdpRouter from "./routes/oidcIdp.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -42,9 +42,9 @@ app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/auth0", auth0Router);
 app.use("/api/saml", samlRouter);
-app.use("/api/oidc", oidcRouter);
 app.use("/api/portals", portalsRouter);
 app.use("/api/saml", samlIdpRouter);
+app.use("/api/oidc", oidcIdpRouter);
 
 // ── Static files (production only) ───────────────────────────────────────────
 if (isProd) {

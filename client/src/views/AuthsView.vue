@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { AppLayout, NavLink, AuthCard, Button, ThemeToggle } from "@vzen/ui";
+import { AppLayout, AuthCard, Button } from "@vzen/ui";
 import { useAuthStore } from "../stores/auth";
-import { useThemeToggle } from "../composables/useThemeToggle";
 import { getPortals, launchExperienceCloud, type Portal } from "../api/portals";
 
 const router = useRouter();
 const auth = useAuthStore();
-const { mode: themeMode, toggle: toggleTheme } = useThemeToggle();
 const portals = ref<Portal[]>([]);
 const launching = ref<string | null>(null);
 const metaContent = ref<string | null>(null);
@@ -33,7 +31,10 @@ async function launch(portal: Portal) {
 }
 
 async function fetchMeta(type: "saml" | "oidc") {
-  const url = type === "saml" ? "/api/saml/idp-metadata" : "/api/oidc/config";
+  const url =
+    type === "saml"
+      ? "/api/saml/idp-metadata"
+      : "/api/oidc/.well-known/openid-configuration";
   metaLabel.value = url;
   try {
     const res = await fetch(url, { credentials: "include" });
@@ -70,17 +71,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <AppLayout brand="vZen Solutions" :user-label="auth.email" :scrollable="true">
-    <template #nav-links>
-      <NavLink href="/home">Home</NavLink>
-      <NavLink href="/auths" :active="true">Available Auths</NavLink>
-    </template>
-
-    <template #nav-right>
-      <ThemeToggle :mode="themeMode" @toggle="toggleTheme" />
-      <Button variant="ghost" @click="handleLogout">Sign out</Button>
-    </template>
-
+  <AppLayout
+    active-page="auths"
+    :user-name="auth.fullName"
+    :user-email="auth.email"
+    @profile="router.push({ name: 'profile' })"
+    :scrollable="true"
+    @logout="handleLogout"
+  >
     <div class="vz-auths">
       <div class="vz-auths__section-header">
         <p class="vz-auths__eyebrow">Identity Gateway</p>

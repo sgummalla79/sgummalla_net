@@ -1,43 +1,72 @@
 <script setup lang="ts">
+import { ref } from "vue";
+import { useTheme } from "../theme/plugin";
+import { defaultTheme, lightTheme } from "../theme/default";
 import NavBar from "../components/NavBar.vue";
+import NavLink from "../components/NavLink.vue";
+import NavAvatar from "../components/NavAvatar.vue";
+import ThemeToggle from "../components/ThemeToggle.vue";
 import SymbolLayer from "../components/SymbolLayer.vue";
 
 const props = withDefaults(
   defineProps<{
     brand?: string;
-    activePage?: string;
-    themeMode?: "dark" | "light";
-    userLabel?: string;
     scrollable?: boolean;
+    userName?: string;
+    userEmail?: string;
+    activePage?: string;
+    navLinks?: Array<{ name: string; label: string; href: string }>;
   }>(),
   {
     brand: "vZen Solutions",
-    activePage: "",
-    themeMode: "dark",
     scrollable: false,
+    activePage: "",
+    navLinks: () => [
+      { name: "home", label: "Home", href: "/home" },
+      { name: "auths", label: "Available Auths", href: "/auths" },
+    ],
   },
 );
 
-defineEmits<{ "toggle-theme": []; logout: [] }>();
+const emit = defineEmits<{
+  logout: [];
+  profile: [];
+}>();
+
+const { setTheme } = useTheme();
+const themeMode = ref<"dark" | "light">("dark");
+
+function toggleTheme() {
+  themeMode.value = themeMode.value === "dark" ? "light" : "dark";
+  setTheme(themeMode.value === "light" ? lightTheme : defaultTheme);
+}
 </script>
 
 <template>
-  <div class="vz-shell" :class="{ 'vz-shell--scrollable': props.scrollable }">
+  <div class="vz-shell" :class="{ 'vz-shell--scrollable': scrollable }">
     <SymbolLayer />
 
-    <NavBar
-      :brand="props.brand"
-      dot-color="green"
-      @toggle-theme="$emit('toggle-theme')"
-    >
+    <NavBar :brand="brand ?? 'vZen Solutions'" dot-color="green">
       <template #links>
-        <slot name="nav-links" />
+        <NavLink
+          v-for="link in props.navLinks"
+          :key="link.name"
+          :href="link.href"
+          :active="activePage === link.name"
+        >
+          {{ link.label }}
+        </NavLink>
       </template>
+
       <template #right>
-        <span v-if="props.userLabel" class="vz-shell__user-label">{{
-          props.userLabel
-        }}</span>
-        <slot name="nav-right" />
+        <ThemeToggle :mode="themeMode" @toggle="toggleTheme" />
+        <NavAvatar
+          v-if="userName && userEmail"
+          :name="userName"
+          :email="userEmail"
+          @profile="emit('profile')"
+          @logout="emit('logout')"
+        />
       </template>
     </NavBar>
 
@@ -69,7 +98,6 @@ defineEmits<{ "toggle-theme": []; logout: [] }>();
   overflow: hidden;
 }
 
-/* Scrollable variant — for pages like AuthsView */
 .vz-shell--scrollable {
   height: auto;
   min-height: 100vh;
@@ -90,12 +118,6 @@ defineEmits<{ "toggle-theme": []; logout: [] }>();
   overflow: visible;
   align-items: flex-start;
   padding: 3rem 2rem 4rem;
-}
-
-.vz-shell__user-label {
-  font-family: var(--vz-font-mono, monospace);
-  font-size: 0.82rem;
-  color: var(--vz-text, #efefef);
 }
 
 .vz-shell__footer {

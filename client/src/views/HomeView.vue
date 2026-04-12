@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { AppLayout, NavLink, Button, ThemeToggle } from "@vzen/ui";
+import { AppLayout } from "@vzen/ui";
 import { useAuthStore } from "../stores/auth";
-import { useThemeToggle } from "../composables/useThemeToggle";
 
 const router = useRouter();
 const auth = useAuthStore();
-const { mode: themeMode, toggle: toggleTheme } = useThemeToggle();
 
 async function handleLogout() {
   await auth.logout();
@@ -15,17 +13,11 @@ async function handleLogout() {
 </script>
 
 <template>
-  <AppLayout brand="vZen Solutions" :user-label="auth.email">
-    <template #nav-links>
-      <NavLink href="/home" :active="true">Home</NavLink>
-      <NavLink href="/auths">Available Auths</NavLink>
-    </template>
-
-    <template #nav-right>
-      <ThemeToggle :mode="themeMode" @toggle="toggleTheme" />
-      <Button variant="ghost" @click="handleLogout">Sign out</Button>
-    </template>
-
+  <AppLayout
+    :user-name="auth.fullName"
+    :user-email="auth.email"
+    @logout="handleLogout"
+  >
     <div class="vz-home">
       <p class="vz-home__eyebrow">Welcome back</p>
       <h1 class="vz-home__headline">
@@ -43,12 +35,6 @@ async function handleLogout() {
             >via {{ auth.user?.provider ?? "—" }}</span
           >
         </div>
-      </div>
-
-      <div class="vz-home__actions">
-        <Button @click="$router.push({ name: 'auths' })"
-          >View Available Auths ↗</Button
-        >
       </div>
     </div>
   </AppLayout>

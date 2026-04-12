@@ -8,7 +8,6 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      // Resolve @vzen/ui from source in dev — no build step required
       "@vzen/ui": resolve(__dirname, "../packages/ui/src/index.ts"),
       "@": resolve(__dirname, "src"),
     },
@@ -28,5 +27,9 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: true,
+    rollupOptions: {
+      // vue-router is provided by the app — treat as external when bundling @vzen/ui source
+      external: [],
+    },
   },
 });
