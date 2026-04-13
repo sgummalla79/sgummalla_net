@@ -30,7 +30,7 @@ export const defaultTheme: VzenTheme = {
     lg: "10px",
   },
   tags: {
-    jwt: { bg: "rgba(255,255,255,0.08)", text: "rgba(255,255,255,0.45)" },
+    jwt: { bg: "rgba(194,65,12,0.18)", text: "#FB923C" },
     saml: { bg: "rgba(124,58,237,0.15)", text: "#A78BFA" },
     oidc: { bg: "rgba(37,99,235,0.15)", text: "#60A5FA" },
     auth0: { bg: "rgba(235,84,36,0.15)", text: "#FB923C" },
@@ -67,7 +67,7 @@ export const lightTheme: VzenTheme = {
     lg: "10px",
   },
   tags: {
-    jwt: { bg: "rgba(0,0,0,0.06)", text: "#666" },
+    jwt: { bg: "rgba(194,65,12,0.12)", text: "#C2410C" },
     saml: { bg: "rgba(124,58,237,0.08)", text: "#7C3AED" },
     oidc: { bg: "rgba(37,99,235,0.08)", text: "#2563EB" },
     auth0: { bg: "rgba(235,84,36,0.08)", text: "#EA580C" },

@@ -19,6 +19,8 @@ export function applyTheme(
       target.style.setProperty(cssVar, value);
     }
   }
+  const isDark = theme.name.toLowerCase().includes("dark");
+  target.style.setProperty("color-scheme", isDark ? "dark" : "light");
 }
 
 // ── Vue plugin ────────────────────────────────────────────────────────────────

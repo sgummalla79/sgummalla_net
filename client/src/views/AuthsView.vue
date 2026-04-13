@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useStorage } from "@vueuse/core";
 import { useRouter } from "vue-router";
 import { AppLayout, AuthCard, Button } from "@vzen/ui";
 import { useAuthStore } from "../stores/auth";
@@ -10,6 +11,11 @@ const auth = useAuthStore();
 const portals = ref<Portal[]>([]);
 const launching = ref<string | null>(null);
 const ecPortal = ref<"support" | "help">("support");
+
+const themeMode = useStorage("vzen-theme-mode", "dark");
+const selectColorScheme = computed(() =>
+  themeMode.value === "dark" ? "dark" : "light",
+);
 
 async function handleLogout() {
   await auth.logout();
@@ -62,7 +68,11 @@ onMounted(async () => {
         >
           <template #action>
             <div v-if="portal.id === 'experience-cloud'" class="vz-ec-action">
-              <select v-model="ecPortal" class="vz-ec-select">
+              <select
+                v-model="ecPortal"
+                class="vz-ec-select"
+                :style="{ colorScheme: selectColorScheme }"
+              >
                 <option value="support">Support Portal</option>
                 <option value="help">Help Portal</option>
               </select>
@@ -166,20 +176,26 @@ onMounted(async () => {
   font-size: 0.85rem;
   font-family: var(--vz-font-sans);
   color: var(--vz-text);
-  background: var(--vz-surface);
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  padding-right: 2rem;
   border: 1px solid var(--vz-border);
   border-radius: var(--vz-radius);
   cursor: pointer;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.6rem center;
-  padding-right: 2rem;
+}
+
+/* Fallback for Windows/Firefox where option elements accept direct CSS */
+.vz-ec-select option {
+  background-color: var(--vz-bg);
+  color: var(--vz-text);
 }
 
 .vz-ec-select:focus {
-  border-color: var(--vz-accent);
+  border-color: var(--vz-border2);
 }
 </style>
