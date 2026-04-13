@@ -24,8 +24,7 @@ router.get("/", (_req: Request, res: Response) => {
         id: "help-portal",
         name: "Help Portal",
         protocol: "oidc",
-        description:
-          "OpenID Connect authorization code flow.",
+        description: "OpenID Connect authorization code flow.",
         launchUrl: "https://help.sgummalla.net/login",
         external: true,
       },
@@ -60,7 +59,9 @@ router.post("/launch/experience-cloud", async (req: Request, res: Response) => {
   const siteUrl = PORTAL_SITE_URLS[portal];
 
   if (!siteUrl) {
-    res.status(400).json({ error: `Unknown portal: ${portal}. Valid options: ${Object.keys(PORTAL_SITE_URLS).join(", ")}` });
+    res.status(400).json({
+      error: `Unknown portal: ${portal}. Valid options: ${Object.keys(PORTAL_SITE_URLS).join(", ")}`,
+    });
     return;
   }
 
@@ -94,7 +95,10 @@ router.post("/launch/experience-cloud", async (req: Request, res: Response) => {
       label: match.label,
     });
 
-    const frontdoorUrl = await getSalesforceFrontdoorUrl(match.sf_username, siteUrl);
+    const frontdoorUrl = await getSalesforceFrontdoorUrl(
+      match.sf_username,
+      siteUrl,
+    );
     res.json({ frontdoorUrl });
   } catch (err) {
     const msg =

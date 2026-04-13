@@ -106,7 +106,10 @@ async function exchangeJWT(jwt: string, siteUrl: string): Promise<string> {
 
 // ── Phase 3 — Exchange access token for web session ───────────────────────────
 
-async function exchangeForSession(accessToken: string, siteUrl: string): Promise<string> {
+async function exchangeForSession(
+  accessToken: string,
+  siteUrl: string,
+): Promise<string> {
   const retUrl = "/s";
   const singleAccessUrl = `${siteUrl}/services/oauth2/singleaccess`;
 

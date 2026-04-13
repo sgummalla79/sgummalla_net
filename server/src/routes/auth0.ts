@@ -81,7 +81,7 @@ router.get("/callback", async (req: Request, res: Response) => {
 
     const token = signToken(user);
     res.cookie(getCookieName(), token, cookieOptions());
-    res.redirect(`${process.env.CLIENT_URL ?? "http://localhost:5173"}/home`);
+    res.redirect(`${process.env.CLIENT_URL ?? "http://localhost:5173"}/auths`);
   } catch (err) {
     console.error("[vZen Auth0]", err);
     res.redirect(

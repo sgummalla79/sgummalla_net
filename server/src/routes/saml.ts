@@ -116,7 +116,9 @@ router.post("/callback", (req, res, next) => {
 
       const token = signToken(user as unknown as AuthUser);
       res.cookie(getCookieName(), token, cookieOptions());
-      res.redirect(`${process.env.CLIENT_URL ?? "http://localhost:5173"}/home`);
+      res.redirect(
+        `${process.env.CLIENT_URL ?? "http://localhost:5173"}/auths`,
+      );
     },
   )(req, res, next);
 });

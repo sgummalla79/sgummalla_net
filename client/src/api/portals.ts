@@ -22,7 +22,9 @@ export async function getPortals(): Promise<Portal[]> {
   return data.portals;
 }
 
-export async function launchExperienceCloud(portal: "support" | "help"): Promise<void> {
+export async function launchExperienceCloud(
+  portal: "support" | "help",
+): Promise<void> {
   const { data } = await client.post<LaunchResponse>(
     "/portals/launch/experience-cloud",
     { portal },
