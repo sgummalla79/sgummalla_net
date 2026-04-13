@@ -220,7 +220,6 @@ SAML_CERT=
 OIDC_CLIENT_ID=
 OIDC_CLIENT_SECRET=
 OIDC_ISSUER=
-OIDC_CALLBACK_URL=http://localhost:3000/api/oidc/callback
 ```
 
 ### Client (`client/.env`)
