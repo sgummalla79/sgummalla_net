@@ -41,6 +41,11 @@ router.get("/", (_req: Request, res: Response) => {
   });
 });
 
+const PORTAL_SITE_URLS: Record<string, string> = {
+  support: "https://support.sgummalla.net",
+  help: "https://help.sgummalla.net",
+};
+
 // ── POST /api/portals/launch/experience-cloud ─────────────────────────────────
 
 router.post("/launch/experience-cloud", async (req: Request, res: Response) => {
@@ -48,6 +53,14 @@ router.post("/launch/experience-cloud", async (req: Request, res: Response) => {
 
   if (!user) {
     res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const portal: string = req.body?.portal ?? "support";
+  const siteUrl = PORTAL_SITE_URLS[portal];
+
+  if (!siteUrl) {
+    res.status(400).json({ error: `Unknown portal: ${portal}. Valid options: ${Object.keys(PORTAL_SITE_URLS).join(", ")}` });
     return;
   }
 
@@ -59,6 +72,8 @@ router.post("/launch/experience-cloud", async (req: Request, res: Response) => {
       userId: user.id,
       sfClientId,
       sfAccounts,
+      portal,
+      siteUrl,
     });
 
     // Find the Salesforce account matching the Connected App client_id
@@ -79,7 +94,7 @@ router.post("/launch/experience-cloud", async (req: Request, res: Response) => {
       label: match.label,
     });
 
-    const frontdoorUrl = await getSalesforceFrontdoorUrl(match.sf_username);
+    const frontdoorUrl = await getSalesforceFrontdoorUrl(match.sf_username, siteUrl);
     res.json({ frontdoorUrl });
   } catch (err) {
     const msg =

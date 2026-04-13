@@ -22,9 +22,10 @@ export async function getPortals(): Promise<Portal[]> {
   return data.portals;
 }
 
-export async function launchExperienceCloud(): Promise<void> {
+export async function launchExperienceCloud(portal: "support" | "help"): Promise<void> {
   const { data } = await client.post<LaunchResponse>(
     "/portals/launch/experience-cloud",
+    { portal },
   );
   // Server returns the frontdoor URL — redirect browser directly to it
   window.open(data.frontdoorUrl, "_blank", "noopener,noreferrer");

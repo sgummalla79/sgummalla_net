@@ -22,12 +22,6 @@ function getPrivateKey(): string {
   return readFileSync(resolve(certsDir, "idp.key"), "utf-8").trim();
 }
 
-function getSiteUrl(): string {
-  const url = process.env.SF_EC_SITE_URL ?? "";
-  if (!url) throw new Error("SF_EC_SITE_URL is not set");
-  return url.replace(/\/$/, "");
-}
-
 function getClientId(): string {
   const id = process.env.SF_JWT_CLIENT_ID ?? "";
   if (!id) throw new Error("SF_JWT_CLIENT_ID is not set");
@@ -36,9 +30,8 @@ function getClientId(): string {
 
 // ── Phase 1 — Mint JWT assertion ──────────────────────────────────────────────
 
-function mintJWT(sfUsername: string): string {
+function mintJWT(sfUsername: string, siteUrl: string): string {
   const key = getPrivateKey();
-  const siteUrl = getSiteUrl();
   const clientId = getClientId();
   const now = Math.floor(Date.now() / 1000);
 
@@ -70,8 +63,7 @@ function mintJWT(sfUsername: string): string {
 
 // ── Phase 2 — Exchange JWT for domain-scoped access token ─────────────────────
 
-async function exchangeJWT(jwt: string): Promise<string> {
-  const siteUrl = getSiteUrl();
+async function exchangeJWT(jwt: string, siteUrl: string): Promise<string> {
   const tokenUrl = `${siteUrl}/services/oauth2/token`;
 
   const res = await fetch(tokenUrl, {
@@ -114,9 +106,8 @@ async function exchangeJWT(jwt: string): Promise<string> {
 
 // ── Phase 3 — Exchange access token for web session ───────────────────────────
 
-async function exchangeForSession(accessToken: string): Promise<string> {
-  const siteUrl = getSiteUrl();
-  const retUrl = process.env.SF_EC_RETURN_URL ?? "/s";
+async function exchangeForSession(accessToken: string, siteUrl: string): Promise<string> {
+  const retUrl = "/s";
   const singleAccessUrl = `${siteUrl}/services/oauth2/singleaccess`;
 
   const res = await fetch(singleAccessUrl, {
@@ -179,17 +170,19 @@ async function exchangeForSession(accessToken: string): Promise<string> {
 
 export async function getSalesforceFrontdoorUrl(
   sfUsername: string,
+  siteUrl: string,
 ): Promise<string> {
+  const normalizedSiteUrl = siteUrl.replace(/\/$/, "");
+
   logger.debug("SF JWT Flow — start", {
     sfUsername,
+    siteUrl: normalizedSiteUrl,
     SF_JWT_CLIENT_ID: process.env.SF_JWT_CLIENT_ID ? "✅ set" : "❌ MISSING",
-    SF_EC_SITE_URL: process.env.SF_EC_SITE_URL ?? "❌ MISSING",
-    SF_EC_RETURN_URL: process.env.SF_EC_RETURN_URL ?? "/s (default)",
   });
 
-  const jwt = mintJWT(sfUsername);
-  const accessToken = await exchangeJWT(jwt);
-  const frontdoorUrl = await exchangeForSession(accessToken);
+  const jwt = mintJWT(sfUsername, normalizedSiteUrl);
+  const accessToken = await exchangeJWT(jwt, normalizedSiteUrl);
+  const frontdoorUrl = await exchangeForSession(accessToken, normalizedSiteUrl);
 
   return frontdoorUrl;
 }
