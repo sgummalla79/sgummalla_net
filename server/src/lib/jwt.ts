@@ -2,11 +2,18 @@ import jwt, { type SignOptions } from "jsonwebtoken";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export interface SfAccount {
+  client_id: string;
+  sf_username: string;
+  label?: string;
+}
+
 export interface JwtPayload {
   sub: string;
   email: string;
   name: string;
   provider: "credentials" | "auth0" | "saml" | "oidc";
+  sfAccounts?: SfAccount[];
   iat?: number;
   exp?: number;
 }
@@ -16,6 +23,7 @@ export interface AuthUser {
   email: string;
   name: string;
   provider: JwtPayload["provider"];
+  sfAccounts?: SfAccount[];
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -38,6 +46,7 @@ export function signToken(user: AuthUser): string {
     email: user.email,
     name: user.name,
     provider: user.provider,
+    ...(user.sfAccounts?.length ? { sfAccounts: user.sfAccounts } : {}),
   };
 
   const options: SignOptions = {

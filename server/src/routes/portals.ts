@@ -1,14 +1,15 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { getSalesforceFrontdoorUrl } from "../lib/sfJwtFlow.js";
+import { logger } from "../lib/logger.js";
 
 const router: import("express").Router = Router();
 
-// All portal routes require a valid JWT cookie
 router.use(requireAuth);
 
 // ── GET /api/portals ──────────────────────────────────────────────────────────
 
-router.get("/", (_req, res) => {
+router.get("/", (_req: Request, res: Response) => {
   res.json({
     portals: [
       {
@@ -22,18 +23,18 @@ router.get("/", (_req, res) => {
       {
         id: "support-portal",
         name: "Support Portal",
-        protocol: "oidc",
-        description:
-          "OpenID Connect authorization code flow via the vZen OAuth server.",
+        protocol: "saml",
+        description: "SP-initiated SAML 2.0 SSO with RSA-signed assertions.",
         launchUrl: "https://support.sgummalla.net/login",
         external: true,
       },
       {
         id: "help-portal",
         name: "Help Portal",
-        protocol: "saml",
-        description: "SP-initiated SAML 2.0 SSO with RSA-signed assertions.",
-        launchUrl: "http://help.sgummalla.net/login",
+        protocol: "oidc",
+        description:
+          "OpenID Connect authorization code flow via the vZen OAuth server.",
+        launchUrl: "https://help.sgummalla.net/login",
         external: true,
       },
     ],
@@ -42,7 +43,7 @@ router.get("/", (_req, res) => {
 
 // ── POST /api/portals/launch/experience-cloud ─────────────────────────────────
 
-router.post("/launch/experience-cloud", (req, res) => {
+router.post("/launch/experience-cloud", async (req: Request, res: Response) => {
   const user = req.user;
 
   if (!user) {
@@ -50,14 +51,42 @@ router.post("/launch/experience-cloud", (req, res) => {
     return;
   }
 
-  // In production: generate a Salesforce JWT assertion here using the
-  // connected app private key, then call the singleaccess endpoint.
-  // For now return a placeholder so the route is testable.
-  res.json({
-    message: "Experience Cloud launch initiated",
-    user: { email: user.email, name: user.name },
-    note: "Implement Salesforce JWT assertion in production",
-  });
+  try {
+    const sfClientId = process.env.SF_JWT_CLIENT_ID ?? "";
+    const sfAccounts = user.sfAccounts ?? [];
+
+    logger.debug("EC Launch — resolving sf_username", {
+      userId: user.id,
+      sfClientId,
+      sfAccounts,
+    });
+
+    // Find the Salesforce account matching the Connected App client_id
+    const match = sfAccounts.find((a) => a.client_id === sfClientId);
+
+    if (!match) {
+      const available =
+        sfAccounts.map((a) => a.label ?? a.client_id).join(", ") || "none";
+      res.status(400).json({
+        error: `No Salesforce account configured for client_id: ${sfClientId}`,
+        hint: `Available accounts in user profile: ${available}`,
+      });
+      return;
+    }
+
+    logger.debug("EC Launch — sf_username resolved", {
+      sf_username: match.sf_username,
+      label: match.label,
+    });
+
+    const frontdoorUrl = await getSalesforceFrontdoorUrl(match.sf_username);
+    res.json({ frontdoorUrl });
+  } catch (err) {
+    const msg =
+      err instanceof Error ? err.message : "Failed to launch Experience Cloud";
+    console.error("[vZen Portals] EC launch error:", msg);
+    res.status(500).json({ error: msg });
+  }
 });
 
 export default router;

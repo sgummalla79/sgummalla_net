@@ -1,15 +1,11 @@
 import { Router, type Request, type Response } from "express";
-import {
-  Issuer,
-  generators,
-  type TokenSet,
-  type UserinfoResponse,
-} from "openid-client";
+import { Issuer, type TokenSet, type UserinfoResponse } from "openid-client";
 import {
   signToken,
   cookieOptions,
   getCookieName,
   type AuthUser,
+  type SfAccount,
 } from "../lib/jwt.js";
 
 const router: import("express").Router = Router();
@@ -43,19 +39,8 @@ async function getClient(): Promise<Auth0Client> {
 router.get("/initiate", async (_req: Request, res: Response) => {
   try {
     const client = await getClient();
-    const state = generators.state();
-
-    res.cookie("auth0_state", state, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 5 * 60 * 1000,
-    });
-
-    const url = client.authorizationUrl({
-      scope: "openid profile email",
-      state,
-    });
+    // Request openid profile email — sf_accounts injected via Auth0 Action
+    const url = client.authorizationUrl({ scope: "openid profile email" });
     res.redirect(url);
   } catch (err) {
     console.error("[vZen Auth0]", err);
@@ -75,16 +60,12 @@ router.get("/callback", async (req: Request, res: Response) => {
       process.env.AUTH0_CALLBACK_URL ??
       "http://localhost:3000/api/auth0/callback";
 
-    const storedState = req.cookies["auth0_state"] as string | undefined;
-    res.clearCookie("auth0_state");
-
-    const checks = storedState ? { state: storedState } : {};
-    const tokenSet: TokenSet = await client.callback(
-      callbackUrl,
-      params,
-      checks,
-    );
+    const tokenSet: TokenSet = await client.callback(callbackUrl, params);
     const userinfo: UserinfoResponse = await client.userinfo(tokenSet);
+
+    // Auth0 Action injects sf_accounts as a custom claim
+    const sfAccounts =
+      (userinfo["sf_accounts"] as SfAccount[] | undefined) ?? [];
 
     const user: AuthUser = {
       id: userinfo.sub,
@@ -95,6 +76,7 @@ router.get("/callback", async (req: Request, res: Response) => {
         (userinfo.email as string) ??
         "",
       provider: "auth0",
+      sfAccounts,
     };
 
     const token = signToken(user);

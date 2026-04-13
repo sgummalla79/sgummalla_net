@@ -33,6 +33,7 @@ export function requireAuth(
       email: payload.email,
       name: payload.name,
       provider: payload.provider,
+      sfAccounts: payload.sfAccounts ?? [],
     };
     next();
   } catch {

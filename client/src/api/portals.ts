@@ -13,16 +13,19 @@ interface PortalsResponse {
   portals: Portal[];
 }
 
+interface LaunchResponse {
+  frontdoorUrl: string;
+}
+
 export async function getPortals(): Promise<Portal[]> {
   const { data } = await client.get<PortalsResponse>("/portals");
   return data.portals;
 }
 
 export async function launchExperienceCloud(): Promise<void> {
-  await client.post("/portals/launch/experience-cloud");
-  window.open(
-    "https://experience.salesforce.com",
-    "_blank",
-    "noopener,noreferrer",
+  const { data } = await client.post<LaunchResponse>(
+    "/portals/launch/experience-cloud",
   );
+  // Server returns the frontdoor URL — redirect browser directly to it
+  window.open(data.frontdoorUrl, "_blank", "noopener,noreferrer");
 }
