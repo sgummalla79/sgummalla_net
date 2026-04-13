@@ -1,6 +1,6 @@
-# vZen — Identity Gateway
+# vZen Solutions
 
-A modern, full-stack identity gateway built with Vue 3, TypeScript, Express, and a portable shared UI component library.
+A modern, full-stack built with Vue 3, TypeScript, Express, and a portable shared UI component library.
 
 ---
 

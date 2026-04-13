@@ -9,8 +9,6 @@ const router = useRouter();
 const auth = useAuthStore();
 const portals = ref<Portal[]>([]);
 const launching = ref<string | null>(null);
-const metaContent = ref<string | null>(null);
-const metaLabel = ref("");
 
 async function handleLogout() {
   await auth.logout();
@@ -30,41 +28,6 @@ async function launch(portal: Portal) {
   }
 }
 
-async function fetchMeta(type: "saml" | "oidc") {
-  const url =
-    type === "saml"
-      ? "/api/saml/idp-metadata"
-      : "/api/oidc/.well-known/openid-configuration";
-  metaLabel.value = url;
-  try {
-    const res = await fetch(url, { credentials: "include" });
-    const text = await res.text();
-
-    if (!res.ok) {
-      try {
-        const json = JSON.parse(text) as { error?: string };
-        metaContent.value = `⚠ ${json.error ?? "Server error"}`;
-      } catch {
-        metaContent.value = `⚠ Error ${res.status}`;
-      }
-      return;
-    }
-
-    metaContent.value =
-      type === "oidc"
-        ? (() => {
-            try {
-              return JSON.stringify(JSON.parse(text), null, 2);
-            } catch {
-              return text;
-            }
-          })()
-        : text;
-  } catch {
-    metaContent.value = "⚠ Failed to connect to server";
-  }
-}
-
 onMounted(async () => {
   portals.value = await getPortals();
 });
@@ -81,8 +44,7 @@ onMounted(async () => {
   >
     <div class="vz-auths">
       <div class="vz-auths__section-header">
-        <p class="vz-auths__eyebrow">Identity Gateway</p>
-        <h1 class="vz-auths__title">Available Auths</h1>
+        <h1 class="vz-auths__title">Applications</h1>
         <p class="vz-auths__sub">
           All configured authentication protocols and their entry points.
         </p>
@@ -107,35 +69,6 @@ onMounted(async () => {
             </Button>
           </template>
         </AuthCard>
-      </div>
-
-      <div class="vz-auths__divider" />
-
-      <div class="vz-auths__section-header">
-        <p class="vz-auths__eyebrow">Configuration</p>
-        <h2 class="vz-auths__title vz-auths__title--sm">Protocol Metadata</h2>
-        <p class="vz-auths__sub">
-          Inspect the raw configuration documents for each protocol.
-        </p>
-      </div>
-
-      <div class="vz-auths__meta-row">
-        <Button variant="ghost" @click="fetchMeta('saml')"
-          >SAML Metadata</Button
-        >
-        <Button variant="ghost" @click="fetchMeta('oidc')"
-          >OAuth / OIDC Config</Button
-        >
-        <Button v-if="metaContent" variant="ghost" @click="metaContent = null"
-          >Clear ✕</Button
-        >
-      </div>
-
-      <div v-if="metaContent" class="vz-auths__meta-viewer">
-        <div class="vz-auths__meta-header">
-          <span class="vz-auths__meta-label">{{ metaLabel }}</span>
-        </div>
-        <pre class="vz-auths__meta-body">{{ metaContent }}</pre>
       </div>
     </div>
   </AppLayout>
@@ -182,10 +115,6 @@ onMounted(async () => {
   line-height: 1;
 }
 
-.vz-auths__title--sm {
-  font-size: 1.3rem;
-}
-
 .vz-auths__sub {
   font-size: 0.92rem;
   color: var(--vz-text2);
@@ -201,51 +130,6 @@ onMounted(async () => {
   border-radius: var(--vz-radius-lg);
   overflow: hidden;
   margin-bottom: 1rem;
-}
-
-.vz-auths__divider {
-  height: 1px;
-  background: var(--vz-border);
-  margin: 2.5rem 0;
-}
-
-.vz-auths__meta-row {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.vz-auths__meta-viewer {
-  border: 1px solid var(--vz-border);
-  border-radius: var(--vz-radius-lg);
-  overflow: hidden;
-}
-
-.vz-auths__meta-header {
-  padding: 0.65rem 1rem;
-  background: var(--vz-surface);
-  border-bottom: 1px solid var(--vz-border);
-}
-
-.vz-auths__meta-label {
-  font-family: var(--vz-font-mono);
-  font-size: 0.72rem;
-  color: var(--vz-text2);
-}
-
-.vz-auths__meta-body {
-  width: 100%;
-  min-height: 200px;
-  background: var(--vz-bg2);
-  color: var(--vz-text2);
-  padding: 1rem 1.1rem;
-  font-family: var(--vz-font-mono);
-  font-size: 0.76rem;
-  line-height: 1.7;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
 }
 
 @media (max-width: 680px) {

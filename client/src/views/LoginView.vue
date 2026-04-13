@@ -37,8 +37,6 @@ async function handleLogin() {
         <ThemeToggle :mode="themeMode" @toggle="toggleTheme" />
       </div>
 
-      <p class="vz-login-card__sub">Identity Gateway · Sign in to continue</p>
-
       <div v-if="auth.error" class="vz-login-card__error" role="alert">
         <svg
           width="13"

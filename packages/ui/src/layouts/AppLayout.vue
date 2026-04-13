@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { useTheme } from "../theme/plugin";
 import { defaultTheme, lightTheme } from "../theme/default";
 import NavBar from "../components/NavBar.vue";
@@ -23,7 +24,8 @@ const props = withDefaults(
     activePage: "",
     navLinks: () => [
       { name: "home", label: "Home", href: "/home" },
-      { name: "auths", label: "Available Auths", href: "/auths" },
+      { name: "auths", label: "Applications", href: "/auths" },
+      { name: "configuration", label: "Configuration", href: "/configuration" },
     ],
   },
 );
@@ -33,11 +35,23 @@ const emit = defineEmits<{
   profile: [];
 }>();
 
+const router = useRouter();
+
+function handleProfile() {
+  emit("profile");
+  router.push("/profile");
+}
+
 const { setTheme } = useTheme();
-const themeMode = ref<"dark" | "light">("dark");
+const THEME_STORAGE_KEY = "vzen-theme-mode";
+const themeMode = ref<"dark" | "light">(
+  (localStorage.getItem(THEME_STORAGE_KEY) as "dark" | "light") ?? "dark",
+);
+setTheme(themeMode.value === "light" ? lightTheme : defaultTheme);
 
 function toggleTheme() {
   themeMode.value = themeMode.value === "dark" ? "light" : "dark";
+  localStorage.setItem(THEME_STORAGE_KEY, themeMode.value);
   setTheme(themeMode.value === "light" ? lightTheme : defaultTheme);
 }
 </script>
@@ -64,7 +78,7 @@ function toggleTheme() {
           v-if="userName && userEmail"
           :name="userName"
           :email="userEmail"
-          @profile="emit('profile')"
+          @profile="handleProfile"
           @logout="emit('logout')"
         />
       </template>
@@ -76,9 +90,6 @@ function toggleTheme() {
 
     <footer class="vz-shell__footer">
       <slot name="footer">
-        <span class="vz-shell__footer-left"
-          >vZen Solutions · Identity Gateway</span
-        >
         <div class="vz-shell__footer-right">
           <span class="vz-shell__footer-dot" />
           Live

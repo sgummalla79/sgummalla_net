@@ -13,14 +13,6 @@ router.get("/", (_req: Request, res: Response) => {
   res.json({
     portals: [
       {
-        id: "experience-cloud",
-        name: "Experience Cloud",
-        protocol: "jwt",
-        description:
-          "Server-side JWT assertion exchanged for a domain-scoped Salesforce session.",
-        launchUrl: "/api/portals/launch/experience-cloud",
-      },
-      {
         id: "support-portal",
         name: "Support Portal",
         protocol: "saml",
@@ -36,6 +28,14 @@ router.get("/", (_req: Request, res: Response) => {
           "OpenID Connect authorization code flow via the vZen OAuth server.",
         launchUrl: "https://help.sgummalla.net/login",
         external: true,
+      },
+      {
+        id: "experience-cloud",
+        name: "Experience Cloud",
+        protocol: "jwt",
+        description:
+          "Server-side JWT assertion exchanged for a domain-scoped Salesforce session.",
+        launchUrl: "/api/portals/launch/experience-cloud",
       },
     ],
   });
