@@ -25,13 +25,13 @@ router.get("/", (_req: Request, res: Response) => {
         name: "Help Portal",
         protocol: "oidc",
         description:
-          "OpenID Connect authorization code flow via the vZen OAuth server.",
+          "OpenID Connect authorization code flow.",
         launchUrl: "https://help.sgummalla.net/login",
         external: true,
       },
       {
         id: "experience-cloud",
-        name: "Experience Cloud",
+        name: "Token Exchange",
         protocol: "jwt",
         description:
           "Server-side JWT assertion exchanged for a domain-scoped Salesforce session.",

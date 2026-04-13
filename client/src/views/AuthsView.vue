@@ -65,7 +65,7 @@ onMounted(async () => {
               :loading="launching === portal.id"
               @click="launch(portal)"
             >
-              Open {{ portal.name }} ↗
+              {{ portal.name }} ↗
             </Button>
           </template>
         </AuthCard>
