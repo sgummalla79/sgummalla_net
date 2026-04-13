@@ -21,8 +21,8 @@ const SYMBOLS = {
 
 // Asymmetric layout — creates diagonal tension across the page
 const symbols = [
-  // π — large, top-left, bleeds off top edge
-  { svg: SYMBOLS.pi, size: 380, rotation: -10, style: "top:-60px; left:-80px" },
+  // π — top-left, fully visible
+  { svg: SYMBOLS.pi, size: 200, rotation: -10, style: "top:60px; left:20px" },
   // ∞ — mid-right, floats in the right third
   {
     svg: SYMBOLS.infinity,
@@ -81,6 +81,6 @@ const symbols = [
   position: absolute;
   pointer-events: none;
   user-select: none;
-  color: var(--vz-symbol-color, rgba(255, 255, 255, 0.13));
+  color: var(--vz-symbol-color, rgba(255, 255, 255, 0.22));
 }
 </style>

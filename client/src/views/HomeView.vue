@@ -21,21 +21,8 @@ async function handleLogout() {
     <div class="vz-home">
       <p class="vz-home__eyebrow">Welcome back</p>
       <h1 class="vz-home__headline">
-        {{ auth.fullName }}<span class="vz-home__dot">.</span>
+        {{ auth.fullName }}
       </h1>
-      <p class="vz-home__subline">Your session is active.</p>
-
-      <div class="vz-home__status">
-        <div class="vz-home__status-item">
-          <span class="vz-home__status-dot" />
-          Session active
-        </div>
-        <div class="vz-home__status-item">
-          <span class="vz-home__status-provider"
-            >via {{ auth.user?.provider ?? "—" }}</span
-          >
-        </div>
-      </div>
     </div>
   </AppLayout>
 </template>

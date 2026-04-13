@@ -6,7 +6,6 @@ import { defaultTheme, lightTheme } from "../theme/default";
 import NavBar from "../components/NavBar.vue";
 import NavLink from "../components/NavLink.vue";
 import NavAvatar from "../components/NavAvatar.vue";
-import ThemeToggle from "../components/ThemeToggle.vue";
 import SymbolLayer from "../components/SymbolLayer.vue";
 
 const props = withDefaults(
@@ -23,7 +22,6 @@ const props = withDefaults(
     scrollable: false,
     activePage: "",
     navLinks: () => [
-      { name: "home", label: "Home", href: "/home" },
       { name: "auths", label: "Applications", href: "/auths" },
       { name: "configuration", label: "Configuration", href: "/configuration" },
     ],
@@ -73,13 +71,14 @@ function toggleTheme() {
       </template>
 
       <template #right>
-        <ThemeToggle :mode="themeMode" @toggle="toggleTheme" />
         <NavAvatar
           v-if="userName && userEmail"
           :name="userName"
           :email="userEmail"
+          :theme-mode="themeMode"
           @profile="handleProfile"
           @logout="emit('logout')"
+          @toggle-theme="toggleTheme"
         />
       </template>
     </NavBar>

@@ -8,7 +8,7 @@ import { useAuthStore } from "../stores/auth";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    redirect: "/home",
+    redirect: "/auths",
   },
   {
     path: "/login",
@@ -42,7 +42,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/:pathMatch(.*)*",
-    redirect: "/home",
+    redirect: "/auths",
   },
 ];
 
@@ -79,7 +79,7 @@ router.beforeEach(async (to) => {
   }
 
   if (!requiresAuth && auth.isAuthenticated && to.name === "login") {
-    return { name: "home" };
+    return { name: "auths" };
   }
 
   return true;

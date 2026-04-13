@@ -21,7 +21,7 @@ const { mode: themeMode, toggle: toggleTheme } = useThemeToggle();
 async function handleLogin() {
   try {
     await auth.login(email.value, password.value);
-    await router.push({ name: "home" });
+    await router.push({ name: "auths" });
   } catch {
     // error is set in the store
   }
