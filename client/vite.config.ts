@@ -21,6 +21,12 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      // chainlit-pilot plugin — remove to disable
+      "/chainlit-app": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 

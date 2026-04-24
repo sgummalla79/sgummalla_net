@@ -9,35 +9,69 @@ router.use(requireAuth);
 
 // ── GET /api/portals ──────────────────────────────────────────────────────────
 
-router.get("/", (_req: Request, res: Response) => {
-  res.json({
-    portals: [
-      {
-        id: "support-portal",
-        name: "Support Portal",
-        protocol: "saml",
-        description: "SP-initiated SAML 2.0 SSO with RSA-signed assertions.",
-        launchUrl: "https://support.sgummalla.net/login",
-        external: true,
-      },
-      {
-        id: "help-portal",
-        name: "Help Portal",
-        protocol: "oidc",
-        description: "OpenID Connect authorization code flow.",
-        launchUrl: "https://help.sgummalla.net/login",
-        external: true,
-      },
-      {
-        id: "experience-cloud",
-        name: "Token Exchange",
-        protocol: "jwt",
-        description:
-          "Server-side JWT assertion exchanged for a domain-scoped Salesforce session.",
-        launchUrl: "/api/portals/launch/experience-cloud",
-      },
-    ],
-  });
+type PortalEntry = {
+  id: string;
+  name: string;
+  protocol: string;
+  description: string;
+  launchUrl: string;
+  external?: boolean;
+  allowedUserIds?: string[];
+};
+
+router.get("/", (req: Request, res: Response) => {
+  const userId = req.user?.id ?? "";
+
+  // chainlit-pilot plugin — conditionally included when CHAINLIT_URL is set
+  const chainlitPortal: PortalEntry[] = process.env.CHAINLIT_URL
+    ? [
+        {
+          id: "chainlit-pilot",
+          name: "AI Pilot",
+          protocol: "chainlit",
+          description:
+            "Conversational AI assistant powered by Chainlit and GPT-4o.",
+          launchUrl: "/chainlit",
+        },
+      ]
+    : [];
+
+  const allPortals: PortalEntry[] = [
+    {
+      id: "support-portal",
+      name: "Support Portal",
+      protocol: "saml",
+      description: "SP-initiated SAML 2.0 SSO with RSA-signed assertions.",
+      launchUrl: "https://support.sgummalla.net/login",
+      external: true,
+      allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
+    },
+    {
+      id: "help-portal",
+      name: "Help Portal",
+      protocol: "oidc",
+      description: "OpenID Connect authorization code flow.",
+      launchUrl: "https://help.sgummalla.net/login",
+      external: true,
+      allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
+    },
+    {
+      id: "experience-cloud",
+      name: "Token Exchange",
+      protocol: "jwt",
+      description:
+        "Server-side JWT assertion exchanged for a domain-scoped Salesforce session.",
+      launchUrl: "/api/portals/launch/experience-cloud",
+      allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
+    },
+    ...chainlitPortal,
+  ];
+
+  const portals = allPortals
+    .filter((p) => !p.allowedUserIds || p.allowedUserIds.includes(userId))
+    .map(({ allowedUserIds: _, ...rest }) => rest);
+
+  res.json({ portals });
 });
 
 const PORTAL_SITE_URLS: Record<string, string> = {

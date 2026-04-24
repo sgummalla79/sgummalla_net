@@ -34,6 +34,7 @@ export const defaultTheme: VzenTheme = {
     saml: { bg: "rgba(124,58,237,0.15)", text: "#A78BFA" },
     oidc: { bg: "rgba(37,99,235,0.15)", text: "#60A5FA" },
     auth0: { bg: "rgba(235,84,36,0.15)", text: "#FB923C" },
+    chainlit: { bg: "rgba(20,184,166,0.15)", text: "#2DD4BF" }, // chainlit-pilot plugin
   },
 };
 
@@ -71,5 +72,6 @@ export const lightTheme: VzenTheme = {
     saml: { bg: "rgba(124,58,237,0.08)", text: "#7C3AED" },
     oidc: { bg: "rgba(37,99,235,0.08)", text: "#2563EB" },
     auth0: { bg: "rgba(235,84,36,0.08)", text: "#EA580C" },
+    chainlit: { bg: "rgba(20,184,166,0.1)", text: "#0D9488" }, // chainlit-pilot plugin
   },
 };

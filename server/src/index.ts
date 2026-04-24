@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
+import { createProxyMiddleware } from "http-proxy-middleware"; // chainlit-pilot plugin
 import healthRouter from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import auth0Router from "./routes/auth0.js";
@@ -31,6 +32,22 @@ if (!isProd) {
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
   );
+}
+
+// ── Chainlit pilot proxy (chainlit-pilot plugin) ──────────────────────────────
+// Must be registered BEFORE body-parsing middlewares so the request stream
+// is intact when forwarded to Chainlit. Remove this block to disable.
+const chainlitProxy = process.env.CHAINLIT_URL
+  ? createProxyMiddleware({
+      target: process.env.CHAINLIT_URL,
+      changeOrigin: true,
+      ws: true,
+      pathFilter: "/chainlit-app",
+    })
+  : null;
+
+if (chainlitProxy) {
+  app.use(chainlitProxy);
 }
 
 app.use(express.json());
@@ -80,9 +97,14 @@ app.use(
   },
 );
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`[vZen] Server running on http://localhost:${PORT}`);
   console.log(`[vZen] Environment: ${process.env.NODE_ENV ?? "development"}`);
 });
+
+// Wire WebSocket upgrades to the Chainlit proxy (chainlit-pilot plugin)
+if (chainlitProxy) {
+  server.on("upgrade", chainlitProxy.upgrade);
+}
 
 export default app;

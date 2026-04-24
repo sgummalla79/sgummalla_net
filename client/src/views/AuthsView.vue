@@ -27,6 +27,9 @@ async function launch(portal: Portal) {
   try {
     if (portal.id === "experience-cloud") {
       await launchExperienceCloud(ecPortal.value);
+    } else if (portal.id === "chainlit-pilot") {
+      // chainlit-pilot plugin — navigates to the Vue page
+      await router.push(portal.launchUrl);
     } else if (portal.external && portal.launchUrl) {
       window.open(portal.launchUrl, "_blank", "noopener,noreferrer");
     }

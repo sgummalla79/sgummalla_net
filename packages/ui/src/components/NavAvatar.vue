@@ -2,9 +2,10 @@
 import { ref, onMounted, onUnmounted } from "vue";
 
 const props = defineProps<{
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
   themeMode?: "dark" | "light";
+  guest?: boolean;
 }>();
 
 defineEmits<{
@@ -16,12 +17,16 @@ defineEmits<{
 const open = ref(false);
 const containerRef = ref<HTMLElement | null>(null);
 
-const initials = props.name
-  .split(" ")
-  .map((w) => w[0])
-  .join("")
-  .slice(0, 2)
-  .toUpperCase();
+const isGuest = props.guest || !props.name;
+
+const initials = isGuest
+  ? ""
+  : (props.name ?? "")
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
 
 function toggle() {
   open.value = !open.value;
@@ -42,58 +47,68 @@ onUnmounted(() =>
 <template>
   <div ref="containerRef" class="vz-avatar-wrap">
     <button class="vz-avatar-btn" :aria-expanded="open" @click="toggle">
-      <span class="vz-avatar-initials">{{ initials }}</span>
+      <!-- Guest: generic person icon -->
+      <svg
+        v-if="isGuest"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        class="vz-avatar-guest-icon"
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+      </svg>
+      <span v-else class="vz-avatar-initials">{{ initials }}</span>
     </button>
 
     <transition name="vz-dropdown">
       <div v-if="open" class="vz-avatar-dropdown">
-        <!-- User info header -->
-        <div class="vz-avatar-header">
-          <div class="vz-avatar-header__initials">{{ initials }}</div>
-          <div class="vz-avatar-header__info">
-            <div class="vz-avatar-header__name">{{ name }}</div>
-            <div class="vz-avatar-header__email">{{ email }}</div>
+        <!-- Authenticated: user info header + profile + theme + logout -->
+        <template v-if="!isGuest">
+          <div class="vz-avatar-header">
+            <div class="vz-avatar-header__initials">{{ initials }}</div>
+            <div class="vz-avatar-header__info">
+              <div class="vz-avatar-header__name">{{ name }}</div>
+              <div class="vz-avatar-header__email">{{ email }}</div>
+            </div>
           </div>
-        </div>
+          <div class="vz-avatar-divider" />
 
-        <div class="vz-avatar-divider" />
-
-        <!-- Menu items -->
-        <button
-          class="vz-avatar-item"
-          @click="
-            () => {
-              open = false;
-              $emit('profile');
-            }
-          "
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
+          <button
+            class="vz-avatar-item"
+            @click="
+              () => {
+                open = false;
+                $emit('profile');
+              }
+            "
           >
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-          </svg>
-          Profile
-        </button>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+            Profile
+          </button>
+        </template>
 
-        <!-- Theme toggle -->
+        <!-- Theme toggle — always shown -->
         <button
           v-if="themeMode !== undefined"
           class="vz-avatar-item vz-avatar-item--theme"
-          @click="
-            () => {
-              $emit('toggle-theme');
-            }
-          "
+          @click="$emit('toggle-theme')"
         >
-          <!-- Sun icon — shown when in dark mode, switching to light -->
           <svg
             v-if="themeMode === 'dark'"
             width="14"
@@ -115,7 +130,6 @@ onUnmounted(() =>
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
           </svg>
-          <!-- Moon icon — shown when in light mode, switching to dark -->
           <svg
             v-else
             width="14"
@@ -137,32 +151,34 @@ onUnmounted(() =>
           </span>
         </button>
 
-        <div class="vz-avatar-divider" />
-
-        <button
-          class="vz-avatar-item vz-avatar-item--danger"
-          @click="
-            () => {
-              open = false;
-              $emit('logout');
-            }
-          "
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
+        <!-- Authenticated: logout -->
+        <template v-if="!isGuest">
+          <div class="vz-avatar-divider" />
+          <button
+            class="vz-avatar-item vz-avatar-item--danger"
+            @click="
+              () => {
+                open = false;
+                $emit('logout');
+              }
+            "
           >
-            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-            <polyline points="16,17 21,12 16,7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          Sign out
-        </button>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            >
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+              <polyline points="16,17 21,12 16,7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Sign out
+          </button>
+        </template>
       </div>
     </transition>
   </div>
@@ -202,6 +218,10 @@ onUnmounted(() =>
   letter-spacing: 0.05em;
   color: var(--vz-text);
   user-select: none;
+}
+
+.vz-avatar-guest-icon {
+  color: var(--vz-text3);
 }
 
 /* Dropdown */

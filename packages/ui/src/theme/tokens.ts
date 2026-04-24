@@ -32,6 +32,7 @@ export interface VzenTheme {
     saml: { bg: string; text: string };
     oidc: { bg: string; text: string };
     auth0: { bg: string; text: string };
+    chainlit: { bg: string; text: string }; // chainlit-pilot plugin
   };
 }
 
@@ -65,6 +66,8 @@ export const cssVarMap: Record<string, string> = {
   "tags.oidc.text": "--vz-tag-oidc-text",
   "tags.auth0.bg": "--vz-tag-auth0-bg",
   "tags.auth0.text": "--vz-tag-auth0-text",
+  "tags.chainlit.bg": "--vz-tag-chainlit-bg", // chainlit-pilot plugin
+  "tags.chainlit.text": "--vz-tag-chainlit-text", // chainlit-pilot plugin
 };
 
 /** Resolves a dot-path like "colors.bg" against a theme object — always returns string */

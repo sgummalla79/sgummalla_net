@@ -35,6 +35,24 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/chainlit",
+    name: "chainlit",
+    component: () => import("../views/ChainlitView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/blog",
+    name: "blog",
+    component: () => import("../views/BlogView.vue"),
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/blog/:slug",
+    name: "blog-article",
+    component: () => import("../views/BlogArticleView.vue"),
+    meta: { requiresAuth: false },
+  },
+  {
     path: "/:pathMatch(.*)*",
     redirect: "/auths",
   },

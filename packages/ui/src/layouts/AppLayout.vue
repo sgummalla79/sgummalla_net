@@ -24,6 +24,7 @@ const props = withDefaults(
     navLinks: () => [
       { name: "auths", label: "Applications", href: "/auths" },
       { name: "configuration", label: "Configuration", href: "/configuration" },
+      { name: "blog", label: "Blog", href: "/blog" },
     ],
   },
 );
@@ -72,9 +73,10 @@ function toggleTheme() {
 
       <template #right>
         <NavAvatar
-          v-if="userName && userEmail"
-          :name="userName"
-          :email="userEmail"
+          v-bind="
+            userName && userEmail ? { name: userName, email: userEmail } : {}
+          "
+          :guest="!userName"
           :theme-mode="themeMode"
           @profile="handleProfile"
           @logout="emit('logout')"
