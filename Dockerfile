@@ -16,8 +16,8 @@ COPY packages/ui ./packages/ui
 COPY client ./client
 COPY server ./server
 
-RUN pnpm --filter @vzen/ui build
-RUN pnpm --filter @vzen/client build
+RUN pnpm --filter @sgw/ui build
+RUN pnpm --filter @sgw/client build
 
 # ── Stage 2: Production ───────────────────────────────────────────────────────
 FROM node:20-slim AS production
