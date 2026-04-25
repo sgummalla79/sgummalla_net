@@ -54,7 +54,6 @@
         s.onload = function () {
           window.mountChainlitWidget({
             chainlitServer: window.location.origin + "/chainlit-app",
-            accessToken: "Bearer " + data.token,
             theme: window.matchMedia("(prefers-color-scheme: dark)").matches
               ? "dark"
               : "light"
