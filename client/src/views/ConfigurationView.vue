@@ -11,7 +11,7 @@ const metaLabel = ref("");
 
 async function handleLogout() {
   await auth.logout();
-  await router.push({ name: "login" });
+  await router.push({ name: "home" });
 }
 
 async function fetchMeta(type: "saml" | "oidc") {

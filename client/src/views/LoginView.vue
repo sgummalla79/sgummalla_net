@@ -76,8 +76,7 @@ async function handleLogin() {
     </div>
 
     <template #footer>
-      <span>SAML 2.0 · OAuth 2.0 · OIDC</span>
-      <span>Sgummalla Works</span>
+      <span>Ideas in Motion, Think. Build. Demo.</span>
     </template>
   </AppLayout>
 </template>

@@ -8,7 +8,9 @@ import { useAuthStore } from "../stores/auth";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    redirect: "/auths",
+    name: "home",
+    component: () => import("../views/HomeView.vue"),
+    meta: { requiresAuth: false },
   },
   {
     path: "/login",
@@ -54,7 +56,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/:pathMatch(.*)*",
-    redirect: "/auths",
+    redirect: "/",
   },
 ];
 
@@ -90,7 +92,7 @@ router.beforeEach(async (to) => {
     return { name: "login" };
   }
 
-  if (!requiresAuth && auth.isAuthenticated && to.name === "login") {
+  if (!requiresAuth && auth.isAuthenticated && ["login", "home"].includes(to.name as string)) {
     return { name: "auths" };
   }
 

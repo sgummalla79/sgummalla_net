@@ -84,6 +84,14 @@ function toggleTheme() {
       </template>
 
       <template #right>
+        <a v-if="!userName" href="/login" class="vz-nav-signin">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10,17 15,12 10,7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Sign In
+        </a>
         <NavAvatar
           v-bind="
             userName && userEmail ? { name: userName, email: userEmail } : {}
@@ -128,6 +136,28 @@ function toggleTheme() {
   object-fit: contain;
 }
 
+.vz-nav-signin {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--vz-font-sans);
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--vz-text2);
+  text-decoration: none;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--vz-border);
+  border-radius: var(--vz-radius-md);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.vz-nav-signin:hover {
+  color: var(--vz-text);
+  border-color: var(--vz-border2);
+  background: var(--vz-surface);
+}
+
 .vz-nav-slogan {
   font-family: var(--vz-font-sans);
   font-size: 0.6rem;
@@ -149,7 +179,8 @@ function toggleTheme() {
 .vz-shell--scrollable {
   height: auto;
   min-height: 100vh;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .vz-shell__main {
@@ -163,7 +194,7 @@ function toggleTheme() {
 }
 
 .vz-shell--scrollable .vz-shell__main {
-  overflow: visible;
+  overflow-x: hidden;
   align-items: flex-start;
   padding: 3rem 2rem 4rem;
 }

@@ -19,7 +19,7 @@ const selectColorScheme = computed(() =>
 
 async function handleLogout() {
   await auth.logout();
-  await router.push({ name: "login" });
+  await router.push({ name: "home" });
 }
 
 async function launch(portal: Portal) {

@@ -8,7 +8,7 @@ const auth = useAuthStore();
 
 async function handleLogout() {
   await auth.logout();
-  await router.push({ name: "login" });
+  await router.push({ name: "home" });
 }
 
 const user = auth.user;
