@@ -3,21 +3,25 @@ import type { SgwTheme } from "./tokens";
 export const defaultTheme: SgwTheme = {
   name: "Sgummalla Works Dark",
   colors: {
-    bg: "#0C0C0C",
-    bg2: "#141414",
-    surface: "rgba(255,255,255,0.05)",
-    surface2: "rgba(255,255,255,0.08)",
-    border: "rgba(255,255,255,0.08)",
-    border2: "rgba(255,255,255,0.12)",
+    // MD3: background should not be pure/near-pure black — use a tonal dark
+    bg: "#111118",
+    bg2: "#1A1A22",
+    // MD3 elevation overlay model: surface = bg + primary tint at increasing opacity
+    surface: "rgba(255,255,255,0.06)",
+    surface2: "rgba(255,255,255,0.10)",
+    border: "rgba(255,255,255,0.09)",
+    border2: "rgba(255,255,255,0.15)",
     text: "#EFEFEF",
-    text2: "rgba(255,255,255,0.6)",
-    text3: "rgba(255,255,255,0.3)",
-    navBg: "rgba(12,12,12,0.88)",
+    text2: "rgba(255,255,255,0.62)",
+    // WCAG fix: raised from 0.30 (2.18:1 fail) → 0.47 (4.81:1 pass)
+    text3: "rgba(255,255,255,0.47)",
+    navBg: "rgba(17,17,24,0.90)",
     green: "#5AE89A",
-    greenDim: "rgba(90,232,154,0.1)",
-    red: "#FF5A5A",
-    redDim: "rgba(255,90,90,0.1)",
-    symbolColor: "rgba(255,255,255,0.13)",
+    greenDim: "rgba(90,232,154,0.12)",
+    red: "#FF6B6B",
+    redDim: "rgba(255,107,107,0.12)",
+    amber: "#FFC043",
+    symbolColor: "rgba(255,255,255,0.10)",
   },
   font: {
     sans: "'Inter', sans-serif",
@@ -55,6 +59,7 @@ export const lightTheme: SgwTheme = {
     greenDim: "rgba(26,122,69,0.08)",
     red: "#B83232",
     redDim: "rgba(184,50,50,0.08)",
+    amber: "#92600A",
     symbolColor: "rgba(0,0,0,0.15)",
   },
   font: {

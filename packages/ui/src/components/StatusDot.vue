@@ -40,7 +40,7 @@ withDefaults(
   background: var(--vz-red);
 }
 .vz-dot--amber {
-  background: #f59e0b;
+  background: var(--vz-amber);
 }
 .vz-dot--muted {
   background: var(--vz-text3);

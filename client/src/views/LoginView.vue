@@ -139,7 +139,7 @@ async function handleLogin() {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #eb5424;
+  background: var(--vz-tag-auth0-text);
   flex-shrink: 0;
 }
 </style>
