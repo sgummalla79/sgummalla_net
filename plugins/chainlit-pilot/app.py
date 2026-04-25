@@ -1,9 +1,28 @@
 import os
+from typing import Optional
+import jwt
 import chainlit as cl
 from openai import AsyncOpenAI
 
 _client = AsyncOpenAI()
 _model = os.getenv("OPENAI_MODEL", "gpt-4o")
+_jwt_secret = os.getenv("JWT_SECRET", "")
+
+
+@cl.header_auth_callback
+def header_auth_callback(headers: dict) -> Optional[cl.User]:
+    auth = headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth[len("Bearer "):]
+    try:
+        payload = jwt.decode(token, _jwt_secret, algorithms=["HS256"])
+        return cl.User(
+            identifier=payload["email"],
+            metadata={"name": payload.get("name", "")},
+        )
+    except Exception:
+        return None
 
 
 @cl.on_chat_start

@@ -37,12 +37,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/chainlit",
-    name: "chainlit",
-    component: () => import("../views/ChainlitView.vue"),
-    meta: { requiresAuth: true },
-  },
-  {
     path: "/blog",
     name: "blog",
     component: () => import("../views/BlogView.vue"),
@@ -92,7 +86,11 @@ router.beforeEach(async (to) => {
     return { name: "login" };
   }
 
-  if (!requiresAuth && auth.isAuthenticated && ["login", "home"].includes(to.name as string)) {
+  if (
+    !requiresAuth &&
+    auth.isAuthenticated &&
+    ["login", "home"].includes(to.name as string)
+  ) {
     return { name: "auths" };
   }
 

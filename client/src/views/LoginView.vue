@@ -34,8 +34,19 @@ async function handleLogin() {
           fill="none"
           style="flex-shrink: 0"
         >
-          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
-          <path d="M8 5v3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          <circle
+            cx="8"
+            cy="8"
+            r="7"
+            stroke="currentColor"
+            stroke-width="1.5"
+          />
+          <path
+            d="M8 5v3.5"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
           <circle cx="8" cy="11" r=".75" fill="currentColor" />
         </svg>
         {{ auth.error }}
@@ -60,7 +71,9 @@ async function handleLogin() {
           :required="true"
           @focus="auth.clearError()"
         />
-        <Button type="submit" :loading="auth.loading" :full-width="true">Sign In</Button>
+        <Button type="submit" :loading="auth.loading" :full-width="true"
+          >Sign In</Button
+        >
       </form>
 
       <div class="vz-login-card__divider">
@@ -89,8 +102,14 @@ async function handleLogin() {
 }
 
 @keyframes vz-fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .vz-login-card__error {

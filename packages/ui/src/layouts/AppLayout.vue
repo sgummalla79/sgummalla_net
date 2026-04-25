@@ -69,7 +69,9 @@ function toggleTheme() {
             alt="Sgummalla Works"
             class="vz-nav-logo"
           />
-          <span class="vz-nav-slogan">Ideas in Motion, Think. Build. Demo.</span>
+          <span class="vz-nav-slogan"
+            >Ideas in Motion, Think. Build. Demo.</span
+          >
         </div>
       </template>
       <template #links>
@@ -85,10 +87,19 @@ function toggleTheme() {
 
       <template #right>
         <a v-if="!userName" href="/login" class="vz-nav-signin">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-            <polyline points="10,17 15,12 10,7"/>
-            <line x1="15" y1="12" x2="3" y2="12"/>
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10,17 15,12 10,7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
           </svg>
           Sign In
         </a>
@@ -148,7 +159,10 @@ function toggleTheme() {
   padding: 0.35rem 0.85rem;
   border: 1px solid var(--vz-border);
   border-radius: var(--vz-radius-md);
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
   white-space: nowrap;
 }
 
