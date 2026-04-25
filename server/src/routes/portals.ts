@@ -31,8 +31,7 @@ router.get("/", (req: Request, res: Response) => {
           protocol: "chainlit",
           description:
             "Conversational AI assistant powered by Chainlit and GPT-4o.",
-          launchUrl: "/chainlit-app",
-          external: true,
+          launchUrl: "",
         },
       ]
     : [];

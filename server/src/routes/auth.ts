@@ -1,4 +1,5 @@
 import { Router } from "express";
+import jwt from "jsonwebtoken";
 import {
   signToken,
   verifyToken,
@@ -81,19 +82,35 @@ router.get("/me", requireAuth, (_req, res) => {
 });
 
 // ── GET /api/auth/chainlit-token ──────────────────────────────────────────────
-// Returns the raw JWT so the Chainlit copilot widget can pass it as a Bearer
-// token to @cl.header_auth_callback in the Python app.
-// The cookie is httpOnly so JavaScript cannot read it directly.
+// Generates a Chainlit-native JWT (signed with CHAINLIT_AUTH_SECRET) for the
+// copilot widget's accessToken. Chainlit validates this internally — no
+// header_auth_callback needed.
 
 router.get("/chainlit-token", (req, res) => {
-  const token = req.cookies[getCookieName()] as string | undefined;
-  if (!token) {
+  const chainlitSecret = process.env.CHAINLIT_AUTH_SECRET;
+  if (!chainlitSecret) {
+    res.status(503).json({ error: "Chainlit auth not configured" });
+    return;
+  }
+
+  const appToken = req.cookies[getCookieName()] as string | undefined;
+  if (!appToken) {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
+
   try {
-    verifyToken(token);
-    res.json({ token });
+    const payload = verifyToken(appToken);
+    const chainlitToken = jwt.sign(
+      {
+        identifier: payload.email,
+        metadata: { name: payload.name },
+      },
+      chainlitSecret,
+      { algorithm: "HS256", expiresIn: "15d" },
+    );
+    console.log("[chainlit-token] generated Chainlit JWT for:", payload.email);
+    res.json({ token: chainlitToken });
   } catch {
     res.clearCookie(getCookieName(), { path: "/" });
     res.status(401).json({ error: "Unauthorized" });

@@ -22,11 +22,41 @@ async function handleLogout() {
   await router.push({ name: "home" });
 }
 
+const chainlitMounted = ref(false);
+
+async function launchChainlit() {
+  const res = await fetch("/api/auth/chainlit-token", { credentials: "include" });
+  if (!res.ok) return;
+  const { token } = await res.json();
+
+  if (chainlitMounted.value) {
+    (window as any).toggleChainlitCopilot();
+    return;
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "/chainlit-app/copilot/index.js";
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Failed to load Chainlit copilot script"));
+    document.head.appendChild(s);
+  });
+
+  (window as any).mountChainlitWidget({
+    chainlitServer: window.location.origin + "/chainlit-app",
+    accessToken: token,
+    theme: themeMode.value === "dark" ? "dark" : "light",
+  });
+  chainlitMounted.value = true;
+}
+
 async function launch(portal: Portal) {
   launching.value = portal.id;
   try {
     if (portal.id === "experience-cloud") {
       await launchExperienceCloud(ecPortal.value);
+    } else if (portal.id === "chainlit-pilot") {
+      await launchChainlit();
     } else if (portal.external && portal.launchUrl) {
       window.open(portal.launchUrl, "_blank", "noopener,noreferrer");
     }

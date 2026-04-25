@@ -5,6 +5,8 @@ from openai import AsyncOpenAI
 _client = AsyncOpenAI()
 _model = os.getenv("OPENAI_MODEL", "gpt-4o")
 
+print(f"[chainlit-startup] CHAINLIT_AUTH_SECRET set: {bool(os.getenv('CHAINLIT_AUTH_SECRET'))}", flush=True)
+
 
 @cl.on_chat_start
 async def start():

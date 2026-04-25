@@ -47,14 +47,6 @@ const chainlitProxy = process.env.CHAINLIT_URL
     })
   : null;
 
-// Serve a floating chat-balloon page at the root of /chainlit-app.
-// Must be registered BEFORE the proxy so Express catches it first;
-// all other sub-paths (/copilot/index.js, WebSocket, etc.) fall through to Chainlit.
-const chainlitCopilotPage = join(__dirname, "views/chainlit-copilot.html");
-app.get(["/chainlit-app", "/chainlit-app/"], (_req, res) => {
-  res.sendFile(chainlitCopilotPage);
-});
-
 if (chainlitProxy) {
   app.use(chainlitProxy);
 }
