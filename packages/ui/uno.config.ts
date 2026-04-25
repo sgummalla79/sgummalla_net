@@ -3,7 +3,7 @@ import { defineConfig, presetUno, presetAttributify } from "unocss";
 export default defineConfig({
   presets: [presetUno(), presetAttributify()],
 
-  // Map vZen CSS vars to UnoCSS theme so `text-vz-text` etc. work
+  // Map Sgummalla Works CSS vars to UnoCSS theme so `text-vz-text` etc. work
   theme: {
     colors: {
       "vz-bg": "var(--vz-bg)",
@@ -32,7 +32,7 @@ export default defineConfig({
     },
   },
 
-  // Reusable shortcuts matching the vZen component patterns
+  // Reusable shortcuts matching the Sgummalla Works component patterns
   shortcuts: {
     // Layout
     "vz-shell": "h-screen grid relative overflow-hidden bg-vz-bg",

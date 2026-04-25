@@ -35,7 +35,7 @@ function getSecret(): string {
 }
 
 export function getCookieName(): string {
-  return process.env.JWT_COOKIE_NAME ?? "vzen_token";
+  return process.env.JWT_COOKIE_NAME ?? "sgw_token";
 }
 
 // ── Sign ──────────────────────────────────────────────────────────────────────

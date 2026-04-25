@@ -43,7 +43,7 @@ router.get("/initiate", async (_req: Request, res: Response) => {
     const url = client.authorizationUrl({ scope: "openid profile email" });
     res.redirect(url);
   } catch (err) {
-    console.error("[vZen Auth0]", err);
+    console.error("[Sgummalla Works Auth0]", err);
     res.redirect(
       `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=auth0_unavailable`,
     );
@@ -83,7 +83,7 @@ router.get("/callback", async (req: Request, res: Response) => {
     res.cookie(getCookieName(), token, cookieOptions());
     res.redirect(`${process.env.CLIENT_URL ?? "http://localhost:5173"}/auths`);
   } catch (err) {
-    console.error("[vZen Auth0]", err);
+    console.error("[Sgummalla Works Auth0]", err);
     res.redirect(
       `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=auth0_failed`,
     );

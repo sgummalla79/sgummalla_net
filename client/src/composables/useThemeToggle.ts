@@ -1,5 +1,5 @@
 import { ref } from "vue";
-import { useTheme, defaultTheme, lightTheme } from "@vzen/ui";
+import { useTheme, defaultTheme, lightTheme } from "@sgw/ui";
 
 export function useThemeToggle() {
   const mode = ref<"dark" | "light">("dark");

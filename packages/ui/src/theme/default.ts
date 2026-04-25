@@ -1,7 +1,7 @@
-import type { VzenTheme } from "./tokens";
+import type { SgwTheme } from "./tokens";
 
-export const defaultTheme: VzenTheme = {
-  name: "vZen Dark",
+export const defaultTheme: SgwTheme = {
+  name: "Sgummalla Works Dark",
   colors: {
     bg: "#0C0C0C",
     bg2: "#141414",
@@ -38,8 +38,8 @@ export const defaultTheme: VzenTheme = {
   },
 };
 
-export const lightTheme: VzenTheme = {
-  name: "vZen Light",
+export const lightTheme: SgwTheme = {
+  name: "Sgummalla Works Light",
   colors: {
     bg: "#F6F5F2",
     bg2: "#EEECEA",

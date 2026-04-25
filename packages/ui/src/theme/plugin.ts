@@ -1,16 +1,16 @@
 import { inject, ref, watch, type App, type InjectionKey, type Ref } from "vue";
-import { cssVarMap, resolveThemeValue, type VzenTheme } from "./tokens";
+import { cssVarMap, resolveThemeValue, type SgwTheme } from "./tokens";
 import { defaultTheme } from "./default";
 
 // ── Injection key ─────────────────────────────────────────────────────────────
 export const THEME_KEY: InjectionKey<{
-  theme: Ref<VzenTheme>;
-  setTheme: (t: VzenTheme) => void;
-}> = Symbol("vzen-theme");
+  theme: Ref<SgwTheme>;
+  setTheme: (t: SgwTheme) => void;
+}> = Symbol("sgw-theme");
 
 // ── Apply theme tokens → CSS custom properties ────────────────────────────────
 export function applyTheme(
-  theme: VzenTheme,
+  theme: SgwTheme,
   target: HTMLElement = document.documentElement,
 ): void {
   for (const [path, cssVar] of Object.entries(cssVarMap)) {
@@ -25,13 +25,13 @@ export function applyTheme(
 
 // ── Vue plugin ────────────────────────────────────────────────────────────────
 export const ThemePlugin = {
-  install(app: App, options: { theme?: VzenTheme } = {}) {
-    const theme = ref<VzenTheme>(options.theme ?? defaultTheme);
+  install(app: App, options: { theme?: SgwTheme } = {}) {
+    const theme = ref<SgwTheme>(options.theme ?? defaultTheme);
     applyTheme(theme.value);
     watch(theme, (next) => applyTheme(next), { deep: true });
     app.provide(THEME_KEY, {
       theme,
-      setTheme: (next: VzenTheme) => {
+      setTheme: (next: SgwTheme) => {
         theme.value = next;
       },
     });
@@ -43,7 +43,7 @@ export function useTheme() {
   const ctx = inject(THEME_KEY);
   if (!ctx) {
     throw new Error(
-      "[vZen] useTheme() must be called inside a component tree where ThemePlugin is installed.",
+      "[Sgummalla Works] useTheme() must be called inside a component tree where ThemePlugin is installed.",
     );
   }
   return ctx;

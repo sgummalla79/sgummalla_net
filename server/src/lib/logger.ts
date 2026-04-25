@@ -8,7 +8,7 @@ const isDebug =
 
 function fmt(label: string, data: Record<string, unknown>): void {
   console.log(`\n${"─".repeat(60)}`);
-  console.log(`[vZen] ${label}`);
+  console.log(`[Sgummalla Works] ${label}`);
   console.log("─".repeat(60));
   for (const [key, val] of Object.entries(data)) {
     const display =
@@ -103,7 +103,7 @@ export const logger = {
   },
 
   error(source: string, err: unknown) {
-    console.error(`\n[vZen ERROR] ${source}`);
+    console.error(`\n[Sgummalla Works ERROR] ${source}`);
     console.error(err);
     console.error("");
   },

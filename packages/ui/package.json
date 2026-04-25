@@ -1,17 +1,17 @@
 {
-  "name": "@vzen/ui",
+  "name": "@sgw/ui",
   "version": "0.1.0",
   "private": false,
-  "description": "vZen shared UI component library",
+  "description": "Sgummalla Works shared UI component library",
   "type": "module",
-  "main": "./dist/vzen-ui.umd.cjs",
-  "module": "./dist/vzen-ui.js",
+  "main": "./dist/sgw-ui.umd.cjs",
+  "module": "./dist/sgw-ui.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/vzen-ui.js",
-      "require": "./dist/vzen-ui.umd.cjs"
+      "import": "./dist/sgw-ui.js",
+      "require": "./dist/sgw-ui.umd.cjs"
     },
     "./styles": "./dist/style.css"
   },

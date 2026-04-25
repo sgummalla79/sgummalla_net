@@ -10,4 +10,4 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const outFile = resolve(__dirname, '../dist/index.d.ts')
 
 writeFileSync(outFile, `export * from './src/index'\n`)
-console.log('[vZen] Generated dist/index.d.ts')
+console.log('[Sgummalla Works] Generated dist/index.d.ts')

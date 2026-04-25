@@ -1,4 +1,4 @@
-export interface VzenTheme {
+export interface SgwTheme {
   name: string;
   colors: {
     bg: string;
@@ -71,7 +71,7 @@ export const cssVarMap: Record<string, string> = {
 };
 
 /** Resolves a dot-path like "colors.bg" against a theme object — always returns string */
-export function resolveThemeValue(theme: VzenTheme, path: string): string {
+export function resolveThemeValue(theme: SgwTheme, path: string): string {
   const value = path
     .split(".")
     .reduce<unknown>(

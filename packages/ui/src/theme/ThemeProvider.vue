@@ -2,21 +2,21 @@
 import { defineComponent, provide, ref, watch } from "vue";
 import { defaultTheme } from "./default";
 import { applyTheme, THEME_KEY } from "./plugin";
-import type { VzenTheme } from "./tokens";
+import type { SgwTheme } from "./tokens";
 
 export default defineComponent({
   name: "ThemeProvider",
 
   props: {
     theme: {
-      type: Object as () => VzenTheme,
+      type: Object as () => SgwTheme,
       default: () => defaultTheme,
     },
   },
 
   setup(props) {
-    const theme = ref<VzenTheme>(props.theme);
-    const setTheme = (next: VzenTheme) => {
+    const theme = ref<SgwTheme>(props.theme);
+    const setTheme = (next: SgwTheme) => {
       theme.value = next;
     };
 

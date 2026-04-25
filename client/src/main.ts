@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import { ThemePlugin, defaultTheme } from "@vzen/ui";
+import { ThemePlugin, defaultTheme } from "@sgw/ui";
 import "virtual:uno.css";
 import "./assets/css/base.css";
 

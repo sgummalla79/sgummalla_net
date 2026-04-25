@@ -171,7 +171,7 @@ router.get("/sso", async (req: Request, res: Response) => {
       if (match?.[1]) requestId = match[1];
     } catch {
       console.warn(
-        "[vZen SAML IDP] Could not parse SAMLRequest ID, using random",
+        "[Sgummalla Works SAML IDP] Could not parse SAMLRequest ID, using random",
       );
     }
 

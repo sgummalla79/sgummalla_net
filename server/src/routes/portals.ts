@@ -137,7 +137,7 @@ router.post("/launch/experience-cloud", async (req: Request, res: Response) => {
   } catch (err) {
     const msg =
       err instanceof Error ? err.message : "Failed to launch Experience Cloud";
-    console.error("[vZen Portals] EC launch error:", msg);
+    console.error("[Sgummalla Works Portals] EC launch error:", msg);
     res.status(500).json({ error: msg });
   }
 });

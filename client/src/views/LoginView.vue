@@ -1,22 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import {
-  LoginLayout,
-  Button,
-  TextInput,
-  StatusDot,
-  ThemeToggle,
-} from "@vzen/ui";
+import { AppLayout, Button, TextInput } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
 import { initiateAuth0 } from "../api/auth";
-import { useThemeToggle } from "../composables/useThemeToggle";
 
 const router = useRouter();
 const auth = useAuthStore();
 const email = ref("");
 const password = ref("");
-const { mode: themeMode, toggle: toggleTheme } = useThemeToggle();
 
 async function handleLogin() {
   try {
@@ -29,14 +21,11 @@ async function handleLogin() {
 </script>
 
 <template>
-  <LoginLayout brand="vZen Solutions">
+  <AppLayout
+    :nav-links="[{ name: 'blog', label: 'Blog', href: '/blog' }]"
+    active-page=""
+  >
     <div class="vz-login-card">
-      <div class="vz-login-card__brand">
-        <StatusDot color="red" :pulse="true" :size="8" />
-        <span class="vz-login-card__brand-name">vZen Solutions</span>
-        <ThemeToggle :mode="themeMode" @toggle="toggleTheme" />
-      </div>
-
       <div v-if="auth.error" class="vz-login-card__error" role="alert">
         <svg
           width="13"
@@ -45,19 +34,8 @@ async function handleLogin() {
           fill="none"
           style="flex-shrink: 0"
         >
-          <circle
-            cx="8"
-            cy="8"
-            r="7"
-            stroke="currentColor"
-            stroke-width="1.5"
-          />
-          <path
-            d="M8 5v3.5"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-          />
+          <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
+          <path d="M8 5v3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
           <circle cx="8" cy="11" r=".75" fill="currentColor" />
         </svg>
         {{ auth.error }}
@@ -82,9 +60,7 @@ async function handleLogin() {
           :required="true"
           @focus="auth.clearError()"
         />
-        <Button type="submit" :loading="auth.loading" :full-width="true"
-          >Sign In</Button
-        >
+        <Button type="submit" :loading="auth.loading" :full-width="true">Sign In</Button>
       </form>
 
       <div class="vz-login-card__divider">
@@ -101,9 +77,9 @@ async function handleLogin() {
 
     <template #footer>
       <span>SAML 2.0 · OAuth 2.0 · OIDC</span>
-      <span>vZen Solutions</span>
+      <span>Sgummalla Works</span>
     </template>
-  </LoginLayout>
+  </AppLayout>
 </template>
 
 <style scoped>
@@ -114,40 +90,8 @@ async function handleLogin() {
 }
 
 @keyframes vz-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.vz-login-card__brand {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin-bottom: 0.3rem;
-}
-
-.vz-login-card__brand-name {
-  font-family: var(--vz-font-mono);
-  font-size: 0.88rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--vz-text);
-  flex: 1;
-}
-
-.vz-login-card__sub {
-  font-family: var(--vz-font-mono);
-  font-size: 0.75rem;
-  color: var(--vz-text3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 1.75rem;
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .vz-login-card__error {

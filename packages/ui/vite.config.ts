@@ -19,8 +19,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      name: "VzenUI",
-      fileName: (format) => `vzen-ui.${format === "es" ? "js" : "umd.cjs"}`,
+      name: "SgwUI",
+      fileName: (format) => `sgw-ui.${format === "es" ? "js" : "umd.cjs"}`,
       formats: ["es", "umd"],
     },
 

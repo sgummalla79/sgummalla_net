@@ -1,5 +1,5 @@
 // ── Theme system ─────────────────────────────────────────────────────────────
-export type { VzenTheme } from "./theme/tokens";
+export type { SgwTheme } from "./theme/tokens";
 export { cssVarMap, resolveThemeValue } from "./theme/tokens";
 export { defaultTheme, lightTheme } from "./theme/default";
 export { ThemePlugin, useTheme, THEME_KEY, applyTheme } from "./theme/plugin";

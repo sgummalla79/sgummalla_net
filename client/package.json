@@ -1,5 +1,5 @@
 {
-  "name": "@vzen/client",
+  "name": "@sgw/client",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "lint": "eslint src --ext .ts,.vue"
   },
   "dependencies": {
-    "@vzen/ui": "workspace:*",
+    "@sgw/ui": "workspace:*",
     "@vueuse/core": "^10.9.0",
     "axios": "^1.6.8",
     "pinia": "^2.1.7",

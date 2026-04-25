@@ -7,6 +7,8 @@ import NavBar from "../components/NavBar.vue";
 import NavLink from "../components/NavLink.vue";
 import NavAvatar from "../components/NavAvatar.vue";
 import SymbolLayer from "../components/SymbolLayer.vue";
+import logoLight from "../assets/logo-light.svg";
+import logoDark from "../assets/logo-dark.svg";
 
 const props = withDefaults(
   defineProps<{
@@ -18,7 +20,7 @@ const props = withDefaults(
     navLinks?: Array<{ name: string; label: string; href: string }>;
   }>(),
   {
-    brand: "vZen Solutions",
+    brand: "Sgummalla Works",
     scrollable: false,
     activePage: "",
     navLinks: () => [
@@ -42,7 +44,7 @@ function handleProfile() {
 }
 
 const { setTheme } = useTheme();
-const THEME_STORAGE_KEY = "vzen-theme-mode";
+const THEME_STORAGE_KEY = "sgw-theme-mode";
 const themeMode = ref<"dark" | "light">(
   (localStorage.getItem(THEME_STORAGE_KEY) as "dark" | "light") ?? "dark",
 );
@@ -59,7 +61,17 @@ function toggleTheme() {
   <div class="vz-shell" :class="{ 'vz-shell--scrollable': scrollable }">
     <SymbolLayer />
 
-    <NavBar :brand="brand ?? 'vZen Solutions'" dot-color="green">
+    <NavBar dot-color="green">
+      <template #brand>
+        <div class="vz-nav-brand-inner">
+          <img
+            :src="themeMode === 'light' ? logoLight : logoDark"
+            alt="Sgummalla Works"
+            class="vz-nav-logo"
+          />
+          <span class="vz-nav-slogan">Ideas in Motion, Think. Build. Demo.</span>
+        </div>
+      </template>
       <template #links>
         <NavLink
           v-for="link in props.navLinks"
@@ -101,6 +113,30 @@ function toggleTheme() {
 </template>
 
 <style scoped>
+.vz-nav-brand-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+}
+
+.vz-nav-logo {
+  height: 26px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.vz-nav-slogan {
+  font-family: var(--vz-font-sans);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--vz-text3);
+  white-space: nowrap;
+}
+
 .vz-shell {
   height: 100vh;
   display: grid;

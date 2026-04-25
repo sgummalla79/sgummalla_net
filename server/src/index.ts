@@ -89,7 +89,7 @@ app.use(
     res: express.Response,
     _next: express.NextFunction,
   ) => {
-    console.error("[vZen]", err.message);
+    console.error("[Sgummalla Works]", err.message);
     res.status(500).json({
       error: "Internal Server Error",
       message: isProd ? undefined : err.message,
@@ -98,8 +98,10 @@ app.use(
 );
 
 const server = app.listen(PORT, () => {
-  console.log(`[vZen] Server running on http://localhost:${PORT}`);
-  console.log(`[vZen] Environment: ${process.env.NODE_ENV ?? "development"}`);
+  console.log(`[Sgummalla Works] Server running on http://localhost:${PORT}`);
+  console.log(
+    `[Sgummalla Works] Environment: ${process.env.NODE_ENV ?? "development"}`,
+  );
 });
 
 // Wire WebSocket upgrades to the Chainlit proxy (chainlit-pilot plugin)

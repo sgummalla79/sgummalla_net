@@ -1,14 +1,14 @@
 {
-  "name": "vzen",
+  "name": "sgummalla-works",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"pnpm --filter @vzen/client dev\" \"pnpm --filter @vzen/server dev\"",
-    "build": "pnpm --filter @vzen/ui build && pnpm --filter @vzen/client build",
+    "dev": "concurrently \"pnpm --filter @sgw/client dev\" \"pnpm --filter @sgw/server dev\"",
+    "build": "pnpm --filter @sgw/ui build && pnpm --filter @sgw/client build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "format": "prettier --write \"**/*.{ts,vue,css,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,vue,css,json,md}\"",
-    "check": "pnpm --filter @vzen/ui build && pnpm --filter @vzen/ui exec vue-tsc --noEmit && pnpm --filter @vzen/client exec vue-tsc --noEmit && pnpm --filter @vzen/server exec tsc --noEmit && pnpm format:check && pnpm --filter @vzen/client exec vite build"
+    "check": "pnpm --filter @sgw/ui build && pnpm --filter @sgw/ui exec vue-tsc --noEmit && pnpm --filter @sgw/client exec vue-tsc --noEmit && pnpm --filter @sgw/server exec tsc --noEmit && pnpm format:check && pnpm --filter @sgw/client exec vite build"
   },
   "devDependencies": {
     "@prettier/plugin-xml": "^3.4.1",

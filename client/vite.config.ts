@@ -8,7 +8,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      "@vzen/ui": resolve(__dirname, "../packages/ui/src/index.ts"),
+      "@sgw/ui": resolve(__dirname, "../packages/ui/src/index.ts"),
       "@": resolve(__dirname, "src"),
     },
   },
@@ -34,7 +34,7 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: true,
     rollupOptions: {
-      // vue-router is provided by the app — treat as external when bundling @vzen/ui source
+      // vue-router is provided by the app — treat as external when bundling @sgw/ui source
       external: [],
     },
   },

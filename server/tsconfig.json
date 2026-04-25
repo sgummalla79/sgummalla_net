@@ -2,10 +2,7 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "ignoreDeprecations": "6.0",
     "outDir": "dist",
-    "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] },
     "types": ["node"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { AppLayout } from "@vzen/ui";
+import { AppLayout } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
 import { articles } from "../data/blog";
 

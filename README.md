@@ -1,4 +1,4 @@
-# vZen Solutions
+# Sgummalla Works
 
 A modern, full-stack built with Vue 3, TypeScript, Express, and a portable shared UI component library.
 
@@ -12,7 +12,7 @@ A modern, full-stack built with Vue 3, TypeScript, Express, and a portable share
 | Styling         | UnoCSS + CSS custom properties                  |
 | State           | Pinia                                           |
 | Routing         | Vue Router 4                                    |
-| UI Library      | `@vzen/ui` (internal, npm-portable)             |
+| UI Library      | `@sgw/ui` (internal, npm-portable)              |
 | Backend         | Express + TypeScript                            |
 | Auth            | httpOnly cookie · JWT · Auth0 · SAML 2.0 · OIDC |
 | Package Manager | pnpm workspaces                                 |
@@ -22,11 +22,11 @@ A modern, full-stack built with Vue 3, TypeScript, Express, and a portable share
 ## Monorepo Structure
 
 ```
-vzen/
+sgummalla-works/
 ├── packages/
-│   └── ui/          → @vzen/ui  — shared component + theme library
-├── client/          → @vzen/client — Vue frontend
-├── server/          → @vzen/server — Express API
+│   └── ui/          → @sgw/ui  — shared component + theme library
+├── client/          → @sgw/client — Vue frontend
+├── server/          → @sgw/server — Express API
 ├── pnpm-workspace.yaml
 └── package.json
 ```
@@ -50,19 +50,19 @@ pnpm build
 
 ## Packages
 
-### `@vzen/ui`
+### `@sgw/ui`
 
 Shared UI component library. Fully portable — can be published to npm independently.
 Theme injection via `ThemeProvider.vue` using CSS custom properties.
 See [`packages/ui/README.md`](./packages/ui/README.md).
 
-### `@vzen/client`
+### `@sgw/client`
 
-Vue 3 frontend application. Consumes `@vzen/ui` for all UI components.
-Communicates with `@vzen/server` via Axios with `credentials: include`.
+Vue 3 frontend application. Consumes `@sgw/ui` for all UI components.
+Communicates with `@sgw/server` via Axios with `credentials: include`.
 See [`client/README.md`](./client/README.md).
 
-### `@vzen/server`
+### `@sgw/server`
 
 Express API server. Stateless JWT auth via httpOnly cookies.
 Handles credentials, Auth0, SAML 2.0, and OIDC.
@@ -92,7 +92,7 @@ Frontend receives the same session regardless of auth method
 
 ## SAML / OIDC Client Configuration
 
-If you are an identity provider or service provider integrated with vZen,
+If you are an identity provider or service provider integrated with Sgummalla Works,
 the following URLs changed in the Vue migration:
 
 | Setting           | Old         | New                   |
@@ -107,17 +107,17 @@ the following URLs changed in the Vue migration:
 
 ## Theme System
 
-Themes are TypeScript objects implementing `VzenTheme` from `@vzen/ui`.
+Themes are TypeScript objects implementing `SgwTheme` from `@sgw/ui`.
 Injected at app startup via `ThemeProvider`. Swappable at runtime.
 
 ```typescript
-import { ThemeProvider, defaultTheme } from "@vzen/ui";
+import { ThemeProvider, defaultTheme } from "@sgw/ui";
 
 // Use default
 app.use(ThemeProvider, { theme: defaultTheme });
 
 // Swap theme
-import { darkProTheme } from "@vzen/ui";
+import { darkProTheme } from "@sgw/ui";
 app.use(ThemeProvider, { theme: darkProTheme });
 ```
 
@@ -128,18 +128,18 @@ app.use(ThemeProvider, { theme: darkProTheme });
 Each module is an independent, committable unit with no dangling dependencies.
 Complete each module fully before starting the next.
 
-| #   | Module                    | Package        | Status      | Branch                           |
-| --- | ------------------------- | -------------- | ----------- | -------------------------------- |
-| 1   | Monorepo Scaffold         | root           | ✅ Complete | `feat/module-1-scaffold`         |
-| 2   | UI — Theme System         | `@vzen/ui`     | ✅ Complete | `feat/module-2-ui-theme`         |
-| 3   | UI — Primitive Components | `@vzen/ui`     | ✅ Complete | `feat/module-3-ui-primitives`    |
-| 4   | UI — Layout Components    | `@vzen/ui`     | ✅ Complete | `feat/module-4-ui-layouts`       |
-| 5   | Server — Core             | `@vzen/server` | ✅ Complete | `feat/module-5-server-core`      |
-| 6   | Server — Credential Auth  | `@vzen/server` | ✅ Complete | `feat/module-6-server-auth`      |
-| 7   | Server — Federated Auth   | `@vzen/server` | ✅ Complete | `feat/module-7-server-federated` |
-| 8   | Client — Scaffold         | `@vzen/client` | ✅ Complete | `feat/module-8-client-scaffold`  |
-| 9   | Client — Auth Layer       | `@vzen/client` | ✅ Complete | `feat/module-9-client-auth`      |
-| 10  | Client — Views            | `@vzen/client` | ✅ Complete | `feat/module-10-client-views`    |
+| #   | Module                    | Package       | Status      | Branch                           |
+| --- | ------------------------- | ------------- | ----------- | -------------------------------- |
+| 1   | Monorepo Scaffold         | root          | ✅ Complete | `feat/module-1-scaffold`         |
+| 2   | UI — Theme System         | `@sgw/ui`     | ✅ Complete | `feat/module-2-ui-theme`         |
+| 3   | UI — Primitive Components | `@sgw/ui`     | ✅ Complete | `feat/module-3-ui-primitives`    |
+| 4   | UI — Layout Components    | `@sgw/ui`     | ✅ Complete | `feat/module-4-ui-layouts`       |
+| 5   | Server — Core             | `@sgw/server` | ✅ Complete | `feat/module-5-server-core`      |
+| 6   | Server — Credential Auth  | `@sgw/server` | ✅ Complete | `feat/module-6-server-auth`      |
+| 7   | Server — Federated Auth   | `@sgw/server` | ✅ Complete | `feat/module-7-server-federated` |
+| 8   | Client — Scaffold         | `@sgw/client` | ✅ Complete | `feat/module-8-client-scaffold`  |
+| 9   | Client — Auth Layer       | `@sgw/client` | ✅ Complete | `feat/module-9-client-auth`      |
+| 10  | Client — Views            | `@sgw/client` | ✅ Complete | `feat/module-10-client-views`    |
 
 ### Status key
 
@@ -162,8 +162,8 @@ git checkout -b feat/module-N-name
 #    Upload key config files to project knowledge when done
 
 # 3. Verify the module independently
-pnpm --filter @vzen/[package] build   # must succeed
-pnpm --filter @vzen/[package] test    # must pass
+pnpm --filter @sgummalla-works/[package] build   # must succeed
+pnpm --filter @sgummalla-works/[package] test    # must pass
 
 # 4. Commit
 git add .

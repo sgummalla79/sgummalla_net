@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { AppLayout, Button } from "@vzen/ui";
+import { AppLayout, Button } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
 
 const router = useRouter();

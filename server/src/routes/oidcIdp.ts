@@ -18,7 +18,7 @@ const router: import("express").Router = Router();
 
 const IDP_ISSUER = process.env.IDP_ENTITY_ID ?? "https://sgummalla-net.fly.dev";
 
-// Salesforce registers vZen as an Auth Provider with these credentials
+// Salesforce registers Sgummalla Works as an Auth Provider with these credentials
 const SF_CLIENT_ID = process.env.SF_OIDC_CLIENT_ID ?? "salesforce-helpportal";
 const SF_CLIENT_SECRET = process.env.SF_OIDC_CLIENT_SECRET ?? "";
 const SF_REDIRECT_URI =
@@ -171,7 +171,7 @@ router.get("/authorize", (req: Request, res: Response) => {
   const token = req.cookies[getCookieName()] as string | undefined;
 
   if (!token) {
-    // Not logged in — redirect to vZen login with return params
+    // Not logged in — redirect to Sgummalla Works login with return params
     const params = new URLSearchParams({
       redirect_uri: redirect_uri ?? SF_REDIRECT_URI,
       client_id: client_id ?? SF_CLIENT_ID,

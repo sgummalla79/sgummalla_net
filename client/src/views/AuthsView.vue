@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useStorage } from "@vueuse/core";
 import { useRouter } from "vue-router";
-import { AppLayout, AuthCard, Button } from "@vzen/ui";
+import { AppLayout, AuthCard, Button } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
 import { getPortals, launchExperienceCloud, type Portal } from "../api/portals";
 
@@ -12,7 +12,7 @@ const portals = ref<Portal[]>([]);
 const launching = ref<string | null>(null);
 const ecPortal = ref<"support" | "help">("support");
 
-const themeMode = useStorage("vzen-theme-mode", "dark");
+const themeMode = useStorage("sgw-theme-mode", "dark");
 const selectColorScheme = computed(() =>
   themeMode.value === "dark" ? "dark" : "light",
 );
