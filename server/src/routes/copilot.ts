@@ -64,11 +64,7 @@ export const copilotProxy = createProxyMiddleware({
 // httpServer upgrade events arrive with the full path, so we strip "/copilot"
 // first — the proxy's pathRewrite then adds it back before forwarding.
 
-export function handleCopilotUpgrade(
-  req: any,
-  socket: any,
-  head: any,
-): void {
+export function handleCopilotUpgrade(req: any, socket: any, head: any): void {
   if (!req.url?.startsWith("/copilot")) return;
 
   const cookies = parseCookies(req.headers?.cookie ?? "");

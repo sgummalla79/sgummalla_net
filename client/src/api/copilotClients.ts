@@ -7,7 +7,6 @@ export interface CopilotClient {
   created_at: string;
 }
 
-
 export async function listClients(): Promise<CopilotClient[]> {
   const { data } = await axios.get<CopilotClient[]>("/api/copilot/clients");
   return data;

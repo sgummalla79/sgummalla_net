@@ -95,9 +95,7 @@ router.get("/initiate", (req, res, next) => {
 
 router.post("/callback", (req, res, next) => {
   if (!isSamlConfigured()) {
-    res.redirect(
-      "/login?error=saml_not_configured",
-    );
+    res.redirect("/login?error=saml_not_configured");
     return;
   }
   ensureStrategy();
@@ -111,17 +109,13 @@ router.post("/callback", (req, res, next) => {
           "[Sgummalla Works SAML]",
           err?.message ?? "No user returned",
         );
-        res.redirect(
-          "/login?error=saml_failed",
-        );
+        res.redirect("/login?error=saml_failed");
         return;
       }
 
       const token = signToken(user as unknown as AuthUser);
       res.cookie(getCookieName(), token, cookieOptions());
-      res.redirect(
-        "/auths",
-      );
+      res.redirect("/auths");
     },
   )(req, res, next);
 });

@@ -40,8 +40,8 @@ const props = withDefaults(
   },
 );
 
-const effectiveNavLinks = computed(() =>
-  props.navLinks ?? (props.isOwner ? OWNER_NAV : PUBLIC_NAV),
+const effectiveNavLinks = computed(
+  () => props.navLinks ?? (props.isOwner ? OWNER_NAV : PUBLIC_NAV),
 );
 
 const emit = defineEmits<{

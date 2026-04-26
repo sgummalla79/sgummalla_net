@@ -31,7 +31,9 @@ router.post("/clients", requireAuth, async (req: Request, res: Response) => {
   const { client_id, client_secret, name, allowed_origins = [] } = req.body;
 
   if (!client_id || !client_secret || !name) {
-    res.status(400).json({ error: "client_id, client_secret and name are required" });
+    res
+      .status(400)
+      .json({ error: "client_id, client_secret and name are required" });
     return;
   }
 
@@ -49,9 +51,9 @@ router.post("/clients", requireAuth, async (req: Request, res: Response) => {
     res.json({ ok: true, client_id });
   } catch (err: any) {
     const isDuplicate = err.code === "23505";
-    res
-      .status(isDuplicate ? 409 : 500)
-      .json({ error: isDuplicate ? "client_id already exists" : "Database error" });
+    res.status(isDuplicate ? 409 : 500).json({
+      error: isDuplicate ? "client_id already exists" : "Database error",
+    });
   }
 });
 
@@ -63,7 +65,12 @@ router.put(
   requireAuth,
   async (req: Request, res: Response) => {
     const { clientId } = req.params;
-    const { client_id: newClientId, client_secret, name, allowed_origins = [] } = req.body;
+    const {
+      client_id: newClientId,
+      client_secret,
+      name,
+      allowed_origins = [],
+    } = req.body;
 
     const [existing] = await sql<{ encrypted_secret: string }[]>`
       SELECT encrypted_secret FROM copilot_clients
@@ -76,7 +83,9 @@ router.put(
     }
 
     const effectiveId = newClientId || clientId;
-    const encryptedSecret = client_secret ? encrypt(client_secret) : existing.encrypted_secret;
+    const encryptedSecret = client_secret
+      ? encrypt(client_secret)
+      : existing.encrypted_secret;
 
     try {
       if (effectiveId !== clientId) {
@@ -102,9 +111,9 @@ router.put(
       res.json({ ok: true, client_id: effectiveId });
     } catch (err: any) {
       const isDuplicate = err.code === "23505";
-      res
-        .status(isDuplicate ? 409 : 500)
-        .json({ error: isDuplicate ? "Client ID already exists" : "Database error" });
+      res.status(isDuplicate ? 409 : 500).json({
+        error: isDuplicate ? "Client ID already exists" : "Database error",
+      });
     }
   },
 );

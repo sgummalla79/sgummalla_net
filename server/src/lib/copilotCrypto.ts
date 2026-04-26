@@ -3,7 +3,9 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 function getKey(): Buffer {
   const hex = process.env.COPILOT_ENCRYPTION_KEY;
   if (!hex || hex.length !== 64) {
-    throw new Error("COPILOT_ENCRYPTION_KEY must be a 64-char hex string (32 bytes)");
+    throw new Error(
+      "COPILOT_ENCRYPTION_KEY must be a 64-char hex string (32 bytes)",
+    );
   }
   return Buffer.from(hex, "hex");
 }
@@ -16,7 +18,11 @@ export function encrypt(plaintext: string): string {
     cipher.final(),
   ]);
   const tag = cipher.getAuthTag();
-  return [iv.toString("hex"), tag.toString("hex"), encrypted.toString("hex")].join(":");
+  return [
+    iv.toString("hex"),
+    tag.toString("hex"),
+    encrypted.toString("hex"),
+  ].join(":");
 }
 
 export function decrypt(ciphertext: string): string {

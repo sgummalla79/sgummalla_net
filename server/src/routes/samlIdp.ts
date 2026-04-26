@@ -146,9 +146,7 @@ router.get("/sso", async (req: Request, res: Response) => {
       SAMLRequest: samlRequest,
       ...(relayState ? { RelayState: relayState } : {}),
     });
-    res.redirect(
-      `/login?${params.toString()}`,
-    );
+    res.redirect(`/login?${params.toString()}`);
     return;
   }
 
@@ -206,9 +204,7 @@ router.get("/sso", async (req: Request, res: Response) => {
       SAMLRequest: samlRequest,
       ...(relayState ? { RelayState: relayState } : {}),
     });
-    res.redirect(
-      `/login?${params.toString()}`,
-    );
+    res.redirect(`/login?${params.toString()}`);
   }
 });
 

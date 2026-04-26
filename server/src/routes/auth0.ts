@@ -44,9 +44,7 @@ router.get("/initiate", async (_req: Request, res: Response) => {
     res.redirect(url);
   } catch (err) {
     console.error("[Sgummalla Works Auth0]", err);
-    res.redirect(
-      "/login?error=auth0_unavailable",
-    );
+    res.redirect("/login?error=auth0_unavailable");
   }
 });
 
@@ -84,9 +82,7 @@ router.get("/callback", async (req: Request, res: Response) => {
     res.redirect("/auths");
   } catch (err) {
     console.error("[Sgummalla Works Auth0]", err);
-    res.redirect(
-      "/login?error=auth0_failed",
-    );
+    res.redirect("/login?error=auth0_failed");
   }
 });
 

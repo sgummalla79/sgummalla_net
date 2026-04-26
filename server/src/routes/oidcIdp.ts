@@ -180,9 +180,7 @@ router.get("/authorize", (req: Request, res: Response) => {
       ...(state ? { state } : {}),
       oidc_return: "1",
     });
-    res.redirect(
-      `/login?${params.toString()}`,
-    );
+    res.redirect(`/login?${params.toString()}`);
     return;
   }
 
@@ -226,9 +224,7 @@ router.get("/authorize", (req: Request, res: Response) => {
       ...(state ? { state } : {}),
       oidc_return: "1",
     });
-    res.redirect(
-      `/login?${params.toString()}`,
-    );
+    res.redirect(`/login?${params.toString()}`);
   }
 });
 
