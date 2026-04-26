@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
 import { createProxyMiddleware } from "http-proxy-middleware"; // chainlit-pilot plugin
+import { verifyToken, getCookieName } from "./lib/jwt.js";
 import healthRouter from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import auth0Router from "./routes/auth0.js";
@@ -48,6 +49,10 @@ if (!isProd) {
   );
 }
 
+// cookieParser is hoisted above the Chainlit proxy so the auth guard below
+// can read the session cookie before the request is forwarded.
+app.use(cookieParser());
+
 // ── Chainlit pilot proxy (chainlit-pilot plugin) ──────────────────────────────
 // Must be registered BEFORE body-parsing middlewares so the request stream
 // is intact when forwarded to Chainlit. Remove this block to disable.
@@ -62,12 +67,28 @@ const chainlitProxy = process.env.CHAINLIT_URL
   : null;
 
 if (chainlitProxy) {
+  // Guard every /chainlit-app/* request — unauthenticated browsers get
+  // redirected to /login. cookieParser must run first (hoisted above).
+  app.use("/chainlit-app", (req, res, next) => {
+    const token = req.cookies[getCookieName()] as string | undefined;
+    if (!token) {
+      res.redirect(302, "/login");
+      return;
+    }
+    try {
+      verifyToken(token);
+      next();
+    } catch {
+      res.clearCookie(getCookieName(), { path: "/" });
+      res.redirect(302, "/login");
+    }
+  });
+
   app.use(chainlitProxy);
 }
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 // ── API routes ────────────────────────────────────────────────────────────────
 app.use("/api", healthRouter);
