@@ -20,6 +20,20 @@ const PORT = Number(process.env.PORT ?? 3000);
 const CLIENT_URL = process.env.CLIENT_URL ?? "http://localhost:5173";
 const isProd = process.env.NODE_ENV === "production";
 
+// ── Canonical host redirect (production only) ─────────────────────────────────
+// Fly assigns a default *.fly.dev URL alongside the custom domain. Redirect
+// any request that doesn't arrive on the canonical host so that only
+// sgummallaworks.com works publicly.
+const CANONICAL_HOST = process.env.CANONICAL_HOST;
+if (isProd && CANONICAL_HOST) {
+  app.use((req, res, next) => {
+    if (req.hostname !== CANONICAL_HOST) {
+      return res.redirect(301, `https://${CANONICAL_HOST}${req.url}`);
+    }
+    next();
+  });
+}
+
 // ── CORS ──────────────────────────────────────────────────────────────────────
 // In production the client is served by Express itself — no CORS needed.
 // In dev the client is on :5173 — CORS required.
