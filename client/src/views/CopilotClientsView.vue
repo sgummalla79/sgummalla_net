@@ -94,13 +94,6 @@ function parseOrigins(raw: string) {
   return raw.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 function handleLogout() {
   auth.logout().then(() => router.push({ name: "home" }));
@@ -162,7 +155,7 @@ app.get("/copilot-token", async (req, res) => {
 });`;
 }
 
-function snippetFrontend(clientId: string) {
+function snippetFrontend(_clientId: string) {
   const server = copilotServer.value;
   return `<!-- Paste this where you want the copilot widget to appear -->
 
@@ -205,7 +198,7 @@ async function handleCreate() {
     await createClient({
       client_id: form.value.client_id,
       client_secret: form.value.client_secret,
-      name: form.value.name || undefined,
+      ...(form.value.name ? { name: form.value.name } : {}),
       allowed_origins: parseOrigins(form.value.allowed_origins),
     });
     clients.value = await listClients();
@@ -241,9 +234,9 @@ async function saveEdit() {
   savingId.value = true;
   try {
     const result = await updateClient(editTarget.value.client_id, {
-      client_id: editForm.value.client_id || undefined,
-      client_secret: editForm.value.client_secret || undefined,
-      name: editForm.value.name || undefined,
+      ...(editForm.value.client_id ? { client_id: editForm.value.client_id } : {}),
+      ...(editForm.value.client_secret ? { client_secret: editForm.value.client_secret } : {}),
+      ...(editForm.value.name ? { name: editForm.value.name } : {}),
       allowed_origins: parseOrigins(editForm.value.allowed_origins),
     });
     clients.value = await listClients();
