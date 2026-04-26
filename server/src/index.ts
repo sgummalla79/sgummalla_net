@@ -84,6 +84,13 @@ if (chainlitProxy) {
     }
   });
 
+  // Block direct access to the Chainlit full UI — only the copilot widget
+  // (mounted from /auths) is the intended entry point. Sub-paths like
+  // /copilot/index.js, WebSocket, and /auth/* still pass through for the widget.
+  app.get(["/chainlit-app", "/chainlit-app/"], (_req, res) => {
+    res.redirect(302, "/auths");
+  });
+
   app.use(chainlitProxy);
 }
 
