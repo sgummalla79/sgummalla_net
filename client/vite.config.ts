@@ -13,23 +13,6 @@ export default defineConfig({
     },
   },
 
-  server: {
-    port: 5173,
-    proxy: {
-      "/api": {
-        target: "http://localhost:3000",
-        changeOrigin: true,
-        secure: false,
-      },
-      // chainlit-pilot plugin — remove to disable
-      "/chainlit-app": {
-        target: "http://localhost:8000",
-        changeOrigin: true,
-        ws: true,
-      },
-    },
-  },
-
   build: {
     outDir: "dist",
     sourcemap: true,

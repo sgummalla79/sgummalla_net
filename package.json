@@ -2,7 +2,7 @@
   "name": "sgummalla-works",
   "private": true,
   "scripts": {
-    "dev": "concurrently --names \"client,server\" \"pnpm --filter @sgw/client dev\" \"pnpm --filter @sgw/server dev\"",
+    "dev": "pnpm --filter @sgw/server dev",
     "build": "pnpm --filter @sgw/ui build && pnpm --filter @sgw/client build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --ignore '../client/**/*.timestamp*' src/index.ts",
     "build": "tsc --project tsconfig.json",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
@@ -31,6 +31,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.12.0",
     "@types/passport": "^1.0.16",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0"
   }
 }

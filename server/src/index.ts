@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
-import cors from "cors";
 import cookieParser from "cookie-parser";
+import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
 import healthRouter from "./routes/health.js";
@@ -16,13 +16,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app: express.Application = express();
 const PORT = Number(process.env.PORT ?? 3000);
-const CLIENT_URL = process.env.CLIENT_URL ?? "http://localhost:5173";
 const isProd = process.env.NODE_ENV === "production";
 
 // ── Canonical host redirect (production only) ─────────────────────────────────
-// Fly assigns a default *.fly.dev URL alongside the custom domain. Redirect
-// any request that doesn't arrive on the canonical host so that only
-// sgummallaworks.com works publicly.
 const CANONICAL_HOST = process.env.CANONICAL_HOST;
 if (isProd && CANONICAL_HOST) {
   app.use((req, res, next) => {
@@ -33,22 +29,7 @@ if (isProd && CANONICAL_HOST) {
   });
 }
 
-// ── CORS ──────────────────────────────────────────────────────────────────────
-// In production the client is served by Express itself — no CORS needed.
-// In dev the client is on :5173 — CORS required.
-if (!isProd) {
-  app.use(
-    cors({
-      origin: CLIENT_URL,
-      credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
-    }),
-  );
-}
-
 app.use(cookieParser());
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -61,21 +42,12 @@ app.use("/api/portals", portalsRouter);
 app.use("/api/saml", samlIdpRouter);
 app.use("/api/oidc", oidcIdpRouter);
 
-// ── Static files (production only) ───────────────────────────────────────────
+// ── Static files (production) ─────────────────────────────────────────────────
 if (isProd) {
   const publicPath = join(__dirname, "../../public");
   app.use(express.static(publicPath));
-
-  // SPA fallback — Vue Router handles all non-API routes
   app.get("*", (_req, res) => {
     res.sendFile(join(publicPath, "index.html"));
-  });
-}
-
-// ── 404 (dev only — prod handled by SPA fallback above) ───────────────────────
-if (!isProd) {
-  app.use((_req, res) => {
-    res.status(404).json({ error: "Not Found" });
   });
 }
 
@@ -95,7 +67,26 @@ app.use(
   },
 );
 
-app.listen(PORT, () => {
+// ── Start ─────────────────────────────────────────────────────────────────────
+// Use http.createServer so Vite's HMR WebSocket can share the same server
+// in dev — no separate port, no proxy.
+const httpServer = createServer(app);
+
+if (!isProd) {
+  const { createServer: createViteServer } = await import("vite");
+  const vite = await createViteServer({
+    configFile: join(__dirname, "../../client/vite.config.ts"),
+    root: join(__dirname, "../../client"),
+    server: {
+      middlewareMode: true,
+      hmr: { server: httpServer },
+    },
+    appType: "spa",
+  });
+  app.use(vite.middlewares);
+}
+
+httpServer.listen(PORT, () => {
   console.log(`[Sgummalla Works] Server running on http://localhost:${PORT}`);
   console.log(
     `[Sgummalla Works] Environment: ${process.env.NODE_ENV ?? "development"}`,
