@@ -38,6 +38,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/copilot-clients",
+    name: "copilot-clients",
+    component: () => import("../views/CopilotClientsView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/blog",
     name: "blog",
     component: () => import("../views/BlogView.vue"),

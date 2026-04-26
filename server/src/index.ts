@@ -16,6 +16,7 @@ import {
   copilotProxy,
   handleCopilotUpgrade,
 } from "./routes/copilot.js";
+import copilotApiRouter from "./routes/copilotApi.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -46,6 +47,7 @@ app.use("/api/saml", samlRouter);
 app.use("/api/portals", portalsRouter);
 app.use("/api/saml", samlIdpRouter);
 app.use("/api/oidc", oidcIdpRouter);
+app.use("/api/copilot", copilotApiRouter);
 
 // ── Copilot — proxy to internal Chainlit (port 8000) ─────────────────────────
 // Express strips "/copilot" before the proxy sees the path; pathRewrite in

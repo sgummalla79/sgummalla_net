@@ -13,10 +13,14 @@ import logoDark from "../assets/logo-dark.svg";
 const OWNER_NAV = [
   { name: "auths", label: "Applications", href: "/auths" },
   { name: "configuration", label: "Configuration", href: "/configuration" },
+  { name: "copilot-clients", label: "Copilot", href: "/copilot-clients" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
-const PUBLIC_NAV = [{ name: "blog", label: "Blog", href: "/blog" }];
+const PUBLIC_NAV = [
+  { name: "copilot-clients", label: "Copilot", href: "/copilot-clients" },
+  { name: "blog", label: "Blog", href: "/blog" },
+];
 
 const props = withDefaults(
   defineProps<{
