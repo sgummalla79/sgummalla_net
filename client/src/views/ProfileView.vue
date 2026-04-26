@@ -27,6 +27,7 @@ const initials = (user?.name ?? "")
 
 <template>
   <AppLayout
+    :is-owner="auth.isOwner"
     :user-name="auth.fullName"
     :user-email="auth.email"
     @logout="handleLogout"

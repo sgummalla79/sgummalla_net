@@ -43,6 +43,7 @@ onMounted(async () => {
 <template>
   <AppLayout
     active-page="auths"
+    :is-owner="auth.isOwner"
     :user-name="auth.fullName"
     :user-email="auth.email"
     @profile="router.push({ name: 'profile' })"

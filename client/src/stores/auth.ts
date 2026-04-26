@@ -16,6 +16,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   // ── Getters ─────────────────────────────────────────────────────────────────
   const isAuthenticated = computed(() => user.value !== null);
+  const isOwner = computed(() => user.value?.id === "auth0|68d40e8f46b12057807fce21");
   const fullName = computed(() => user.value?.name ?? "");
   const email = computed(() => user.value?.email ?? "");
 
@@ -72,6 +73,7 @@ export const useAuthStore = defineStore("auth", () => {
     bootstrapped,
     // getters
     isAuthenticated,
+    isOwner,
     fullName,
     email,
     // actions

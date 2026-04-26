@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useTheme } from "../theme/plugin";
 import { defaultTheme, lightTheme } from "../theme/default";
@@ -10,6 +10,14 @@ import SymbolLayer from "../components/SymbolLayer.vue";
 import logoLight from "../assets/logo-light.svg";
 import logoDark from "../assets/logo-dark.svg";
 
+const OWNER_NAV = [
+  { name: "auths", label: "Applications", href: "/auths" },
+  { name: "configuration", label: "Configuration", href: "/configuration" },
+  { name: "blog", label: "Blog", href: "/blog" },
+];
+
+const PUBLIC_NAV = [{ name: "blog", label: "Blog", href: "/blog" }];
+
 const props = withDefaults(
   defineProps<{
     brand?: string;
@@ -17,18 +25,20 @@ const props = withDefaults(
     userName?: string;
     userEmail?: string;
     activePage?: string;
+    isOwner?: boolean;
     navLinks?: Array<{ name: string; label: string; href: string }>;
   }>(),
   {
     brand: "Sgummalla Works",
     scrollable: false,
     activePage: "",
-    navLinks: () => [
-      { name: "auths", label: "Applications", href: "/auths" },
-      { name: "configuration", label: "Configuration", href: "/configuration" },
-      { name: "blog", label: "Blog", href: "/blog" },
-    ],
+    isOwner: false,
+    navLinks: undefined,
   },
+);
+
+const effectiveNavLinks = computed(() =>
+  props.navLinks ?? (props.isOwner ? OWNER_NAV : PUBLIC_NAV),
 );
 
 const emit = defineEmits<{
@@ -76,7 +86,7 @@ function toggleTheme() {
       </template>
       <template #links>
         <NavLink
-          v-for="link in props.navLinks"
+          v-for="link in effectiveNavLinks"
           :key="link.name"
           :href="link.href"
           :active="activePage === link.name"
