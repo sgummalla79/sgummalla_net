@@ -33,7 +33,6 @@ const props = withDefaults(
     scrollable: false,
     activePage: "",
     isOwner: false,
-    navLinks: undefined,
   },
 );
 
