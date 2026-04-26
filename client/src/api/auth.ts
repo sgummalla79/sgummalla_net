@@ -41,11 +41,3 @@ export async function me(): Promise<ApiUser> {
 export function initiateAuth0(): void {
   window.location.href = `${import.meta.env.VITE_API_URL ?? ""}/api/auth0/initiate`;
 }
-
-export function initiateSaml(): void {
-  window.location.href = `${import.meta.env.VITE_API_URL ?? ""}/api/saml/initiate`;
-}
-
-export function initiateOidc(): void {
-  window.location.href = `${import.meta.env.VITE_API_URL ?? ""}/api/oidc/initiate`;
-}
