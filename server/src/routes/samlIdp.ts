@@ -147,7 +147,7 @@ router.get("/sso", async (req: Request, res: Response) => {
       ...(relayState ? { RelayState: relayState } : {}),
     });
     res.redirect(
-      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?${params.toString()}`,
+      `/login?${params.toString()}`,
     );
     return;
   }
@@ -207,7 +207,7 @@ router.get("/sso", async (req: Request, res: Response) => {
       ...(relayState ? { RelayState: relayState } : {}),
     });
     res.redirect(
-      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?${params.toString()}`,
+      `/login?${params.toString()}`,
     );
   }
 });

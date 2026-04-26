@@ -181,7 +181,7 @@ router.get("/authorize", (req: Request, res: Response) => {
       oidc_return: "1",
     });
     res.redirect(
-      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?${params.toString()}`,
+      `/login?${params.toString()}`,
     );
     return;
   }
@@ -227,7 +227,7 @@ router.get("/authorize", (req: Request, res: Response) => {
       oidc_return: "1",
     });
     res.redirect(
-      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?${params.toString()}`,
+      `/login?${params.toString()}`,
     );
   }
 });

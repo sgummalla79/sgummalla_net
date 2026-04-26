@@ -45,7 +45,7 @@ router.get("/initiate", async (_req: Request, res: Response) => {
   } catch (err) {
     console.error("[Sgummalla Works Auth0]", err);
     res.redirect(
-      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=auth0_unavailable`,
+      "/login?error=auth0_unavailable",
     );
   }
 });
@@ -81,11 +81,11 @@ router.get("/callback", async (req: Request, res: Response) => {
 
     const token = signToken(user);
     res.cookie(getCookieName(), token, cookieOptions());
-    res.redirect(`${process.env.CLIENT_URL ?? "http://localhost:5173"}/auths`);
+    res.redirect("/auths");
   } catch (err) {
     console.error("[Sgummalla Works Auth0]", err);
     res.redirect(
-      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=auth0_failed`,
+      "/login?error=auth0_failed",
     );
   }
 });

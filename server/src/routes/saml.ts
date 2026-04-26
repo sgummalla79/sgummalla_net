@@ -96,7 +96,7 @@ router.get("/initiate", (req, res, next) => {
 router.post("/callback", (req, res, next) => {
   if (!isSamlConfigured()) {
     res.redirect(
-      `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=saml_not_configured`,
+      "/login?error=saml_not_configured",
     );
     return;
   }
@@ -112,7 +112,7 @@ router.post("/callback", (req, res, next) => {
           err?.message ?? "No user returned",
         );
         res.redirect(
-          `${process.env.CLIENT_URL ?? "http://localhost:5173"}/login?error=saml_failed`,
+          "/login?error=saml_failed",
         );
         return;
       }
@@ -120,7 +120,7 @@ router.post("/callback", (req, res, next) => {
       const token = signToken(user as unknown as AuthUser);
       res.cookie(getCookieName(), token, cookieOptions());
       res.redirect(
-        `${process.env.CLIENT_URL ?? "http://localhost:5173"}/auths`,
+        "/auths",
       );
     },
   )(req, res, next);
