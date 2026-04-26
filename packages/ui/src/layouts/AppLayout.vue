@@ -163,10 +163,10 @@ function toggleTheme() {
   font-family: var(--vz-font-sans);
   font-size: 0.825rem;
   font-weight: 500;
-  color: var(--vz-text2);
+  color: var(--vz-green);
   text-decoration: none;
   padding: 0.35rem 0.85rem;
-  border: 1px solid var(--vz-border);
+  border: 1px solid var(--vz-green);
   border-radius: var(--vz-radius-md);
   transition:
     color 0.15s,
@@ -176,9 +176,9 @@ function toggleTheme() {
 }
 
 .vz-nav-signin:hover {
-  color: var(--vz-text);
-  border-color: var(--vz-border2);
-  background: var(--vz-surface);
+  color: var(--vz-bg);
+  background: var(--vz-green);
+  border-color: var(--vz-green);
 }
 
 .vz-nav-slogan {
