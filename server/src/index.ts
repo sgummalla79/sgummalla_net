@@ -4,8 +4,6 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
-import { createProxyMiddleware } from "http-proxy-middleware"; // chainlit-pilot plugin
-import { verifyToken, getCookieName } from "./lib/jwt.js";
 import healthRouter from "./routes/health.js";
 import authRouter from "./routes/auth.js";
 import auth0Router from "./routes/auth0.js";
@@ -49,62 +47,7 @@ if (!isProd) {
   );
 }
 
-// cookieParser is hoisted above the Chainlit proxy so the auth guard below
-// can read the session cookie before the request is forwarded.
 app.use(cookieParser());
-
-// ── Chainlit pilot proxy (chainlit-pilot plugin) ──────────────────────────────
-// Must be registered BEFORE body-parsing middlewares so the request stream
-// is intact when forwarded to Chainlit. Remove this block to disable.
-const chainlitProxy = process.env.CHAINLIT_URL
-  ? createProxyMiddleware({
-      target: process.env.CHAINLIT_URL,
-      changeOrigin: true,
-      autoRewrite: true,
-      ws: true,
-      pathFilter: "/chainlit-app",
-    })
-  : null;
-
-if (chainlitProxy) {
-  // Single middleware for all /chainlit-app/* traffic:
-  // - Root path (the Chainlit full UI) → always redirect; authenticated users
-  //   go to /auths, unauthenticated go to /login.
-  // - Sub-paths (copilot assets, WebSocket, auth endpoints) → require a valid
-  //   session cookie, then pass through to the proxy.
-  app.use("/chainlit-app", (req, res, next) => {
-    const token = req.cookies[getCookieName()] as string | undefined;
-
-    if (req.path === "/" || req.path === "") {
-      if (!token) {
-        res.redirect(302, "/login");
-        return;
-      }
-      try {
-        verifyToken(token);
-        res.redirect(302, "/auths");
-      } catch {
-        res.clearCookie(getCookieName(), { path: "/" });
-        res.redirect(302, "/login");
-      }
-      return;
-    }
-
-    if (!token) {
-      res.redirect(302, "/login");
-      return;
-    }
-    try {
-      verifyToken(token);
-      next();
-    } catch {
-      res.clearCookie(getCookieName(), { path: "/" });
-      res.redirect(302, "/login");
-    }
-  });
-
-  app.use(chainlitProxy);
-}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -152,16 +95,11 @@ app.use(
   },
 );
 
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`[Sgummalla Works] Server running on http://localhost:${PORT}`);
   console.log(
     `[Sgummalla Works] Environment: ${process.env.NODE_ENV ?? "development"}`,
   );
 });
-
-// Wire WebSocket upgrades to the Chainlit proxy (chainlit-pilot plugin)
-if (chainlitProxy) {
-  server.on("upgrade", chainlitProxy.upgrade);
-}
 
 export default app;

@@ -3,7 +3,7 @@ import client from "./client";
 export interface Portal {
   id: string;
   name: string;
-  protocol: "jwt" | "saml" | "oidc" | "auth0" | "chainlit"; // chainlit-pilot plugin
+  protocol: "jwt" | "saml" | "oidc" | "auth0";
   description: string;
   launchUrl: string;
   external?: boolean;

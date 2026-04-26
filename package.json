@@ -2,7 +2,7 @@
   "name": "sgummalla-works",
   "private": true,
   "scripts": {
-    "dev": "concurrently --names \"client,server,chainlit\" \"pnpm --filter @sgw/client dev\" \"pnpm --filter @sgw/server dev\" \"cd plugins/chainlit-pilot && source .env && chainlit run app.py --host 0.0.0.0 --port 8000 --root-path /chainlit-app\"",
+    "dev": "concurrently --names \"client,server\" \"pnpm --filter @sgw/client dev\" \"pnpm --filter @sgw/server dev\"",
     "build": "pnpm --filter @sgw/ui build && pnpm --filter @sgw/client build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",

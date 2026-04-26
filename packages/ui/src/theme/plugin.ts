@@ -21,8 +21,6 @@ export function applyTheme(
   }
   const isDark = theme.name.toLowerCase().includes("dark");
   target.style.setProperty("color-scheme", isDark ? "dark" : "light");
-  // .dark class is required by Chainlit's copilot widget (shadcn/ui theme selector)
-  isDark ? target.classList.add("dark") : target.classList.remove("dark");
 }
 
 // ── Vue plugin ────────────────────────────────────────────────────────────────

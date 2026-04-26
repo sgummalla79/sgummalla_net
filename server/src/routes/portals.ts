@@ -22,20 +22,6 @@ type PortalEntry = {
 router.get("/", (req: Request, res: Response) => {
   const userId = req.user?.id ?? "";
 
-  // chainlit-pilot plugin — conditionally included when CHAINLIT_URL is set
-  const chainlitPortal: PortalEntry[] = process.env.CHAINLIT_URL
-    ? [
-        {
-          id: "chainlit-pilot",
-          name: "AI Pilot",
-          protocol: "chainlit",
-          description:
-            "Conversational AI assistant powered by Chainlit and GPT-4o.",
-          launchUrl: "",
-        },
-      ]
-    : [];
-
   const allPortals: PortalEntry[] = [
     {
       id: "support-portal",
@@ -64,7 +50,6 @@ router.get("/", (req: Request, res: Response) => {
       launchUrl: "/api/portals/launch/experience-cloud",
       allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
     },
-    ...chainlitPortal,
   ];
 
   const portals = allPortals
