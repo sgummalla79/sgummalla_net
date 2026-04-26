@@ -5,6 +5,8 @@ import {
 } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 
+const OWNER_ID = "auth0|68d40e8f46b12057807fce21";
+
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
@@ -22,7 +24,7 @@ const routes: RouteRecordRaw[] = [
     path: "/auths",
     name: "auths",
     component: () => import("../views/AuthsView.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, ownerOnly: true },
   },
   {
     path: "/configuration",
@@ -86,12 +88,18 @@ router.beforeEach(async (to) => {
     return { name: "login" };
   }
 
+  const isOwner = auth.user?.id === OWNER_ID;
+
+  if (to.meta.ownerOnly && !isOwner) {
+    return { name: "blog" };
+  }
+
   if (
     !requiresAuth &&
     auth.isAuthenticated &&
     ["login", "home"].includes(to.name as string)
   ) {
-    return { name: "auths" };
+    return isOwner ? { name: "auths" } : { name: "blog" };
   }
 
   return true;
