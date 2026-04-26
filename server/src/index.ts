@@ -67,10 +67,29 @@ const chainlitProxy = process.env.CHAINLIT_URL
   : null;
 
 if (chainlitProxy) {
-  // Guard every /chainlit-app/* request — unauthenticated browsers get
-  // redirected to /login. cookieParser must run first (hoisted above).
+  // Single middleware for all /chainlit-app/* traffic:
+  // - Root path (the Chainlit full UI) → always redirect; authenticated users
+  //   go to /auths, unauthenticated go to /login.
+  // - Sub-paths (copilot assets, WebSocket, auth endpoints) → require a valid
+  //   session cookie, then pass through to the proxy.
   app.use("/chainlit-app", (req, res, next) => {
     const token = req.cookies[getCookieName()] as string | undefined;
+
+    if (req.path === "/" || req.path === "") {
+      if (!token) {
+        res.redirect(302, "/login");
+        return;
+      }
+      try {
+        verifyToken(token);
+        res.redirect(302, "/auths");
+      } catch {
+        res.clearCookie(getCookieName(), { path: "/" });
+        res.redirect(302, "/login");
+      }
+      return;
+    }
+
     if (!token) {
       res.redirect(302, "/login");
       return;
@@ -82,13 +101,6 @@ if (chainlitProxy) {
       res.clearCookie(getCookieName(), { path: "/" });
       res.redirect(302, "/login");
     }
-  });
-
-  // Block direct access to the Chainlit full UI — only the copilot widget
-  // (mounted from /auths) is the intended entry point. Sub-paths like
-  // /copilot/index.js, WebSocket, and /auth/* still pass through for the widget.
-  app.get(["/chainlit-app", "/chainlit-app/"], (_req, res) => {
-    res.redirect(302, "/auths");
   });
 
   app.use(chainlitProxy);
