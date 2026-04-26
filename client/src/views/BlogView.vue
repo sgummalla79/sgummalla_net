@@ -10,7 +10,7 @@ const auth = useAuthStore();
 
 const navLinks = computed(() => {
   const links = [];
-  if (auth.isAuthenticated) {
+  if (auth.isOwner) {
     links.push(
       { name: "auths", label: "Applications", href: "/auths" },
       { name: "configuration", label: "Configuration", href: "/configuration" },
