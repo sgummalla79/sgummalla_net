@@ -161,7 +161,12 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
 - Add `copilotAuthGuard` to the proxy — verifies JWT cookie, injects signed `x-copilot-token` header
 - Add `/api/copilot/me-token` endpoint — reads JWT cookie, returns a Chainlit-compatible token
 - **Test:** unauthenticated requests blocked, authenticated users proxied with identity passed to Chainlit
-- **Status:** ❌ To do
+- **Status:** ✅ Done
+- **Notes:**
+  - Proxy must be mounted before `express.json()` / `express.urlencoded()` — body parsers consume POST bodies before the proxy can forward them, causing requests to hang
+  - Port 8000 accessible directly in dev (unavoidable on localhost) — blocked in production since Docker never exposes it
+  - `_copilotToken` is stored on the Express request object in `copilotAuthGuard` and read in the `proxyReq` event handler
+  - WebSocket upgrade also verifies cookie and injects token before forwarding
 
 ### Part 4 — Widget on all pages (own users)
 - Load the Chainlit widget script in `AppLayout`

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import sql from "../lib/db.js";
 import { encrypt, decrypt } from "../lib/copilotCrypto.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { getCookieName, verifyToken } from "../lib/jwt.js";
 
 const router: import("express").Router = Router();
 
@@ -132,6 +133,35 @@ router.delete(
     res.json({ ok: true });
   },
 );
+
+// ── GET /api/copilot/me-token ─────────────────────────────────────────────────
+// Issues a short-lived Chainlit access token for the logged-in user.
+// Used by the widget on sgummalla.net pages (Path 1 — own users).
+
+router.get("/me-token", async (req: Request, res: Response) => {
+  const sessionToken = req.cookies?.[getCookieName()] as string | undefined;
+  if (!sessionToken) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const payload = verifyToken(sessionToken);
+    const secret = process.env.COPILOT_AUTH_SECRET;
+    if (!secret) {
+      res.status(500).json({ error: "Copilot auth not configured" });
+      return;
+    }
+    const accessToken = jwt.sign(
+      { identifier: payload.email, name: payload.name, email: payload.email },
+      secret,
+      { algorithm: "HS256", expiresIn: "1h" },
+    );
+    res.json({ access_token: accessToken });
+  } catch {
+    res.status(401).json({ error: "Unauthorized" });
+  }
+});
 
 // ── POST /api/copilot/token ───────────────────────────────────────────────────
 
