@@ -20,10 +20,7 @@ const OWNER_NAV = [
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
-const AUTH_NAV = [
-  { name: "copilot-clients", label: "Copilot", href: "/copilot-clients" },
-  { name: "blog", label: "Blog", href: "/blog" },
-];
+const AUTH_NAV = [{ name: "blog", label: "Blog", href: "/blog" }];
 
 const GUEST_NAV = [{ name: "blog", label: "Blog", href: "/blog" }];
 
