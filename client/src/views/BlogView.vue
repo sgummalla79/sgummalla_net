@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
@@ -7,18 +6,6 @@ import { articles } from "../data/blog";
 
 const router = useRouter();
 const auth = useAuthStore();
-
-const navLinks = computed(() => {
-  const links = [];
-  if (auth.isOwner) {
-    links.push(
-      { name: "auths", label: "Applications", href: "/auths" },
-      { name: "configuration", label: "Configuration", href: "/configuration" },
-    );
-  }
-  links.push({ name: "blog", label: "Blog", href: "/blog" });
-  return links;
-});
 
 async function handleLogout() {
   await auth.logout();
@@ -29,7 +16,8 @@ async function handleLogout() {
 <template>
   <AppLayout
     active-page="blog"
-    :nav-links="navLinks"
+    :is-owner="auth.isOwner"
+    :is-authenticated="auth.isAuthenticated"
     :user-name="auth.fullName"
     :user-email="auth.email"
     :scrollable="true"

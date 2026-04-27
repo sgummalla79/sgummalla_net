@@ -54,6 +54,7 @@ async function fetchMeta(type: "saml" | "oidc") {
   <AppLayout
     active-page="configuration"
     :is-owner="auth.isOwner"
+    :is-authenticated="auth.isAuthenticated"
     :user-name="auth.fullName"
     :user-email="auth.email"
     @profile="router.push({ name: 'profile' })"

@@ -21,10 +21,7 @@ async function handleLogin() {
 </script>
 
 <template>
-  <AppLayout
-    :nav-links="[{ name: 'blog', label: 'Blog', href: '/blog' }]"
-    active-page=""
-  >
+  <AppLayout active-page="">
     <div class="vz-login-card">
       <div v-if="auth.error" class="vz-login-card__error" role="alert">
         <svg

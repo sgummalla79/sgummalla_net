@@ -418,6 +418,7 @@ async function confirmDelete() {
   <AppLayout
     active-page="copilot-clients"
     :is-owner="auth.isOwner"
+    :is-authenticated="auth.isAuthenticated"
     :user-name="auth.fullName"
     :user-email="auth.email"
     :scrollable="true"

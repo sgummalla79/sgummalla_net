@@ -4,7 +4,7 @@ import { AppLayout } from "@sgw/ui";
 
 <template>
   <!-- non-scrollable: fills 100vh, no vertical bar -->
-  <AppLayout :nav-links="[{ name: 'blog', label: 'Blog', href: '/blog' }]">
+  <AppLayout>
     <div class="sgw-page">
       <!-- ── Left: hero ────────────────────────────────────────────── -->
       <div class="sgw-hero">
