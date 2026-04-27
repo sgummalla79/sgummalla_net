@@ -183,8 +183,11 @@ function togglePin() {
         <slot />
       </main>
 
-      <Transition name="vz-copilot">
-        <div v-if="isAuthenticated && copilotOpen" class="vz-copilot-sidebar">
+      <div
+        v-if="isAuthenticated && copilotLoaded"
+        class="vz-copilot-sidebar"
+        :class="{ 'vz-copilot-sidebar--open': copilotOpen }"
+      >
           <div class="vz-copilot-header">
             <span class="vz-copilot-title">AI Copilot</span>
             <div class="vz-copilot-actions">
@@ -203,13 +206,11 @@ function togglePin() {
             </div>
           </div>
           <iframe
-            v-if="copilotLoaded"
             src="/copilot/"
             class="vz-copilot-frame"
             allow="microphone"
           />
         </div>
-      </Transition>
     </div>
 
     <footer class="vz-shell__footer">
@@ -375,15 +376,21 @@ function togglePin() {
 /* ── Copilot sidebar ─────────────────────────────────────────────────────── */
 
 .vz-copilot-sidebar {
-  width: 380px;
+  width: 0;
   flex-shrink: 0;
   background: var(--vz-bg);
-  border-left: 1px solid var(--vz-border);
+  border-left: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
   z-index: 200;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vz-copilot-sidebar--open {
+  width: 380px;
+  border-left: 1px solid var(--vz-border);
 }
 
 .vz-copilot-header {
@@ -457,15 +464,6 @@ function togglePin() {
   width: 100%;
 }
 
-/* Sidebar width transition — main content adjusts as sidebar opens/closes */
-.vz-copilot-enter-active,
-.vz-copilot-leave-active {
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.vz-copilot-enter-from,
-.vz-copilot-leave-to {
-  width: 0;
-}
 
 
 @media (max-width: 680px) {
@@ -481,9 +479,8 @@ function togglePin() {
   .vz-shell__footer {
     padding: 0.85rem 1.25rem;
   }
-  .vz-copilot-sidebar {
+  .vz-copilot-sidebar--open {
     width: 100vw;
-    max-width: 100vw;
   }
 }
 </style>
