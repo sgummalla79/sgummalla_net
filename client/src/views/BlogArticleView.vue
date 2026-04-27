@@ -175,8 +175,8 @@ async function handleLogout() {
 
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 15px;
+  line-height: 1.75;
 }
 
 /* ── Light mode overrides ───────────────────────────────────────────────── */
@@ -232,7 +232,7 @@ async function handleLogout() {
   margin-bottom: 12px;
 }
 .vz-article-body .doc-header h1 {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
@@ -241,7 +241,7 @@ async function handleLogout() {
 }
 .vz-article-body .doc-header .subtitle {
   color: var(--text-dim);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 300;
 }
 .vz-article-body .meta-row {
@@ -282,7 +282,7 @@ async function handleLogout() {
   margin-bottom: 6px;
 }
 .vz-article-body .section-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.01em;
@@ -292,7 +292,7 @@ async function handleLogout() {
 }
 .vz-article-body .section-desc {
   color: var(--text-dim);
-  font-size: 13px;
+  font-size: 14px;
   margin-top: 10px;
   margin-bottom: 24px;
   font-weight: 300;
@@ -303,7 +303,7 @@ async function handleLogout() {
   border-radius: 6px;
   padding: 16px 20px;
   margin: 20px 0;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.6;
   border-left: 3px solid;
 }
@@ -335,7 +335,7 @@ async function handleLogout() {
   border-radius: 8px;
   overflow: hidden;
   margin: 20px 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 .vz-article-body .data-grid .cell {
   padding: 11px 14px;
@@ -379,7 +379,7 @@ async function handleLogout() {
   border-radius: 8px;
   overflow: hidden;
   margin: 20px 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 .vz-article-body .req-grid .cell {
   padding: 11px 14px;
@@ -496,7 +496,7 @@ async function handleLogout() {
   border-radius: 8px;
   overflow: hidden;
   margin: 20px 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 .vz-article-body .breaks-grid .cell {
   padding: 11px 14px;
@@ -615,7 +615,7 @@ async function handleLogout() {
   align-items: flex-start;
   padding: 12px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 13px;
+  font-size: 14px;
 }
 .vz-article-body .flow-step:last-child {
   border-bottom: none;
@@ -644,7 +644,7 @@ async function handleLogout() {
 .vz-article-body .step-content p {
   color: var(--text-dim);
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* ── Two-column layout ──────────────────────────────────────────────────── */
@@ -663,7 +663,7 @@ async function handleLogout() {
   padding: 16px 20px;
 }
 .vz-article-body .pros-cons h4 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 10px;
 }
@@ -678,7 +678,7 @@ async function handleLogout() {
   padding: 0;
 }
 .vz-article-body .pros-cons li {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-dim);
   padding: 3px 0 3px 14px;
   position: relative;
@@ -706,7 +706,7 @@ async function handleLogout() {
   border-radius: 8px;
   padding: 24px;
   margin: 20px 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 .vz-article-body .dt-row {
   display: flex;
@@ -774,7 +774,7 @@ async function handleLogout() {
   border: 1px solid rgba(59, 130, 246, 0.35);
 }
 .vz-article-body .recommendation h3 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text);
 }
@@ -796,7 +796,7 @@ async function handleLogout() {
   border-color: var(--accent);
 }
 .vz-article-body .option-card h4 {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 8px;
@@ -806,7 +806,7 @@ async function handleLogout() {
   padding: 0;
 }
 .vz-article-body .option-card li {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-dim);
   padding: 3px 0 3px 14px;
   position: relative;
