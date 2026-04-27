@@ -147,7 +147,7 @@ router.get("/me-token", async (req: Request, res: Response) => {
 
   try {
     const payload = verifyToken(sessionToken);
-    const secret = process.env.COPILOT_AUTH_SECRET;
+    const secret = process.env.CHAINLIT_AUTH_SECRET;
     if (!secret) {
       res.status(500).json({ error: "Copilot auth not configured" });
       return;
@@ -221,7 +221,7 @@ router.post("/token", async (req: Request, res: Response) => {
     return;
   }
 
-  const copilotAuthSecret = process.env.COPILOT_AUTH_SECRET;
+  const copilotAuthSecret = process.env.CHAINLIT_AUTH_SECRET;
   if (!copilotAuthSecret) {
     res.status(500).json({ error: "Copilot auth not configured" });
     return;

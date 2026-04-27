@@ -6,8 +6,8 @@ import { getCookieName, verifyToken, type JwtPayload } from "../lib/jwt.js";
 const CHAINLIT_URL = process.env.CHAINLIT_URL ?? "http://localhost:8000";
 
 function getCopilotSecret(): string {
-  const secret = process.env.COPILOT_AUTH_SECRET;
-  if (!secret) throw new Error("COPILOT_AUTH_SECRET is not set");
+  const secret = process.env.CHAINLIT_AUTH_SECRET;
+  if (!secret) throw new Error("CHAINLIT_AUTH_SECRET is not set");
   return secret;
 }
 

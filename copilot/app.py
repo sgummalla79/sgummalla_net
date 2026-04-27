@@ -6,7 +6,7 @@ from openai import AsyncOpenAI
 
 client = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-COPILOT_AUTH_SECRET = os.environ["COPILOT_AUTH_SECRET"]
+CHAINLIT_AUTH_SECRET = os.environ["CHAINLIT_AUTH_SECRET"]
 
 
 @cl.header_auth_callback
@@ -15,7 +15,7 @@ def header_auth_callback(headers: Dict) -> Optional[cl.User]:
     if not token:
         return None
     try:
-        payload = jwt.decode(token, COPILOT_AUTH_SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token, CHAINLIT_AUTH_SECRET, algorithms=["HS256"])
         return cl.User(
             identifier=payload["identifier"],
             metadata={
