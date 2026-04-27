@@ -184,7 +184,11 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
 - Update `Dockerfile` with Python + copilot app
 - Update `docker-entrypoint.sh` to start Chainlit alongside Express
 - **Test:** `docker build` succeeds, staging deploy works
-- **Status:** ❌ To do
+- **Status:** ✅ Done
+- **Notes:**
+  - `CHAINLIT_AUTH_SECRET` is set from `$COPILOT_AUTH_SECRET` at runtime in entrypoint
+  - Chainlit started with `--headless` flag in production (no browser auto-open)
+  - Docker build tested and passing
 
 ---
 
