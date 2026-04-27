@@ -62,6 +62,14 @@ async function handleLogout() {
         :class="{ 'vz-article-body--light': isLight }"
         v-html="article.content"
       />
+
+      <div class="vz-article-disclaimer">
+        <strong>Disclaimer:</strong> The information in this article is based on
+        generally available (GA) features and publicly accessible documentation.
+        It does not represent official guidance from any employer or organisation
+        and does not disclose any confidential, pre-release, or proprietary
+        information.
+      </div>
     </div>
   </AppLayout>
 </template>
@@ -102,6 +110,21 @@ async function handleLogout() {
 
 .vz-article-back:hover {
   color: var(--vz-text);
+}
+
+.vz-article-disclaimer {
+  margin-top: 2rem;
+  padding: 0.85rem 1.25rem;
+  border: 1px solid var(--vz-border);
+  border-radius: var(--vz-radius);
+  font-size: 0.75rem;
+  color: var(--vz-text3);
+  line-height: 1.65;
+  font-family: var(--vz-font-mono);
+}
+
+.vz-article-disclaimer strong {
+  color: var(--vz-text2);
 }
 </style>
 

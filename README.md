@@ -233,4 +233,30 @@ VITE_API_URL=http://localhost:3000
 
 ---
 
+## Blog Content Policy
+
+Articles published on this site must comply with the following guidelines:
+
+- **GA features only** — content must cover Generally Available (GA) features. Do not disclose pre-release, beta, or roadmap information.
+- **No confidential information** — never publish proprietary, internal, or non-public company information.
+- **Align with official documentation** — content must be consistent with public-facing product documentation and official communication policies.
+- **Share responsibly** — when sharing article URLs in internal or external channels, follow your organisation's Share Article URLs in Channels guidelines.
+
+---
+
+## Blog Content Policy
+
+Articles published on this site must comply with the following guidelines:
+
+- **GA features only** — content must cover Generally Available (GA) features. Do not disclose pre-release, beta, or roadmap information.
+- **No confidential information** — never publish proprietary, internal, or non-public company information.
+- **Align with official documentation** — content must be consistent with public-facing product documentation and official communication policies.
+- **Share responsibly** — when sharing article URLs in internal or external channels, follow your organisation's Share Article URLs in Channels guidelines.
+
+All articles automatically display the following disclaimer at the bottom:
+
+> **Disclaimer:** The information in this article is based on generally available (GA) features and publicly accessible documentation. It does not represent official guidance from any employer or organisation and does not disclose any confidential, pre-release, or proprietary information.
+
+---
+
 _Last updated: Module 10 — Client Views complete. All modules done. 🎉_
