@@ -119,7 +119,7 @@ function togglePin() {
           {{ link.label }}
         </NavLink>
         <button
-          v-if="isOwner"
+          v-if="isAuthenticated"
           class="vz-nav-link vz-nav-copilot-btn"
           :class="{ 'vz-nav-link--active': copilotOpen }"
           title="AI Copilot"
