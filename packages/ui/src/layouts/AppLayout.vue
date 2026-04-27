@@ -184,7 +184,7 @@ function togglePin() {
       </main>
 
       <Transition name="vz-copilot">
-        <div v-if="isOwner && copilotOpen" class="vz-copilot-sidebar">
+        <div v-if="isAuthenticated && copilotOpen" class="vz-copilot-sidebar">
           <div class="vz-copilot-header">
             <span class="vz-copilot-title">AI Copilot</span>
             <div class="vz-copilot-actions">
