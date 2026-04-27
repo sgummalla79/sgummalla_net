@@ -169,10 +169,16 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
   - WebSocket upgrade also verifies cookie and injects token before forwarding
 
 ### Part 4 — Widget on all pages (own users)
-- Load the Chainlit widget script in `AppLayout`
-- Fetch token from `/api/copilot/me-token` and mount the widget
-- **Test:** widget appears on all pages for logged-in users, Chainlit greets them by name
-- **Status:** ❌ To do
+- Copilot sidebar in `AppLayout` — robot icon in nav, slides in beside main content
+- Pinnable: when pinned, sidebar stays open on robot click or page navigation
+- iframe loads `/copilot/` through the auth proxy
+- **Status:** ✅ Done
+- **Notes:**
+  - Chainlit 2.x `mountChainlitWidget` no longer exists — used iframe instead
+  - Chainlit 2.x streaming: must call `await reply.send()` BEFORE streaming tokens, then `await reply.update()` after
+  - Sidebar is a flex sibling of `<main>` so content adjusts width — not an overlay
+  - Proxy must be before `express.json()` body parsers (already done in Part 2)
+  - Old Chainlit process must be killed before restarting (`lsof -ti :8000 | xargs kill -9`)
 
 ### Part 5 — Docker + deployment
 - Update `Dockerfile` with Python + copilot app

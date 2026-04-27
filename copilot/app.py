@@ -50,10 +50,10 @@ async def on_message(message: cl.Message):
     )
 
     reply = cl.Message(content="")
+    await reply.send()
     async for chunk in response:
         delta = chunk.choices[0].delta.content or ""
         await reply.stream_token(delta)
-
-    await reply.send()
+    await reply.update()
     history.append({"role": "assistant", "content": reply.content})
     cl.user_session.set("history", history)
