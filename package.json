@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter @sgw/server dev",
+    "dev:full": "concurrently --names server,copilot --prefix-colors blue,green --kill-others-on-fail \"pnpm dev\" \"cd copilot && dotenv -f ../server/.env run -- chainlit run app.py --root-path /copilot --port 8000\"",
     "build": "pnpm --filter @sgw/ui build && pnpm --filter @sgw/client build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",

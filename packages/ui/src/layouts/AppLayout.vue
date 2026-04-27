@@ -16,7 +16,7 @@ import logoDark from "../assets/logo-dark.svg";
 const OWNER_NAV = [
   { name: "auths", label: "Applications", href: "/auths" },
   { name: "configuration", label: "Configuration", href: "/configuration" },
-  { name: "copilot-clients", label: "Copilot", href: "/copilot-clients" },
+  { name: "copilot-clients", label: "Clients", href: "/copilot-clients" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
@@ -74,6 +74,22 @@ function toggleTheme() {
   localStorage.setItem(THEME_STORAGE_KEY, themeMode.value);
   setTheme(themeMode.value === "light" ? lightTheme : defaultTheme);
 }
+
+// ── Copilot sidebar ───────────────────────────────────────────────────────────
+
+const copilotOpen = ref(false);
+const copilotLoaded = ref(false);
+const copilotPinned = ref(false);
+
+function openCopilot() {
+  copilotOpen.value = true;
+  copilotLoaded.value = true;
+}
+
+function togglePin() {
+  copilotPinned.value = !copilotPinned.value;
+  if (copilotPinned.value) openCopilot();
+}
 </script>
 
 <template>
@@ -102,6 +118,32 @@ function toggleTheme() {
         >
           {{ link.label }}
         </NavLink>
+        <button
+          v-if="isAuthenticated"
+          class="vz-nav-link vz-nav-copilot-btn"
+          :class="{ 'vz-nav-link--active': copilotOpen }"
+          title="AI Copilot"
+          @click="copilotOpen && !copilotPinned ? copilotOpen = false : openCopilot()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 8V4H8" />
+            <rect width="16" height="12" x="4" y="8" rx="2" />
+            <path d="M2 14h2" />
+            <path d="M20 14h2" />
+            <path d="M15 13v2" />
+            <path d="M9 13v2" />
+          </svg>
+        </button>
       </template>
 
       <template #right>
@@ -135,9 +177,40 @@ function toggleTheme() {
       </template>
     </NavBar>
 
-    <main class="vz-shell__main">
-      <slot />
-    </main>
+    <!-- Body — sidebar sits beside main so content adjusts rather than overlaps -->
+    <div class="vz-shell__body">
+      <main class="vz-shell__main">
+        <slot />
+      </main>
+
+      <Transition name="vz-copilot">
+        <div v-if="isAuthenticated && copilotOpen" class="vz-copilot-sidebar">
+          <div class="vz-copilot-header">
+            <span class="vz-copilot-title">AI Copilot</span>
+            <div class="vz-copilot-actions">
+              <button
+                class="vz-copilot-pin"
+                :class="{ 'vz-copilot-pin--active': copilotPinned }"
+                :title="copilotPinned ? 'Unpin' : 'Pin'"
+                @click="togglePin"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="17" x2="12" y2="22" />
+                  <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" />
+                </svg>
+              </button>
+              <button class="vz-copilot-close" @click="copilotOpen = false; copilotPinned = false">✕</button>
+            </div>
+          </div>
+          <iframe
+            v-if="copilotLoaded"
+            src="/copilot/"
+            class="vz-copilot-frame"
+            allow="microphone"
+          />
+        </div>
+      </Transition>
+    </div>
 
     <footer class="vz-shell__footer">
       <slot name="footer">
@@ -200,6 +273,14 @@ function toggleTheme() {
   white-space: nowrap;
 }
 
+.vz-nav-copilot-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 0 0.75rem;
+}
+
 .vz-shell {
   height: 100vh;
   display: grid;
@@ -216,18 +297,30 @@ function toggleTheme() {
   overflow-y: auto;
 }
 
-.vz-shell__main {
-  position: relative;
+.vz-shell__body {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
   z-index: 1;
+  min-height: 0;
+}
+
+.vz-shell__main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.vz-shell--scrollable .vz-shell__body {
+  overflow-y: auto;
 }
 
 .vz-shell--scrollable .vz-shell__main {
-  overflow-x: hidden;
   align-items: flex-start;
   padding: 3rem 2rem 4rem;
 }
@@ -279,6 +372,102 @@ function toggleTheme() {
   }
 }
 
+/* ── Copilot sidebar ─────────────────────────────────────────────────────── */
+
+.vz-copilot-sidebar {
+  width: 380px;
+  flex-shrink: 0;
+  background: var(--vz-bg);
+  border-left: 1px solid var(--vz-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 200;
+}
+
+.vz-copilot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--vz-border);
+  flex-shrink: 0;
+}
+
+.vz-copilot-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.vz-copilot-pin {
+  background: none;
+  border: none;
+  color: var(--vz-text3);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--vz-radius-sm);
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+.vz-copilot-pin:hover {
+  color: var(--vz-text);
+  background: var(--vz-surface2);
+}
+
+.vz-copilot-pin--active {
+  color: var(--vz-green);
+}
+
+.vz-copilot-pin--active:hover {
+  color: var(--vz-green);
+}
+
+.vz-copilot-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--vz-text);
+  letter-spacing: 0.01em;
+}
+
+.vz-copilot-close {
+  background: none;
+  border: none;
+  color: var(--vz-text3);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--vz-radius-sm);
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+
+.vz-copilot-close:hover {
+  color: var(--vz-text);
+  background: var(--vz-surface2);
+}
+
+.vz-copilot-frame {
+  flex: 1;
+  border: none;
+  width: 100%;
+}
+
+/* Sidebar width transition — main content adjusts as sidebar opens/closes */
+.vz-copilot-enter-active,
+.vz-copilot-leave-active {
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vz-copilot-enter-from,
+.vz-copilot-leave-to {
+  width: 0;
+}
+
+
 @media (max-width: 680px) {
   .vz-shell {
     height: auto;
@@ -291,6 +480,10 @@ function toggleTheme() {
   }
   .vz-shell__footer {
     padding: 0.85rem 1.25rem;
+  }
+  .vz-copilot-sidebar {
+    width: 100vw;
+    max-width: 100vw;
   }
 }
 </style>
