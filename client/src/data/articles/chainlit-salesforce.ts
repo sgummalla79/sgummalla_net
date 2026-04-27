@@ -2,7 +2,7 @@ const html = `
 <div class="doc-header">
   <div class="label">Technical Architecture Reference</div>
   <h1>Third-Party Widget Integration<br>Salesforce Experience Cloud</h1>
-  <div class="subtitle">LWC · Visualforce · Canvas — Capabilities, Constraints &amp; Recommendation</div>
+  <div class="subtitle">LWC · Visualforce · Canvas — Capabilities, Constraints &amp; Architecture Guidance</div>
   <div class="meta-row">
     <span class="meta-tag">Platform: Experience Cloud</span>
     <span class="meta-tag">Release: Spring '26</span>
@@ -373,8 +373,8 @@ const html = `
   </div>
 
   <div class="section">
-    <div class="section-label">07 — Decision</div>
-    <div class="section-title">Recommendation</div>
+    <div class="section-label">07 — Architecture Guidance</div>
+    <div class="section-title">Integration Approach</div>
     <div class="decision-tree">
       <div class="dt-row"><div class="dt-condition"><strong>Always-authenticated users</strong> + willing to configure a Connected App + want the cleanest authentication model with no Apex</div><div class="dt-arrow">→</div><div class="dt-result canvas">Canvas (Workaround B — coordinating LWC for toggle)</div></div>
       <div class="dt-row"><div class="dt-condition"><strong>Any guest users</strong> OR want the simplest path to a working overlay OR prefer to keep authentication inside Apex</div><div class="dt-arrow">→</div><div class="dt-result vf">Visualforce Full-Screen Overlay</div></div>
@@ -382,7 +382,7 @@ const html = `
       <div class="dt-row"><div class="dt-condition"><strong>Widget bundle ≤ 5MB</strong> + LWR site + willing to enable Trusted Mode + want a pure LWC solution on the Salesforce-native platform path</div><div class="dt-arrow">→</div><div class="dt-result" style="color:var(--purple);">LWC + Trusted Mode (prototype in sandbox first)</div></div>
     </div>
     <div class="recommendation">
-      <div class="rec-header"><span class="rec-badge">Primary Recommendation</span><h3>Visualforce Overlay — Primary · Canvas if auth elegance matters · LWC if bundle fits</h3></div>
+      <div class="rec-header"><span class="rec-badge">Primary Approach</span><h3>Visualforce Overlay — Primary · Canvas if auth elegance matters · LWC if bundle fits</h3></div>
       <div class="option-cards">
         <div class="option-card primary">
           <span class="oc-badge oc-primary">Recommended</span>
