@@ -255,7 +255,7 @@ Articles published on this site must comply with the following guidelines:
 
 All articles automatically display the following disclaimer at the bottom:
 
-> **Disclaimer:** The information in this article is based on generally available (GA) features and publicly accessible documentation. It does not represent official guidance from any employer or organisation and does not disclose any confidential, pre-release, or proprietary information.
+> **Disclaimer:** The information in this article is based on generally available (GA) features and publicly accessible documentation at the time of publication. It does not represent official guidance from any employer or organisation and does not disclose any confidential, pre-release, or proprietary information. Product features, behaviour, and documentation may change over time. Please refer to the latest official documentation and verify all information before making any technical or business decisions.
 
 ---
 

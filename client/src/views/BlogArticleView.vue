@@ -55,6 +55,7 @@ async function handleLogout() {
         <button class="vz-article-back" @click="router.push('/blog')">
           ← Back to Blog
         </button>
+        <span class="vz-article-date">Published {{ article.date }}</span>
       </div>
 
       <div
@@ -65,10 +66,13 @@ async function handleLogout() {
 
       <div class="vz-article-disclaimer">
         <strong>Disclaimer:</strong> The information in this article is based on
-        generally available (GA) features and publicly accessible documentation.
-        It does not represent official guidance from any employer or organisation
-        and does not disclose any confidential, pre-release, or proprietary
-        information.
+        generally available (GA) features and publicly accessible documentation
+        at the time of publication. It does not represent official guidance from
+        any employer or organisation and does not disclose any confidential,
+        pre-release, or proprietary information. Product features, behaviour,
+        and documentation may change over time. Please refer to the latest
+        official documentation and verify all information before making any
+        technical or business decisions.
       </div>
     </div>
   </AppLayout>
@@ -94,6 +98,17 @@ async function handleLogout() {
 
 .vz-article-nav {
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.vz-article-date {
+  font-family: var(--vz-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--vz-text3);
 }
 
 .vz-article-back {
