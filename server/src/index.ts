@@ -12,6 +12,7 @@ import portalsRouter from "./routes/portals.js";
 import samlIdpRouter from "./routes/samlIdp.js";
 import oidcIdpRouter from "./routes/oidcIdp.js";
 import copilotApiRouter from "./routes/copilotApi.js";
+import { copilotProxy, handleCopilotUpgrade } from "./routes/copilot.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -31,6 +32,10 @@ if (isProd && CANONICAL_HOST) {
 }
 
 app.use(cookieParser());
+
+// ── Copilot proxy — must be before body parsers so POST bodies are not consumed
+app.use("/copilot", copilotProxy as any);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -73,6 +78,8 @@ app.use(
 // Use http.createServer so Vite's HMR WebSocket can share the same server
 // in dev — no separate port, no proxy.
 const httpServer = createServer(app);
+
+httpServer.on("upgrade", handleCopilotUpgrade);
 
 if (!isProd) {
   const { createServer: createViteServer } = await import("vite");

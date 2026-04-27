@@ -151,7 +151,11 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
 - Wire up in `server/src/index.ts`
 - Add `dev:full` script back to `package.json`
 - **Test:** start both servers, visit `/copilot` in browser and see Chainlit load
-- **Status:** ❌ To do
+- **Status:** ✅ Done
+- **Notes:**
+  - `CHAINLIT_URL` env var controls the proxy target (defaults to `http://localhost:8000`)
+  - `dev:full` passes `CHAINLIT_AUTH_SECRET=$COPILOT_AUTH_SECRET` to Chainlit at startup
+  - WebSocket upgrades handled via `httpServer.on("upgrade", handleCopilotUpgrade)`
 
 ### Part 3 — Auth guard + identity passthrough
 - Add `copilotAuthGuard` to the proxy — verifies JWT cookie, injects signed `x-copilot-token` header
