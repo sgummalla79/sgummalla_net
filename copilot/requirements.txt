@@ -1,0 +1,3 @@
+chainlit>=2.11.1
+openai>=1.0.0
+pyjwt>=2.8.0
