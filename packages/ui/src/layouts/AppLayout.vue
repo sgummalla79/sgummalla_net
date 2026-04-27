@@ -16,12 +16,12 @@ import logoDark from "../assets/logo-dark.svg";
 const OWNER_NAV = [
   { name: "auths", label: "Applications", href: "/auths" },
   { name: "configuration", label: "Configuration", href: "/configuration" },
-  { name: "copilot-clients", label: "Clients", href: "/copilot-clients" },
+  { name: "copilot-clients", label: "Copilot Clients", href: "/copilot-clients" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
 const AUTH_NAV = [
-  { name: "copilot-clients", label: "Clients", href: "/copilot-clients" },
+  { name: "copilot-clients", label: "Copilot Clients", href: "/copilot-clients" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
