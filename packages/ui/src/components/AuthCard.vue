@@ -2,7 +2,7 @@
 defineProps<{
   title: string;
   description: string;
-  protocol: "jwt" | "saml" | "oidc" | "auth0" | "chainlit"; // chainlit-pilot plugin
+  protocol: "jwt" | "saml" | "oidc" | "auth0";
   status?: "active" | "inactive";
 }>();
 
@@ -11,7 +11,6 @@ const protocolLabel: Record<string, string> = {
   saml: "SAML 2.0",
   oidc: "OIDC",
   auth0: "Auth0",
-  chainlit: "Chainlit", // chainlit-pilot plugin
 };
 </script>
 
@@ -87,12 +86,6 @@ const protocolLabel: Record<string, string> = {
 .vz-auth-card__tag--auth0 {
   background: var(--vz-tag-auth0-bg);
   color: var(--vz-tag-auth0-text);
-}
-
-/* chainlit-pilot plugin */
-.vz-auth-card__tag--chainlit {
-  background: var(--vz-tag-chainlit-bg);
-  color: var(--vz-tag-chainlit-text);
 }
 
 .vz-auth-card__status {

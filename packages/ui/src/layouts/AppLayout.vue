@@ -14,20 +14,18 @@ import logoDark from "../assets/logo-dark.svg";
 // Add / remove items here only. No view should build its own nav list.
 
 const OWNER_NAV = [
-  { name: "auths",           label: "Applications", href: "/auths" },
-  { name: "configuration",   label: "Configuration", href: "/configuration" },
-  { name: "copilot-clients", label: "Copilot",       href: "/copilot-clients" },
-  { name: "blog",            label: "Blog",           href: "/blog" },
+  { name: "auths", label: "Applications", href: "/auths" },
+  { name: "configuration", label: "Configuration", href: "/configuration" },
+  { name: "copilot-clients", label: "Copilot", href: "/copilot-clients" },
+  { name: "blog", label: "Blog", href: "/blog" },
 ];
 
 const AUTH_NAV = [
   { name: "copilot-clients", label: "Copilot", href: "/copilot-clients" },
-  { name: "blog",            label: "Blog",    href: "/blog" },
-];
-
-const GUEST_NAV = [
   { name: "blog", label: "Blog", href: "/blog" },
 ];
+
+const GUEST_NAV = [{ name: "blog", label: "Blog", href: "/blog" }];
 
 const props = withDefaults(
   defineProps<{
@@ -52,11 +50,7 @@ const props = withDefaults(
 const effectiveNavLinks = computed(
   () =>
     props.navLinks ??
-    (props.isOwner
-      ? OWNER_NAV
-      : props.isAuthenticated
-        ? AUTH_NAV
-        : GUEST_NAV),
+    (props.isOwner ? OWNER_NAV : props.isAuthenticated ? AUTH_NAV : GUEST_NAV),
 );
 
 const emit = defineEmits<{

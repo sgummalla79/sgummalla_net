@@ -40,7 +40,7 @@ const routes: RouteRecordRaw[] = [
     path: "/copilot-clients",
     name: "copilot-clients",
     component: () => import("../views/CopilotClientsView.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, ownerOnly: true },
   },
   {
     path: "/blog",

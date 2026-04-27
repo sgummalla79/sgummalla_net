@@ -11,11 +11,6 @@ import samlRouter from "./routes/saml.js";
 import portalsRouter from "./routes/portals.js";
 import samlIdpRouter from "./routes/samlIdp.js";
 import oidcIdpRouter from "./routes/oidcIdp.js";
-import {
-  copilotAuthGuard,
-  copilotProxy,
-  handleCopilotUpgrade,
-} from "./routes/copilot.js";
 import copilotApiRouter from "./routes/copilotApi.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -49,11 +44,6 @@ app.use("/api/saml", samlIdpRouter);
 app.use("/api/oidc", oidcIdpRouter);
 app.use("/api/copilot", copilotApiRouter);
 
-// ── Copilot — proxy to internal Chainlit (port 8000) ─────────────────────────
-// Express strips "/copilot" before the proxy sees the path; pathRewrite in
-// copilot.ts adds it back. Port 8000 is never exposed to the outside world.
-app.use("/copilot", copilotAuthGuard, copilotProxy as any);
-
 // ── Static files (production) ─────────────────────────────────────────────────
 if (isProd) {
   const publicPath = join(__dirname, "../../public");
@@ -83,9 +73,6 @@ app.use(
 // Use http.createServer so Vite's HMR WebSocket can share the same server
 // in dev — no separate port, no proxy.
 const httpServer = createServer(app);
-
-// Forward /copilot WebSocket upgrades (Chainlit Socket.IO) to port 8000
-httpServer.on("upgrade", handleCopilotUpgrade);
 
 if (!isProd) {
   const { createServer: createViteServer } = await import("vite");

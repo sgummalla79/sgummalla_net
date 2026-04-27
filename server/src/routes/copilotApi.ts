@@ -191,9 +191,9 @@ router.post("/token", async (req: Request, res: Response) => {
     return;
   }
 
-  const chainlitSecret = process.env.CHAINLIT_AUTH_SECRET;
-  if (!chainlitSecret) {
-    res.status(500).json({ error: "Chainlit auth not configured" });
+  const copilotAuthSecret = process.env.COPILOT_AUTH_SECRET;
+  if (!copilotAuthSecret) {
+    res.status(500).json({ error: "Copilot auth not configured" });
     return;
   }
 
@@ -203,7 +203,7 @@ router.post("/token", async (req: Request, res: Response) => {
       display_name: payload["metadata"]?.["name"] ?? identifier,
       metadata: payload["metadata"] ?? {},
     },
-    chainlitSecret,
+    copilotAuthSecret,
     { algorithm: "HS256", expiresIn: "1h" },
   );
 

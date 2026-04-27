@@ -577,7 +577,8 @@ async function confirmDelete() {
                   placeholder="https://app.example.com, https://other.example.com"
                 />
                 <span class="cc__hint"
-                  >Comma-separated origins allowed to embed the widget. Leave empty to allow all (dev only).</span
+                  >Comma-separated origins allowed to embed the widget. Leave
+                  empty to allow all (dev only).</span
                 >
               </div>
 
@@ -735,20 +736,36 @@ async function confirmDelete() {
               </div>
 
               <div class="cc__step">
-                <div class="cc__step-num">Step 5 — Configure Allowed Origins</div>
+                <div class="cc__step-num">
+                  Step 5 — Configure Allowed Origins
+                </div>
                 <p class="cc__step-desc">
-                  The <strong>Allowed Origins</strong> field on this client controls which domains
-                  are permitted to embed the widget. If left empty all origins are allowed —
-                  fine for development but not for production.
+                  The <strong>Allowed Origins</strong> field on this client
+                  controls which domains are permitted to embed the widget. If
+                  left empty all origins are allowed — fine for development but
+                  not for production.
                 </p>
                 <p class="cc__step-desc">
-                  Set it to the exact origin(s) where your page is hosted. You can update this
-                  at any time using the <strong>Edit</strong> button on the client row.
+                  Set it to the exact origin(s) where your page is hosted. You
+                  can update this at any time using the
+                  <strong>Edit</strong> button on the client row.
                 </p>
                 <div class="cc__sf-table">
-                  <div class="cc__sf-row"><span class="cc__sf-key">Example</span><code class="cc__sf-val">https://app.mycompany.com</code></div>
-                  <div class="cc__sf-row"><span class="cc__sf-key">Multiple</span><code class="cc__sf-val">https://app.mycompany.com, https://staging.mycompany.com</code></div>
-                  <div class="cc__sf-row"><span class="cc__sf-key">Local dev</span><code class="cc__sf-val">http://localhost:3000</code></div>
+                  <div class="cc__sf-row">
+                    <span class="cc__sf-key">Example</span
+                    ><code class="cc__sf-val">https://app.mycompany.com</code>
+                  </div>
+                  <div class="cc__sf-row">
+                    <span class="cc__sf-key">Multiple</span
+                    ><code class="cc__sf-val"
+                      >https://app.mycompany.com,
+                      https://staging.mycompany.com</code
+                    >
+                  </div>
+                  <div class="cc__sf-row">
+                    <span class="cc__sf-key">Local dev</span
+                    ><code class="cc__sf-val">http://localhost:3000</code>
+                  </div>
                 </div>
               </div>
 
@@ -898,33 +915,96 @@ async function confirmDelete() {
 
           <!-- Origins -->
           <div class="cc__step">
-            <div class="cc__step-num">Before you start — Set Allowed Origins for this client</div>
+            <div class="cc__step-num">
+              Before you start — Set Allowed Origins for this client
+            </div>
             <p class="cc__step-desc">
-              The <strong>Allowed Origins</strong> field on this client must include your Salesforce
-              org domain so the widget is permitted to embed on those pages.
-              Click <strong>Edit</strong> on the client row and add your org's domains.
-              Salesforce orgs typically use several domains — add all that apply:
+              The <strong>Allowed Origins</strong> field on this client must
+              include your Salesforce org domain so the widget is permitted to
+              embed on those pages. Click <strong>Edit</strong> on the client
+              row and add your org's domains. Salesforce orgs typically use
+              several domains — add all that apply:
             </p>
             <div class="cc__sf-table">
-              <div class="cc__sf-row cc__sf-row--header"><span class="cc__sf-key">Production</span><span class="cc__sf-val" /></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">Lightning Experience</span><code class="cc__sf-val">https://yourorg.lightning.force.com</code></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">My Domain</span><code class="cc__sf-val">https://yourorg.my.salesforce.com</code></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">VisualForce (modern)</span><code class="cc__sf-val">https://yourorg.vf.force.com</code></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">VisualForce (legacy)</span><code class="cc__sf-val">https://yourorg.visualforce.com</code></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">Experience Cloud</span><code class="cc__sf-val">https://yourorg.my.site.com</code></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">Salesforce Sites</span><code class="cc__sf-val">https://yourorg.secure.force.com</code></div>
-              <div class="cc__sf-row cc__sf-row--header"><span class="cc__sf-key">Sandbox</span><span class="cc__sf-val" /></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">Sandbox Lightning</span><code class="cc__sf-val">https://yourorg--sandbox.sandbox.lightning.force.com</code></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">Sandbox My Domain</span><code class="cc__sf-val">https://yourorg--sandbox.sandbox.my.salesforce.com</code></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">Sandbox VisualForce</span><code class="cc__sf-val">https://yourorg--sandbox.sandbox.vf.force.com</code></div>
-              <div class="cc__sf-row cc__sf-row--header"><span class="cc__sf-key">Developer / Scratch</span><span class="cc__sf-val" /></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">Developer Edition</span><code class="cc__sf-val">https://yourorg.develop.lightning.force.com</code></div>
-              <div class="cc__sf-row"><span class="cc__sf-key">Scratch Org</span><code class="cc__sf-val">https://yourorg.scratch.lightning.force.com</code></div>
+              <div class="cc__sf-row cc__sf-row--header">
+                <span class="cc__sf-key">Production</span
+                ><span class="cc__sf-val" />
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">Lightning Experience</span
+                ><code class="cc__sf-val"
+                  >https://yourorg.lightning.force.com</code
+                >
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">My Domain</span
+                ><code class="cc__sf-val"
+                  >https://yourorg.my.salesforce.com</code
+                >
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">VisualForce (modern)</span
+                ><code class="cc__sf-val">https://yourorg.vf.force.com</code>
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">VisualForce (legacy)</span
+                ><code class="cc__sf-val">https://yourorg.visualforce.com</code>
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">Experience Cloud</span
+                ><code class="cc__sf-val">https://yourorg.my.site.com</code>
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">Salesforce Sites</span
+                ><code class="cc__sf-val"
+                  >https://yourorg.secure.force.com</code
+                >
+              </div>
+              <div class="cc__sf-row cc__sf-row--header">
+                <span class="cc__sf-key">Sandbox</span
+                ><span class="cc__sf-val" />
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">Sandbox Lightning</span
+                ><code class="cc__sf-val"
+                  >https://yourorg--sandbox.sandbox.lightning.force.com</code
+                >
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">Sandbox My Domain</span
+                ><code class="cc__sf-val"
+                  >https://yourorg--sandbox.sandbox.my.salesforce.com</code
+                >
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">Sandbox VisualForce</span
+                ><code class="cc__sf-val"
+                  >https://yourorg--sandbox.sandbox.vf.force.com</code
+                >
+              </div>
+              <div class="cc__sf-row cc__sf-row--header">
+                <span class="cc__sf-key">Developer / Scratch</span
+                ><span class="cc__sf-val" />
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">Developer Edition</span
+                ><code class="cc__sf-val"
+                  >https://yourorg.develop.lightning.force.com</code
+                >
+              </div>
+              <div class="cc__sf-row">
+                <span class="cc__sf-key">Scratch Org</span
+                ><code class="cc__sf-val"
+                  >https://yourorg.scratch.lightning.force.com</code
+                >
+              </div>
             </div>
-            <p class="cc__step-desc" style="margin-top:0.5rem">
-              Replace <code>yourorg</code> with your actual org subdomain. To find it:
-              <strong>Setup → My Domain → Current My Domain URL</strong>.
-              Add all domains that apply — users may access the page from any of them.
+            <p class="cc__step-desc" style="margin-top: 0.5rem">
+              Replace <code>yourorg</code> with your actual org subdomain. To
+              find it:
+              <strong>Setup → My Domain → Current My Domain URL</strong>. Add
+              all domains that apply — users may access the page from any of
+              them.
             </p>
           </div>
 
@@ -1235,7 +1315,8 @@ async function confirmDelete() {
               placeholder="https://app.example.com, https://other.example.com"
             />
             <span class="cc__hint"
-              >Comma-separated origins allowed to embed the widget. Leave empty to allow all (dev only).</span
+              >Comma-separated origins allowed to embed the widget. Leave empty
+              to allow all (dev only).</span
             >
           </div>
 

@@ -30,7 +30,6 @@ onMounted(() => {
 
 onUnmounted(() => themeObserver?.disconnect());
 
-
 const article = findArticle(route.params.slug as string);
 if (!article) router.replace("/blog");
 

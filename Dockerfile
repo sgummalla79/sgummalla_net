@@ -22,11 +22,6 @@ RUN pnpm --filter @sgw/client build
 # ── Stage 2: Production ───────────────────────────────────────────────────────
 FROM node:20-slim AS production
 
-# Python for Chainlit
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip \
-    && rm -rf /var/lib/apt/lists/*
-
 RUN npm install -g tsx pnpm@9
 
 WORKDIR /app
@@ -38,15 +33,8 @@ COPY server/package.json ./server/
 
 RUN pnpm install --prod --no-frozen-lockfile
 
-# Python dependencies
-COPY copilot/requirements.txt ./copilot/requirements.txt
-RUN pip3 install --no-cache-dir --break-system-packages -r copilot/requirements.txt
-
 COPY server/src ./server/src
 COPY server/tsconfig.json ./server/
-
-# Copilot app + Chainlit config
-COPY copilot ./copilot
 
 COPY --from=builder /app/client/dist ./public
 
