@@ -59,7 +59,6 @@ export const useAuthStore = defineStore("auth", () => {
     } finally {
       user.value = null;
       loading.value = false;
-      bootstrapped.value = false;
     }
   }
 
