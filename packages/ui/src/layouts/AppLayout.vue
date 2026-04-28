@@ -16,13 +16,21 @@ import logoDark from "../assets/logo-dark.svg";
 const OWNER_NAV = [
   { name: "auths", label: "Applications", href: "/auths" },
   { name: "configuration", label: "Configuration", href: "/configuration" },
-  { name: "copilot-clients", label: "Copilot Clients", href: "/copilot-clients" },
+  {
+    name: "copilot-clients",
+    label: "Copilot Clients",
+    href: "/copilot-clients",
+  },
   { name: "drafts", label: "Drafts", href: "/drafts" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
 const AUTH_NAV = [
-  { name: "copilot-clients", label: "Copilot Clients", href: "/copilot-clients" },
+  {
+    name: "copilot-clients",
+    label: "Copilot Clients",
+    href: "/copilot-clients",
+  },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
@@ -127,7 +135,11 @@ function togglePin() {
           class="vz-nav-link vz-nav-copilot-btn"
           :class="{ 'vz-nav-link--active': copilotOpen }"
           title="AI Copilot"
-          @click="copilotOpen && !copilotPinned ? copilotOpen = false : openCopilot()"
+          @click="
+            copilotOpen && !copilotPinned
+              ? (copilotOpen = false)
+              : openCopilot()
+          "
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -192,29 +204,45 @@ function togglePin() {
         class="vz-copilot-sidebar"
         :class="{ 'vz-copilot-sidebar--open': copilotOpen }"
       >
-          <div class="vz-copilot-header">
-            <span class="vz-copilot-title">AI Copilot</span>
-            <div class="vz-copilot-actions">
-              <button
-                class="vz-copilot-pin"
-                :class="{ 'vz-copilot-pin--active': copilotPinned }"
-                :title="copilotPinned ? 'Unpin' : 'Pin'"
-                @click="togglePin"
+        <div class="vz-copilot-header">
+          <span class="vz-copilot-title">AI Copilot</span>
+          <div class="vz-copilot-actions">
+            <button
+              class="vz-copilot-pin"
+              :class="{ 'vz-copilot-pin--active': copilotPinned }"
+              :title="copilotPinned ? 'Unpin' : 'Pin'"
+              @click="togglePin"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="17" x2="12" y2="22" />
-                  <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" />
-                </svg>
-              </button>
-              <button class="vz-copilot-close" @click="copilotOpen = false; copilotPinned = false">✕</button>
-            </div>
+                <line x1="12" y1="17" x2="12" y2="22" />
+                <path
+                  d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"
+                />
+              </svg>
+            </button>
+            <button
+              class="vz-copilot-close"
+              @click="
+                copilotOpen = false;
+                copilotPinned = false;
+              "
+            >
+              ✕
+            </button>
           </div>
-          <iframe
-            src="/copilot/"
-            class="vz-copilot-frame"
-            allow="microphone"
-          />
         </div>
+        <iframe src="/copilot/" class="vz-copilot-frame" allow="microphone" />
+      </div>
     </div>
 
     <footer class="vz-shell__footer">
@@ -419,7 +447,9 @@ function togglePin() {
   cursor: pointer;
   padding: 0.2rem 0.4rem;
   border-radius: var(--vz-radius-sm);
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -453,7 +483,9 @@ function togglePin() {
   cursor: pointer;
   padding: 0.2rem 0.4rem;
   border-radius: var(--vz-radius-sm);
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
   line-height: 1;
 }
 
@@ -467,8 +499,6 @@ function togglePin() {
   border: none;
   width: 100%;
 }
-
-
 
 @media (max-width: 680px) {
   .vz-shell {

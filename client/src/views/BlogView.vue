@@ -42,7 +42,9 @@ async function handleLogout() {
       </div>
 
       <div v-if="loading" class="vz-blog__empty">Loading…</div>
-      <div v-else-if="articles.length === 0" class="vz-blog__empty">No articles yet.</div>
+      <div v-else-if="articles.length === 0" class="vz-blog__empty">
+        No articles yet.
+      </div>
 
       <div class="vz-blog__list">
         <article

@@ -1,7 +1,9 @@
 # Chainlit Copilot — Design Notes
 
 ## Goal
+
 Add Chainlit copilot as a plugin to the webapp with two distinct use cases:
+
 1. Own logged-in users see the copilot widget on all pages of sgummalla.net
 2. External clients can embed the copilot widget on their own sites
 
@@ -10,7 +12,9 @@ Add Chainlit copilot as a plugin to the webapp with two distinct use cases:
 ## Decisions Log
 
 ### Q: How should Chainlit be served?
+
 **Options discussed:**
+
 - Expose port 8000 directly to the outside world
 - Run Chainlit internally on port 8000, proxy through Express at `/copilot` (reverse proxy)
 
@@ -19,6 +23,7 @@ Add Chainlit copilot as a plugin to the webapp with two distinct use cases:
 ---
 
 ### Q: How should authentication work?
+
 **Options discussed:**
 
 **Option 1 — Proxy-only guard:**
@@ -32,6 +37,7 @@ Express checks the JWT cookie, creates a short-lived signed token (using `COPILO
 ---
 
 ### Q: How does CHAINLIT_URL relate to authentication?
+
 **Context:** User asked if CHAINLIT_URL is what enables auth delegation from port 3000 to port 8000.
 
 **Clarification:** No — `CHAINLIT_URL` only tells Chainlit where it is publicly served, so it builds correct asset/socket URLs and OAuth callback URLs. It is not what does the authentication. The auth delegation is done via `@cl.header_auth_callback` + signed header injection from the Express proxy.
@@ -53,7 +59,9 @@ Both your own logged-in sgummalla.net users (widget on all pages) and external r
 ---
 
 ### Q: How should staging deployment be triggered?
+
 **Options discussed:**
+
 1. Manually via `fly deploy --config fly.staging.toml`
 2. Automatically via GitHub Actions on push to a specific branch
 
@@ -66,6 +74,7 @@ Both your own logged-in sgummalla.net users (widget on all pages) and external r
 Both paths lead to the same Chainlit instance at port 8000, authenticated via `@cl.header_auth_callback`.
 
 ### Path 1 — Own logged-in users (all pages of sgummalla.net)
+
 ```
 User is logged into sgummalla.net (has JWT cookie)
 → AppLayout loads the Chainlit widget on every page
@@ -74,9 +83,11 @@ User is logged into sgummalla.net (has JWT cookie)
 → Widget connects to https://yourdomain.com/copilot with that token
 → Chainlit verifies token via @cl.header_auth_callback → knows who the user is
 ```
+
 No client_id/client_secret needed — the existing JWT session is enough.
 
 ### Path 2 — External clients (their own sites)
+
 ```
 User is on an external client's site
 → External client's backend:
@@ -90,6 +101,7 @@ User is on an external client's site
 → Widget connects to https://yourdomain.com/copilot with that token
 → Chainlit verifies token via @cl.header_auth_callback → knows who the user is
 ```
+
 The `/api/copilot/token` endpoint (already built) handles the token exchange step.
 
 ---
@@ -118,26 +130,27 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
 
 ## What Needs to Be Built
 
-| File | Purpose | Status |
-|---|---|---|
-| `copilot/app.py` | Chainlit app with `@cl.header_auth_callback` | ❌ To do |
-| `copilot/requirements.txt` | Python deps (chainlit, pyjwt, etc.) | ❌ To do |
-| `server/src/routes/copilot.ts` | Reverse proxy + auth guard | ❌ To do |
-| `server/src/index.ts` | Mount `/copilot` route + WebSocket upgrade | ❌ To do |
-| `packages/ui` | Add Chainlit widget to AppLayout (all pages) | ❌ To do |
-| `Dockerfile` | Add Python install + copilot app copy | ❌ To do |
-| `docker-entrypoint.sh` | Start Chainlit on port 8000 alongside Express | ❌ To do |
-| `package.json` | Add `dev:full` script | ❌ To do |
-| `server/src/routes/copilotApi.ts` | `/api/copilot/token` endpoint | ✅ Already built |
-| `server/src/lib/copilotCrypto.ts` | Encrypt/decrypt client secrets | ✅ Already built |
-| DB: `copilot_clients` table | Store registered client apps | ✅ Already built |
-| `client/src/views/CopilotClientsView.vue` | UI to manage registered clients | ✅ Already built |
+| File                                      | Purpose                                       | Status           |
+| ----------------------------------------- | --------------------------------------------- | ---------------- |
+| `copilot/app.py`                          | Chainlit app with `@cl.header_auth_callback`  | ❌ To do         |
+| `copilot/requirements.txt`                | Python deps (chainlit, pyjwt, etc.)           | ❌ To do         |
+| `server/src/routes/copilot.ts`            | Reverse proxy + auth guard                    | ❌ To do         |
+| `server/src/index.ts`                     | Mount `/copilot` route + WebSocket upgrade    | ❌ To do         |
+| `packages/ui`                             | Add Chainlit widget to AppLayout (all pages)  | ❌ To do         |
+| `Dockerfile`                              | Add Python install + copilot app copy         | ❌ To do         |
+| `docker-entrypoint.sh`                    | Start Chainlit on port 8000 alongside Express | ❌ To do         |
+| `package.json`                            | Add `dev:full` script                         | ❌ To do         |
+| `server/src/routes/copilotApi.ts`         | `/api/copilot/token` endpoint                 | ✅ Already built |
+| `server/src/lib/copilotCrypto.ts`         | Encrypt/decrypt client secrets                | ✅ Already built |
+| DB: `copilot_clients` table               | Store registered client apps                  | ✅ Already built |
+| `client/src/views/CopilotClientsView.vue` | UI to manage registered clients               | ✅ Already built |
 
 ---
 
 ## Implementation Plan
 
 ### Part 1 — Chainlit Python app (foundation)
+
 - `copilot/app.py` with `@cl.header_auth_callback` and basic chat handler
 - `copilot/requirements.txt`
 - **Test:** run Chainlit locally on port 8000, verify header auth accepts/rejects with `curl`
@@ -147,6 +160,7 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
   - Initial HTTP GET to `/copilot/` always returns 200 (Chainlit serves the static shell). Auth via `@cl.header_auth_callback` fires at WebSocket handshake time, not on page load. Our Express auth guard (Part 3) handles blocking unauthenticated users before they reach Chainlit.
 
 ### Part 2 — Express reverse proxy (no auth yet)
+
 - `server/src/routes/copilot.ts` — HTTP proxy + WebSocket upgrade to port 8000
 - Wire up in `server/src/index.ts`
 - Add `dev:full` script back to `package.json`
@@ -158,6 +172,7 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
   - WebSocket upgrades handled via `httpServer.on("upgrade", handleCopilotUpgrade)`
 
 ### Part 3 — Auth guard + identity passthrough
+
 - Add `copilotAuthGuard` to the proxy — verifies JWT cookie, injects signed `x-copilot-token` header
 - Add `/api/copilot/me-token` endpoint — reads JWT cookie, returns a Chainlit-compatible token
 - **Test:** unauthenticated requests blocked, authenticated users proxied with identity passed to Chainlit
@@ -169,6 +184,7 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
   - WebSocket upgrade also verifies cookie and injects token before forwarding
 
 ### Part 4 — Widget on all pages (own users)
+
 - Copilot sidebar in `AppLayout` — robot icon in nav, slides in beside main content
 - Pinnable: when pinned, sidebar stays open on robot click or page navigation
 - iframe loads `/copilot/` through the auth proxy
@@ -181,6 +197,7 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
   - Old Chainlit process must be killed before restarting (`lsof -ti :8000 | xargs kill -9`)
 
 ### Part 5 — Docker + deployment
+
 - Update `Dockerfile` with Python + copilot app
 - Update `docker-entrypoint.sh` to start Chainlit alongside Express
 - **Test:** `docker build` succeeds, staging deploy works
@@ -193,14 +210,17 @@ Browser (JWT cookie) → Express :3000/copilot → [proxy] → Chainlit :8000
 ---
 
 ## Open Questions (pending answers)
+
 - Should chat history be persisted per user?
 
 ## Answered Questions
+
 - **AI backend:** OpenAI
 - **Widget visibility on sgummalla.net:** Owner only (initially)
 
 ---
 
 ## Key Chainlit Docs
+
 - Header auth: https://docs.chainlit.io/authentication/header
 - OAuth (CHAINLIT_URL context): https://docs.chainlit.io/authentication/oauth

@@ -13,7 +13,7 @@ const neon = postgres(process.env.NEON_DB_URL!, { ssl: "require" });
 // The file exports: const html = `...`; export default html;
 const tsSource = readFileSync(
   join(__dirname, "../../../client/src/data/articles/chainlit-salesforce.ts"),
-  "utf-8"
+  "utf-8",
 );
 // Strip the TS wrapper — extract everything between the first backtick and `export default`
 const match = tsSource.match(/const html = `([\s\S]*)`;\s*export default html/);
@@ -46,4 +46,7 @@ async function seed() {
   await neon.end();
 }
 
-seed().catch((err) => { console.error(err); process.exit(1); });
+seed().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

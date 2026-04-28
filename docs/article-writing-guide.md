@@ -25,14 +25,14 @@ Every article automatically displays the following disclaimer at the bottom — 
 
 Avoid prescriptive or opinionated language. Use neutral, architectural framing instead:
 
-| Avoid | Use instead |
-|---|---|
-| Recommendation | Architecture Guidance / Integration Approach |
-| Decision | Architecture Guidance |
-| Primary Recommendation | Primary Approach |
-| I recommend | This approach suits / This pattern works well for |
-| You should | Consider / This is suited to |
-| Best practice | Common pattern / Established approach |
+| Avoid                  | Use instead                                       |
+| ---------------------- | ------------------------------------------------- |
+| Recommendation         | Architecture Guidance / Integration Approach      |
+| Decision               | Architecture Guidance                             |
+| Primary Recommendation | Primary Approach                                  |
+| I recommend            | This approach suits / This pattern works well for |
+| You should             | Consider / This is suited to                      |
+| Best practice          | Common pattern / Established approach             |
 
 ---
 
@@ -40,19 +40,19 @@ Avoid prescriptive or opinionated language. Use neutral, architectural framing i
 
 Use these sizes in the article CSS (`BlogArticleView.vue`):
 
-| Element | Size |
-|---|---|
-| Base body text | 16px |
-| Content text (callout, grid, flow, decision-tree) | 15px |
-| Small content (step detail, pros/cons li, option-card li) | 14px |
-| Section title | 24px |
-| Doc header h1 | 32px |
-| Doc header subtitle | 16px |
-| Approach/guidance h3 | 22px |
-| Option card h4 | 16px |
-| Uppercase decorative labels (section-label, meta-tag, badge) | 10–12px (intentionally small) |
-| LWS diagram / ASCII art code blocks | 13px (structured layout, leave as-is) |
-| Line height | 1.8 |
+| Element                                                      | Size                                  |
+| ------------------------------------------------------------ | ------------------------------------- |
+| Base body text                                               | 16px                                  |
+| Content text (callout, grid, flow, decision-tree)            | 15px                                  |
+| Small content (step detail, pros/cons li, option-card li)    | 14px                                  |
+| Section title                                                | 24px                                  |
+| Doc header h1                                                | 32px                                  |
+| Doc header subtitle                                          | 16px                                  |
+| Approach/guidance h3                                         | 22px                                  |
+| Option card h4                                               | 16px                                  |
+| Uppercase decorative labels (section-label, meta-tag, badge) | 10–12px (intentionally small)         |
+| LWS diagram / ASCII art code blocks                          | 13px (structured layout, leave as-is) |
+| Line height                                                  | 1.8                                   |
 
 ---
 

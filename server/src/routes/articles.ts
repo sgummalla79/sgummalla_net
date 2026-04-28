@@ -52,35 +52,42 @@ router.get("/drafts", requireAuth, async (_req: Request, res: Response) => {
 // ── GET /api/articles/drafts/:slug ────────────────────────────────────────────
 // Owner only — single draft with full content for preview
 
-router.get("/drafts/:slug", requireAuth, async (req: Request, res: Response) => {
-  const [article] = await neon<
-    {
-      slug: string;
-      title: string;
-      subtitle: string;
-      date: string;
-      tags: string[];
-      description: string;
-      content: string;
-    }[]
-  >`
+router.get(
+  "/drafts/:slug",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const [article] = await neon<
+      {
+        slug: string;
+        title: string;
+        subtitle: string;
+        date: string;
+        tags: string[];
+        description: string;
+        content: string;
+      }[]
+    >`
     SELECT slug, title, subtitle, date, tags, description, content
     FROM articles
     WHERE slug = ${req.params.slug}
       AND published = false
   `;
-  if (!article) {
-    res.status(404).json({ error: "Draft not found" });
-    return;
-  }
-  res.json(article);
-});
+    if (!article) {
+      res.status(404).json({ error: "Draft not found" });
+      return;
+    }
+    res.json(article);
+  },
+);
 
 // ── PATCH /api/articles/drafts/:slug/publish ──────────────────────────────────
 // Owner only — publish a draft article
 
-router.patch("/drafts/:slug/publish", requireAuth, async (req: Request, res: Response) => {
-  const result = await neon`
+router.patch(
+  "/drafts/:slug/publish",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const result = await neon`
     UPDATE articles
     SET published  = true,
         updated_at = now()
@@ -88,12 +95,13 @@ router.patch("/drafts/:slug/publish", requireAuth, async (req: Request, res: Res
       AND published = false
     RETURNING slug
   `;
-  if (result.length === 0) {
-    res.status(404).json({ error: "Draft not found" });
-    return;
-  }
-  res.json({ ok: true, slug: req.params.slug });
-});
+    if (result.length === 0) {
+      res.status(404).json({ error: "Draft not found" });
+      return;
+    }
+    res.json({ ok: true, slug: req.params.slug });
+  },
+);
 
 // ── GET /api/articles/:slug ───────────────────────────────────────────────────
 // Returns single published article with full content

@@ -38,7 +38,9 @@ async function handleLogout() {
     <div class="vz-drafts">
       <div class="vz-drafts__header">
         <h1 class="vz-drafts__title">Drafts</h1>
-        <p class="vz-drafts__sub">Unpublished articles — preview and publish when ready.</p>
+        <p class="vz-drafts__sub">
+          Unpublished articles — preview and publish when ready.
+        </p>
       </div>
 
       <div v-if="loading" class="vz-drafts__empty">Loading…</div>
@@ -57,7 +59,12 @@ async function handleLogout() {
             <span class="vz-drafts__badge">Draft</span>
             <span class="vz-drafts__date">{{ draft.date }}</span>
             <div class="vz-drafts__tags">
-              <span v-for="tag in draft.tags" :key="tag" class="vz-drafts__tag">{{ tag }}</span>
+              <span
+                v-for="tag in draft.tags"
+                :key="tag"
+                class="vz-drafts__tag"
+                >{{ tag }}</span
+              >
             </div>
           </div>
           <h2 class="vz-drafts__item-title">{{ draft.title }}</h2>
@@ -78,8 +85,14 @@ async function handleLogout() {
 }
 
 @keyframes vz-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .vz-drafts__header {
