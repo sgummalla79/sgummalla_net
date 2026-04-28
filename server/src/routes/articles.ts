@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from "express";
-import neon from "../lib/db_neon.js";
+import neon from "../lib/db.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 
 const router: import("express").Router = Router();
