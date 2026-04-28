@@ -6,8 +6,8 @@ const neon = postgres(process.env.NEON_DB_URL!, { ssl: "require" });
 const content = `
 <div class="doc-header">
   <div class="label">Salesforce Architecture · 2GP</div>
-  <h1>The Dependency Blueprint<br/>2GP Package Dependency Management</h1>
-  <div class="subtitle">A Technical Architect's Guide — Dependency Structures · Decision Framework · Target Architecture</div>
+  <h1>2GP Package Dependency Structures<br/>Star, Diamond, Mixed &amp; Inverted Funnel</h1>
+  <div class="subtitle">Dependency Resolution Framework — Dependency Structures · Decision Framework · Target Architecture</div>
   <div class="meta-row">
     <span class="meta-tag">Second-Generation Packaging (2GP)</span>
     <span class="meta-tag">Unlocked Packages</span>

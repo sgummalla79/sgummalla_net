@@ -6,8 +6,8 @@ const neon = postgres(process.env.NEON_DB_URL!, { ssl: "require" });
 const content = `
 <div class="doc-header">
   <div class="label">Companion Article · Salesforce Architecture · 2GP</div>
-  <h1>The Path to the Blueprint<br/>2GP Package Dependency Management</h1>
-  <div class="subtitle">Follows: The Dependency Blueprint — Linear Chain · Flat · Tiered — Migration Paths</div>
+  <h1>2GP Package Dependency Structures<br/>Linear Chain, Flat &amp; Tiered</h1>
+  <div class="subtitle">Dependency Resolution Framework — Linear Chain · Flat · Tiered — Migration Paths</div>
   <div class="meta-row">
     <span class="meta-tag">Second-Generation Packaging (2GP)</span>
     <span class="meta-tag">Unlocked Packages</span>
@@ -21,8 +21,8 @@ const content = `
 
   <div class="section">
     <div class="section-label">00 — Context</div>
-    <div class="section-title">How This Relates to The Dependency Blueprint</div>
-    <p class="section-desc"><a href="/blog/2gp-dependency-blueprint" style="color:var(--accent);text-decoration:none;font-weight:500;">The Dependency Blueprint</a> covers four dependency structures — Star / Hub-and-Spoke, Diamond, Mixed / Hybrid, and Inverted Funnel — where the five-branch decision framework fully applies. This article covers the three remaining structures where applicability is partial or limited.</p>
+    <div class="section-title">How This Relates to the Companion Article</div>
+    <p class="section-desc"><a href="/blog/2gp-dependency-blueprint" style="color:var(--accent);text-decoration:none;font-weight:500;">2GP Package Dependency Structures — Star, Diamond, Mixed &amp; Inverted Funnel</a> covers four structures where the five-branch decision framework fully applies. This article covers the three remaining structures where applicability is partial or limited.</p>
 
     <div class="data-grid" style="grid-template-columns: 1fr 1.4fr 1.4fr;">
       <div class="cell hdr">Structure</div>
@@ -76,7 +76,7 @@ const content = `
 ✓  Everything in Pkg A  // transitive via B → C</pre>
 
     <div class="callout info">
-      <strong>The key difference from the structures in The Dependency Blueprint:</strong> In a chain, packages are not siblings — they are ancestors and descendants. A downstream package does not need a special dependency declaration to reach upstream packages. The chain already provides access.
+      <strong>The key difference from the structures in the companion article:</strong> In a chain, packages are not siblings — they are ancestors and descendants. A downstream package does not need a special dependency declaration to reach upstream packages. The chain already provides access.
     </div>
 
     <p><strong>Non-adjacent sharing — where it gets complex.</strong> The real challenge in a linear chain is not downstream-to-upstream access — it is the reverse. When something needs to flow <em>against</em> the chain direction, or when a new package connects at a point in the middle, the structure creates tension.</p>
@@ -102,7 +102,7 @@ Pkg A  →  component moved here (if truly generic)
 Pkg Shared  →  component moved here (if cross-cutting but not base-level)</pre>
     </div>
 
-    <p><strong>When the chain branches.</strong> The moment a linear chain produces its first branch — a point where two or more packages depend on the same upstream package — the structure is no longer a pure chain. It has become a Star or Mixed structure, and <strong>The Dependency Blueprint applies fully from that point on.</strong></p>
+    <p><strong>When the chain branches.</strong> The moment a linear chain produces its first branch — a point where two or more packages depend on the same upstream package — the structure is no longer a pure chain. It has become a Star or Mixed structure, and <strong>the decision framework from the companion article applies fully from that point on.</strong></p>
 
     <pre class="lws-diagram">Pkg A → Pkg B → Pkg C       // original chain segment
               ↓
@@ -153,7 +153,7 @@ Tier 3:  Pkg Suite</pre>
       </div>
     </div>
 
-    <p>This is the target architecture described in The Dependency Blueprint. If your suite has reached this structure, the five-branch decision framework has largely done its job. The challenge now shifts from <em>resolving</em> conflicts to <em>maintaining</em> the structure as the suite continues to grow.</p>
+    <p>This is the target architecture described in the companion article. If your suite has reached this structure, the five-branch decision framework has largely done its job. The challenge now shifts from <em>resolving</em> conflicts to <em>maintaining</em> the structure as the suite continues to grow.</p>
 
     <p><strong>Simplified tier-based decisions.</strong> In a tiered structure, the full five-branch decision tree collapses into a single, clearer question for most situations:</p>
 
@@ -337,7 +337,7 @@ Tier 3:  Pkg Suite</pre>
     </div>
 
     <div class="callout info">
-      <strong>Companion to:</strong> The Dependency Blueprint — A Technical Architect's Guide to Package Dependency Management in Salesforce 2GP. Intended audience: Salesforce Technical Architects and Senior Developers working with multi-package 2GP Unlocked Packages.
+      <strong>Companion article:</strong> <a href="/blog/2gp-dependency-blueprint" style="color:var(--accent);text-decoration:none;font-weight:500;">2GP Package Dependency Structures — Star, Diamond, Mixed &amp; Inverted Funnel — Dependency Resolution Framework</a>. Intended audience: Salesforce Technical Architects and Senior Developers working with multi-package 2GP Unlocked Packages.
     </div>
   </div>
 
@@ -350,7 +350,7 @@ async function seed() {
     VALUES (
       ${"2gp-path-to-blueprint"},
       ${"2GP Package Dependency Structures — Linear Chain, Flat & Tiered — Dependency Resolution Framework"},
-      ${"Companion to The Dependency Blueprint — Linear Chain · Flat · Tiered — Migration Paths"},
+      ${"Dependency Resolution Framework — Linear Chain · Flat · Tiered — Migration Paths"},
       ${"April 27, 2026"},
       ${["Salesforce", "2GP", "Architecture", "Unlocked Packages", "Migration"]},
       ${"Not every package suite starts in the right structure. This companion guide covers the three dependency structures where the Blueprint's decision framework has limited or partial reach — and what to do instead, including how to migrate toward a healthier architecture."},
