@@ -349,7 +349,7 @@ async function seed() {
     INSERT INTO articles (slug, title, subtitle, date, tags, description, content, published)
     VALUES (
       ${"2gp-path-to-blueprint"},
-      ${"The Path to the Blueprint — 2GP Package Dependency Management"},
+      ${"2GP Package Dependency Structures — Linear Chain, Flat & Tiered — Dependency Resolution Framework"},
       ${"Companion to The Dependency Blueprint — Linear Chain · Flat · Tiered — Migration Paths"},
       ${"April 27, 2026"},
       ${["Salesforce", "2GP", "Architecture", "Unlocked Packages", "Migration"]},
