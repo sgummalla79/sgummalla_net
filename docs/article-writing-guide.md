@@ -66,6 +66,25 @@ Use these sizes in the article CSS (`BlogArticleView.vue`):
 
 ---
 
+## Language
+
+Use **American English** throughout. Common British spellings to avoid:
+
+| British | American |
+|---|---|
+| artefact | artifact |
+| behaviour | behavior |
+| colour | color |
+| organisation | organization |
+| catalogue | catalog |
+| formalise | formalize |
+| recognise | recognize |
+| artefact | artifact |
+| favour | favor |
+| centre | center |
+
+---
+
 ## Known Gotchas
 
 ### Backslashes in seed scripts (template literal escape)
