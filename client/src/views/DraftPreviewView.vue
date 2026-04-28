@@ -15,7 +15,8 @@ let themeObserver: MutationObserver | null = null;
 onMounted(() => {
   const update = () => {
     isLight.value =
-      document.documentElement.style.getPropertyValue("color-scheme") === "light";
+      document.documentElement.style.getPropertyValue("color-scheme") ===
+      "light";
   };
   update();
   themeObserver = new MutationObserver(update);
@@ -68,7 +69,8 @@ async function handleLogout() {
     @profile="router.push({ name: 'profile' })"
     @logout="handleLogout"
   >
-    <!-- Draft banner -->
+    <div class="vz-draft-page">
+    <!-- Draft banner — top of page, non-sticky -->
     <div class="vz-draft-banner">
       <div class="vz-draft-banner__left">
         <span class="vz-draft-banner__badge">Draft Preview</span>
@@ -88,9 +90,6 @@ async function handleLogout() {
 
     <div v-if="article" class="vz-article-wrapper">
       <div class="vz-article-nav">
-        <button class="vz-article-back" @click="router.push('/drafts')">
-          ← Back to Drafts
-        </button>
         <span class="vz-article-date">Published {{ article.date }}</span>
       </div>
 
@@ -110,25 +109,50 @@ async function handleLogout() {
         official documentation and verify all information before making any
         technical or business decisions.
       </div>
+
+      <div class="vz-draft-publish-bottom">
+        <button class="vz-draft-banner__back" @click="router.push('/drafts')">← Back to Drafts</button>
+        <button
+          class="vz-draft-banner__publish"
+          :disabled="publishing || published"
+          @click="handlePublish"
+        >
+          {{ published ? "Published ✓" : publishing ? "Publishing…" : "Publish Article" }}
+        </button>
+      </div>
+    </div>
     </div>
   </AppLayout>
 </template>
 
 <style scoped>
-/* ── Draft banner ────────────────────────────────────────────────────────── */
-.vz-draft-banner {
+/* ── Page wrapper — stacks banner above article vertically ───────────────── */
+.vz-draft-page {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 1180px;
+  gap: 1.5rem;
+}
+
+/* ── Draft banner ────────────────────────────────────────────────────────── */
+.vz-draft-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.85rem 1.25rem;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: var(--vz-radius);
-  margin-bottom: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(245, 158, 11, 0.1);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.3);
   flex-wrap: wrap;
+}
+
+.vz-draft-publish-bottom {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .vz-draft-banner__left {
@@ -171,7 +195,9 @@ async function handleLogout() {
   font-size: 0.8rem;
   color: var(--vz-text2);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .vz-draft-banner__back:hover {
@@ -204,13 +230,18 @@ async function handleLogout() {
 /* ── Article styles (mirrors BlogArticleView) ──────────────────────────── */
 .vz-article-wrapper {
   width: 100%;
-  max-width: 1180px;
   animation: vz-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes vz-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .vz-article-nav {
@@ -221,21 +252,6 @@ async function handleLogout() {
   gap: 1rem;
 }
 
-.vz-article-back {
-  background: none;
-  border: none;
-  font-family: var(--vz-font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  color: var(--vz-text3);
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.15s;
-}
-
-.vz-article-back:hover {
-  color: var(--vz-text);
-}
 
 .vz-article-date {
   font-family: var(--vz-font-mono);
