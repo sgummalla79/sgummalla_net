@@ -12,6 +12,7 @@ import portalsRouter from "./routes/portals.js";
 import samlIdpRouter from "./routes/samlIdp.js";
 import oidcIdpRouter from "./routes/oidcIdp.js";
 import copilotApiRouter from "./routes/copilotApi.js";
+import articlesRouter from "./routes/articles.js";
 import {
   copilotProxy,
   copilotAuthGuard,
@@ -52,6 +53,7 @@ app.use("/api/portals", portalsRouter);
 app.use("/api/saml", samlIdpRouter);
 app.use("/api/oidc", oidcIdpRouter);
 app.use("/api/copilot", copilotApiRouter);
+app.use("/api/articles", articlesRouter);
 
 // ── Static files (production) ─────────────────────────────────────────────────
 if (isProd) {

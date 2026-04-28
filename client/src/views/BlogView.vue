@@ -1,11 +1,22 @@
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
-import { articles } from "../data/blog";
+import { listArticles, type Article } from "../api/articles";
 
 const router = useRouter();
 const auth = useAuthStore();
+const articles = ref<Article[]>([]);
+const loading = ref(true);
+
+onMounted(async () => {
+  try {
+    articles.value = await listArticles();
+  } finally {
+    loading.value = false;
+  }
+});
 
 async function handleLogout() {
   await auth.logout();
@@ -30,10 +41,13 @@ async function handleLogout() {
         <p class="vz-blog__sub">Technical articles and architecture guides.</p>
       </div>
 
+      <div v-if="loading" class="vz-blog__empty">Loading…</div>
+      <div v-else-if="articles.length === 0" class="vz-blog__empty">No articles yet.</div>
+
       <div class="vz-blog__list">
         <article
           v-for="article in articles"
-          :key="article.id"
+          :key="article.slug"
           class="vz-blog__item"
           @click="router.push(`/blog/${article.slug}`)"
         >
@@ -120,6 +134,12 @@ async function handleLogout() {
 
 .vz-blog__item:hover .vz-blog__read {
   opacity: 1;
+}
+
+.vz-blog__empty {
+  color: var(--vz-text3);
+  font-size: 0.875rem;
+  padding: 2rem 0;
 }
 
 .vz-blog__item-top {

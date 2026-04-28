@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { AppLayout } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
-import { findArticle } from "../data/blog";
+import { getArticle, type Article } from "../api/articles";
 
 const route = useRoute();
 const router = useRouter();
@@ -30,8 +30,15 @@ onMounted(() => {
 
 onUnmounted(() => themeObserver?.disconnect());
 
-const article = findArticle(route.params.slug as string);
-if (!article) router.replace("/blog");
+const article = ref<Article | null>(null);
+
+onMounted(async () => {
+  try {
+    article.value = await getArticle(route.params.slug as string);
+  } catch {
+    router.replace("/blog");
+  }
+});
 
 async function handleLogout() {
   await auth.logout();
