@@ -17,6 +17,7 @@ const OWNER_NAV = [
   { name: "auths", label: "Applications", href: "/auths" },
   { name: "configuration", label: "Configuration", href: "/configuration" },
   { name: "copilot-clients", label: "Copilot Clients", href: "/copilot-clients" },
+  { name: "drafts", label: "Drafts", href: "/drafts" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 

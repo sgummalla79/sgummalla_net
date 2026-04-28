@@ -55,6 +55,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: false },
   },
   {
+    path: "/drafts",
+    name: "drafts",
+    component: () => import("../views/DraftsView.vue"),
+    meta: { requiresAuth: true, ownerOnly: true },
+  },
+  {
+    path: "/drafts/:slug",
+    name: "draft-preview",
+    component: () => import("../views/DraftPreviewView.vue"),
+    meta: { requiresAuth: true, ownerOnly: true },
+  },
+  {
     path: "/:pathMatch(.*)*",
     redirect: "/",
   },
