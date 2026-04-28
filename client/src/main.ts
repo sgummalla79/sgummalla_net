@@ -3,6 +3,7 @@ import { createPinia } from "pinia";
 import { ThemePlugin, defaultTheme } from "@sgw/ui";
 import "virtual:uno.css";
 import "./assets/css/base.css";
+import "./styles/article.css";
 
 import App from "./App.vue";
 import router from "./router/index";
