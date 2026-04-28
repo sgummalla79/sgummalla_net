@@ -66,6 +66,39 @@ Use these sizes in the article CSS (`BlogArticleView.vue`):
 
 ---
 
+## Known Gotchas
+
+### Backslashes in seed scripts (template literal escape)
+
+When seeding article HTML via a TypeScript template literal (e.g. `seed-*.ts`), backslashes in ASCII art diagrams are consumed by JavaScript's template literal escape processing. A `\` followed by a real newline is treated as a line continuation — the backslash and the newline are both swallowed, merging the two lines.
+
+**Symptom:** ASCII tree diagrams like this...
+```
+      Package A (Hub)
+     /    |    |    \
+  Pkg B  Pkg C  Pkg D  Pkg E
+```
+...get stored as a single mangled line:
+```
+      Package A (Hub)
+     /    |    |      Pkg B  Pkg C  Pkg D  Pkg E
+```
+
+**Fix:** Escape every `\` in ASCII art inside template literals as `\\`:
+```ts
+// WRONG — backslash eaten at end of line
+`     /    |    |    \
+  Pkg B  Pkg C  Pkg D  Pkg E`
+
+// CORRECT
+`     /    |    |    \\
+  Pkg B  Pkg C  Pkg D  Pkg E`
+```
+
+This applies to any `\` that appears at the end of a line in the HTML string. Backslashes mid-line (e.g. `\\` in code paths like `C:\\Users`) are unaffected.
+
+---
+
 ## Adding a New Article
 
 1. Create `client/src/data/articles/<slug>.ts` exporting an HTML string
