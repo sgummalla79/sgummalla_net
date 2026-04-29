@@ -6,7 +6,7 @@ const neon = postgres(process.env.NEON_DB_URL!, { ssl: "require" });
 const content = `
 <div class="doc-header">
   <div class="label">Salesforce Architecture · 2GP</div>
-  <h1>2GP Package Dependency Structures<br/>Star, Diamond, Mixed &amp; Inverted Funnel</h1>
+  <h1>2GP Unlocked Package Dependency Structures<br/>Star, Diamond, Mixed &amp; Inverted Funnel</h1>
   <div class="subtitle">Dependency Resolution Framework — Dependency Structures · Decision Framework · Target Architecture</div>
   <div class="meta-row">
     <span class="meta-tag">Second-Generation Packaging (2GP)</span>
@@ -391,7 +391,7 @@ async function seed() {
     INSERT INTO articles (slug, title, subtitle, date, tags, description, content, published)
     VALUES (
       ${"2gp-dependency-blueprint"},
-      ${"2GP Package Dependency Structures — Star, Diamond, Mixed & Inverted Funnel — Dependency Resolution Framework"},
+      ${"2GP Unlocked Package Dependency Structures — Star, Diamond, Mixed & Inverted Funnel — Dependency Resolution Framework"},
       ${"Dependency Structures · Decision Framework · Target Architecture"},
       ${"April 27, 2026"},
       ${["Salesforce", "2GP", "Architecture", "Unlocked Packages"]},
