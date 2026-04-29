@@ -27,9 +27,9 @@ async function seed() {
       ${"salesforce-widget-integration"},
       ${"Third-Party Widget Integration — Salesforce Experience Cloud"},
       ${"LWC · Visualforce · Canvas — Capabilities, Constraints & Architecture Guidance"},
-      ${"April 24, 2026"},
-      ${["Salesforce", "Experience Cloud", "LWC", "LWS"]},
-      ${"A technical architecture reference for integrating any external third-party widget into Salesforce Experience Cloud. Covers LWC and Lightning Web Security constraints, the Visualforce full-screen overlay approach, Salesforce Canvas, and Head Markup injection — with a full capability matrix and clear architecture guidance."},
+      ${"April 29, 2026"},
+      ${["Salesforce", "Experience Cloud", "LWC", "LWS", "LWR", "Aura"]},
+      ${"A technical architecture reference for integrating any external third-party widget into Salesforce Experience Cloud. Covers LWR vs Aura runtimes, LWC and Lightning Web Security constraints, Visualforce full-screen overlay, Salesforce Canvas, Head Markup injection — with a full capability matrix, integration approach guidance, third-party cookie restrictions, and CSP directive selection."},
       ${content},
       ${false}
     )
