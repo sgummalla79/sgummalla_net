@@ -1,0 +1,113 @@
+/* ── Sgummalla Works — AI Copilot branding ──────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+/* Apply app fonts */
+*, *::before, *::after {
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+}
+
+code, pre, kbd, samp, .font-mono {
+  font-family: 'DM Mono', 'Courier New', monospace !important;
+}
+
+/* ── Dark mode ──────────────────────────────────────────────────────────── */
+
+.dark body,
+.dark #root,
+.dark [data-testid="chat-view"] {
+  background-color: #0c0c0c !important;
+}
+
+/* Message area background */
+.dark .MuiBox-root,
+.dark .cl-message-container {
+  background-color: #0c0c0c;
+}
+
+/* User message bubbles */
+.dark .MuiChip-root {
+  background-color: #1a1a1a !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Input area */
+.dark textarea,
+.dark input[type="text"] {
+  background-color: #111111 !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #f7f7f7 !important;
+}
+
+.dark textarea::placeholder,
+.dark input::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Send button — app green */
+.dark button[type="submit"],
+.dark [data-testid="send-button"] {
+  background-color: #5ae89a !important;
+  color: #000 !important;
+}
+
+.dark button[type="submit"]:hover,
+.dark [data-testid="send-button"]:hover {
+  background-color: #4cd585 !important;
+}
+
+/* Header / nav bar */
+.dark header,
+.dark nav {
+  background-color: #111111 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Scrollbar */
+.dark ::-webkit-scrollbar {
+  width: 6px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #0c0c0c;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* ── Light mode ─────────────────────────────────────────────────────────── */
+
+body,
+#root {
+  background-color: #fafaf8 !important;
+}
+
+/* Send button — app green (light) */
+button[type="submit"],
+[data-testid="send-button"] {
+  background-color: #22c55e !important;
+  color: #fff !important;
+}
+
+button[type="submit"]:hover,
+[data-testid="send-button"]:hover {
+  background-color: #16a34a !important;
+}
+
+/* Header (light) */
+header,
+nav {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+/* ── Assistant name ──────────────────────────────────────────────────────── */
+
+/* Reduce the chain-of-thought verbosity styling */
+.cl-step {
+  font-size: 0.82rem !important;
+  opacity: 0.7;
+}
