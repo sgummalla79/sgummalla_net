@@ -22,6 +22,9 @@ mask_user_env = false
 # Authorized origins
 allow_origins = ["*"]
 
+# Enable thread/message persistence via the data layer defined in app.py
+dataPersistence = true
+
 [features]
 # Process and display HTML in messages. This can be a security risk (see https://stackoverflow.com/questions/19603097/why-is-it-dangerous-to-render-user-generated-html-or-javascript)
 unsafe_allow_html = false
@@ -125,6 +128,9 @@ cot = "full"
 # Specify a CSS file that can be used to customize the user interface.
 custom_css = "/public/custom.css"
 
+# Specify a JavaScript file that can be used to customize the user interface.
+custom_js = "/public/custom.js"
+
 # Specify additional attributes for a custom CSS file
 # custom_css_attributes = "media=\"print\""
 
@@ -152,10 +158,9 @@ alert_style = "classic"
 # custom_meta_image_url = "https://chainlit-cloud.s3.eu-west-3.amazonaws.com/logo/chainlit_banner.png"
 
 # Load assistant logo directly from URL.
-logo_file_url = "/public/logo_dark.svg"
-
 # Load assistant avatar image directly from URL.
-default_avatar_file_url = "/public/avatar.svg"
+# Must include the /copilot root-path prefix so the browser proxy resolves it.
+default_avatar_file_url = "/copilot/public/avatar.png"
 
 # Avatar size in pixels (default: 20).
 # avatar_size = 20

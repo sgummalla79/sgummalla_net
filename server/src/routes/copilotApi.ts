@@ -240,4 +240,29 @@ router.post("/token", async (req: Request, res: Response) => {
   res.json({ access_token: accessToken });
 });
 
+// ── GET /api/copilot/last-thread ─────────────────────────────────────────────
+// Returns the most recent Chainlit thread ID for the logged-in user.
+// Used by the widget to resume the last conversation instead of starting fresh.
+
+router.get("/last-thread", async (req: Request, res: Response) => {
+  const sessionToken = req.cookies?.[getCookieName()] as string | undefined;
+  if (!sessionToken) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  try {
+    const payload = verifyToken(sessionToken);
+    const rows = await sql<{ id: string }[]>`
+      SELECT t.id
+      FROM threads t
+      WHERE t."userIdentifier" = ${payload.email}
+      ORDER BY t."createdAt" DESC
+      LIMIT 1
+    `;
+    res.json({ threadId: rows[0]?.id ?? null });
+  } catch {
+    res.status(401).json({ error: "Unauthorized" });
+  }
+});
+
 export default router;

@@ -16,21 +16,13 @@ import logoDark from "../assets/logo-dark.svg";
 const OWNER_NAV = [
   { name: "auths", label: "Applications", href: "/auths" },
   { name: "configuration", label: "Configuration", href: "/configuration" },
-  {
-    name: "copilot-clients",
-    label: "Copilot Clients",
-    href: "/copilot-clients",
-  },
+  { name: "copilot-clients", label: "Clients", href: "/copilot-clients" },
   { name: "drafts", label: "Drafts", href: "/drafts" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
 const AUTH_NAV = [
-  {
-    name: "copilot-clients",
-    label: "Copilot Clients",
-    href: "/copilot-clients",
-  },
+  { name: "copilot-clients", label: "Clients", href: "/copilot-clients" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
@@ -85,6 +77,10 @@ function toggleTheme() {
   themeMode.value = themeMode.value === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_STORAGE_KEY, themeMode.value);
   setTheme(themeMode.value === "light" ? lightTheme : defaultTheme);
+  copilotIframeRef.value?.contentWindow?.postMessage(
+    { type: "set-theme", theme: themeMode.value },
+    "*",
+  );
 }
 
 // ── Copilot sidebar ───────────────────────────────────────────────────────────
@@ -93,9 +89,27 @@ const copilotOpen = ref(false);
 const copilotLoaded = ref(false);
 const copilotPinned = ref(false);
 const copilotIframeReady = ref(false);
+const copilotIframeRef = ref<HTMLIFrameElement | null>(null);
+// Set once before the iframe is first shown — not reactive, so theme changes
+// never reload the iframe (live theme changes use postMessage instead).
+const copilotIframeSrc = ref(`/copilot/?mode=widget&theme=${themeMode.value}`);
 
-function openCopilot() {
+async function openCopilot() {
   copilotOpen.value = true;
+  if (copilotLoaded.value) return; // already loaded, don't rebuild src
+
+  // Look up the user's last thread so the iframe resumes it instead of
+  // starting fresh. Fall back to the root if no thread exists yet.
+  try {
+    const { threadId } = await fetch("/api/copilot/last-thread").then((r) =>
+      r.json(),
+    );
+    const base = threadId ? `/copilot/thread/${threadId}` : `/copilot/`;
+    copilotIframeSrc.value = `${base}?mode=widget&theme=${themeMode.value}`;
+  } catch {
+    // network error — keep default src
+  }
+
   copilotLoaded.value = true;
 }
 
@@ -109,12 +123,16 @@ watch(
       copilotPinned.value = false;
       copilotIframeReady.value = false;
     }
-  }
+  },
 );
 
 function togglePin() {
   copilotPinned.value = !copilotPinned.value;
   if (copilotPinned.value) openCopilot();
+}
+
+function openCopilotPage() {
+  window.open("/copilot", "_blank");
 }
 </script>
 
@@ -203,6 +221,7 @@ function togglePin() {
           @profile="handleProfile"
           @logout="emit('logout')"
           @toggle-theme="toggleTheme"
+          @copilot="openCopilotPage"
         />
       </template>
     </NavBar>
@@ -257,15 +276,31 @@ function togglePin() {
         </div>
         <div class="vz-copilot-body">
           <div v-if="!copilotIframeReady" class="vz-copilot-loading">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="vz-copilot-loading__icon">
-              <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" />
-              <path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="vz-copilot-loading__icon"
+            >
+              <path d="M12 8V4H8" />
+              <rect width="16" height="12" x="4" y="8" rx="2" />
+              <path d="M2 14h2" />
+              <path d="M20 14h2" />
+              <path d="M15 13v2" />
+              <path d="M9 13v2" />
             </svg>
             <span class="vz-copilot-loading__text">Loading AI Copilot</span>
             <div class="vz-copilot-loading__dots"><span /><span /><span /></div>
           </div>
           <iframe
-            src="/copilot/"
+            :src="copilotIframeSrc"
+            ref="copilotIframeRef"
             class="vz-copilot-frame"
             :class="{ 'vz-copilot-frame--ready': copilotIframeReady }"
             allow="microphone"
@@ -450,7 +485,6 @@ function togglePin() {
   transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-
 .vz-copilot-sidebar--open {
   width: 380px;
   border-left: 1px solid var(--vz-border);
@@ -569,17 +603,34 @@ function togglePin() {
   animation: vz-copilot-dot 1.2s ease-in-out infinite;
 }
 
-.vz-copilot-loading__dots span:nth-child(2) { animation-delay: 0.2s; }
-.vz-copilot-loading__dots span:nth-child(3) { animation-delay: 0.4s; }
+.vz-copilot-loading__dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.vz-copilot-loading__dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes vz-copilot-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 @keyframes vz-copilot-dot {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .vz-copilot-frame {
