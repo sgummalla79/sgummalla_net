@@ -38,7 +38,7 @@ const html = `
 
     <div class="cell dim">Security sandbox</div>
     <div class="cell center">LWS — site-level setting in Experience Builder<span class="note-small">Org-level LWS toggle in Session Settings has <strong>no effect</strong> on LWR sites</span></div>
-    <div class="cell center last-col">Lightning Locker (default) or LWS if org-level toggle is on<span class="note-small">Locker uses SecureWindow; LWS uses membrane proxies</span></div>
+    <div class="cell center last-col">Lightning Locker (default) or LWS if org-level toggle is on<span class="note-small">LWS for Aura is <strong>Beta</strong> — not GA. Locker uses SecureWindow; LWS uses membrane proxies. Test thoroughly before enabling LWS on Aura in production.</span></div>
 
     <div class="cell dim">LWS global object exposure</div>
     <div class="cell center"><span class="yes">Globals exposed directly</span><span class="note-small"><code>window</code>, <code>document</code>, element globals are accessible without secure wrappers — within namespace sandbox only</span></div>
@@ -92,8 +92,8 @@ const html = `
 
     <div class="cell dim">Load external JS bundle from a trusted domain at runtime</div>
     <div class="cell center">
-      <span class="partial">✓ Partial</span>
-      <span class="note-small">loadScript fetches it, but LWS sandboxes execution</span>
+      <span class="no">✗ No</span>
+      <span class="note-small"><code>loadScript</code> is a CSP requirement to use static resources only — external domain URLs are not supported. Static resources are served from Salesforce's own domain (5MB limit applies).</span>
     </div>
     <div class="cell center">
       <span class="yes">✓ Yes</span>
@@ -188,7 +188,7 @@ const html = `
 │
 </span><span class="c-purple">│   ├── LWC Component A        →  sees: namespace-scoped window (proxied on Aura; direct on LWR)
 │   ├── LWC Component B        →  sees: namespace-scoped window (proxied on Aura; direct on LWR)
-│   └── loadScript(widget.js)  →  executes inside namespace sandbox — same scoped globals
+│   └── loadScript(widget.js)  →  static resource only (CSP requirement); executes inside namespace sandbox
 </span><span class="c-red">│
 </span><span class="c-blue">└── Widget iframe  ──  Cross-origin browsing context; OUTSIDE all Salesforce namespaces
                        posts messages to the REAL browser window.parent
@@ -207,8 +207,8 @@ const html = `
     <div class="cell hdr last-col">Reason</div>
 
     <div class="cell dim"><code>loadScript</code> — fetches and executes the bundle</div>
-    <div class="cell center"><span class="yes">✓ Works</span></div>
-    <div class="cell last-col">Network fetch is unaffected by LWS</div>
+    <div class="cell center"><span class="partial">✓ Static only</span></div>
+    <div class="cell last-col"><code>loadScript</code> is a CSP requirement to use Salesforce static resources — external domain URLs are not supported. Loading from static resource works; loading from an external URL is not an official supported pattern.</div>
 
     <div class="cell dim">Widget mount function is callable</div>
     <div class="cell center"><span class="yes">✓ Works</span></div>
@@ -250,7 +250,7 @@ const html = `
   </div>
 
   <div class="callout warning">
-    <strong>LWS Trusted Mode (Winter '26 GA, Spring '26) — a conditional path opens for LWC.</strong>
+    <strong>LWS Trusted Mode (Winter '26, GA) — a conditional path opens for LWC.</strong>
     Trusted Mode allows third-party scripts loaded via <code>loadScript</code> to bypass LWS and Locker
     entirely, giving unrestricted access to the real <code>window</code>, <code>document</code>, and DOM
     globals. This directly fixes the <code>postMessage</code> problem — <code>window.addEventListener('message', handler)</code>
@@ -456,13 +456,26 @@ Visualforce.remoting.Manager.<span class="fn">invokeAction</span>(
       <h4>Constraints</h4>
       <ul>
         <li>Requires an authenticated Salesforce session — no guest user support</li>
-        <li>Connected App setup is non-trivial</li>
+        <li><strong>Spring '26:</strong> new Connected App creation is disabled by default — Canvas now requires an <strong>External Client App (ECA)</strong>; existing Connected Apps continue to work</li>
         <li>Users must be pre-authorized via profile or permission set assignment</li>
         <li><code>position: fixed</code> overlay requires an additional workaround (see below)</li>
         <li>Canvas is stable but receives no active platform investment from Salesforce</li>
         <li>Your server must implement HMAC-SHA256 signature verification</li>
       </ul>
     </div>
+  </div>
+
+  <div class="callout danger">
+    <strong>Spring '26: Canvas now requires an External Client App — new Connected Apps are disabled by default.</strong>
+    As of Spring '26, Salesforce disabled new Connected App creation by default across all orgs.
+    The official Canvas Developer Guide (Spring '26) states: <em>"We recommend using external client apps
+    for all new Canvas integrations."</em> Canvas support was added to External Client Apps (ECAs) in Spring '26.
+    <br><br>
+    <strong>What this means in practice:</strong><br>
+    ✓ Existing Connected Apps continue to work and are unaffected.<br>
+    ✓ New Canvas integrations must use an External Client App (App Manager → New External Client App → Canvas plugin).<br>
+    ✗ If you specifically need a new Connected App (e.g. for a feature not yet available in ECAs), you must contact Salesforce Support to re-enable creation — and Salesforce has stated this support will not continue indefinitely.<br>
+    ✗ The article's recommendation to "create a Connected App" applies only to existing Connected App setups. For all new implementations, use an External Client App.
   </div>
 
   <div class="detail-card">
@@ -798,7 +811,7 @@ Visualforce.remoting.Manager.<span class="fn">invokeAction</span>(
         <span class="oc-badge oc-alt">Alternative</span>
         <h4>Canvas + Coordinating LWC</h4>
         <ul>
-          <li>Create a Connected App with Canvas enabled and Signed Request access method</li>
+          <li><strong>Spring '26:</strong> use an External Client App with Canvas plugin (not a Connected App — new Connected App creation requires a Salesforce Support request)</li>
           <li>Implement HMAC-SHA256 signature verification on your server</li>
           <li>Generate the access token server-side from the verified user context</li>
           <li>Canvas iframe hosts the widget — fully outside LWS</li>
