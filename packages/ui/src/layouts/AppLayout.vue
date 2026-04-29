@@ -92,6 +92,7 @@ function toggleTheme() {
 const copilotOpen = ref(false);
 const copilotLoaded = ref(false);
 const copilotPinned = ref(false);
+const copilotIframeReady = ref(false);
 
 function openCopilot() {
   copilotOpen.value = true;
@@ -106,6 +107,7 @@ watch(
       copilotOpen.value = false;
       copilotLoaded.value = false;
       copilotPinned.value = false;
+      copilotIframeReady.value = false;
     }
   }
 );
@@ -253,7 +255,23 @@ function togglePin() {
             </button>
           </div>
         </div>
-        <iframe src="/copilot/" class="vz-copilot-frame" allow="microphone" />
+        <div class="vz-copilot-body">
+          <div v-if="!copilotIframeReady" class="vz-copilot-loading">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="vz-copilot-loading__icon">
+              <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" />
+              <path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" />
+            </svg>
+            <span class="vz-copilot-loading__text">Loading AI Copilot</span>
+            <div class="vz-copilot-loading__dots"><span /><span /><span /></div>
+          </div>
+          <iframe
+            src="/copilot/"
+            class="vz-copilot-frame"
+            :class="{ 'vz-copilot-frame--ready': copilotIframeReady }"
+            allow="microphone"
+            @load="copilotIframeReady = true"
+          />
+        </div>
       </div>
     </div>
 
@@ -432,6 +450,7 @@ function togglePin() {
   transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+
 .vz-copilot-sidebar--open {
   width: 380px;
   border-left: 1px solid var(--vz-border);
@@ -506,10 +525,77 @@ function togglePin() {
   background: var(--vz-surface2);
 }
 
-.vz-copilot-frame {
+.vz-copilot-body {
   flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.vz-copilot-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--vz-text3);
+  background: var(--vz-bg);
+}
+
+.vz-copilot-loading__icon {
+  opacity: 0.4;
+  animation: vz-copilot-pulse 2.5s ease-in-out infinite;
+}
+
+.vz-copilot-loading__text {
+  font-family: var(--vz-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3);
+}
+
+.vz-copilot-loading__dots {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.vz-copilot-loading__dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--vz-text3);
+  animation: vz-copilot-dot 1.2s ease-in-out infinite;
+}
+
+.vz-copilot-loading__dots span:nth-child(2) { animation-delay: 0.2s; }
+.vz-copilot-loading__dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes vz-copilot-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes vz-copilot-dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.vz-copilot-frame {
+  position: absolute;
+  inset: 0;
   border: none;
   width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.vz-copilot-frame--ready {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 @media (max-width: 680px) {
