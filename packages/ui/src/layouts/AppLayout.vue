@@ -94,22 +94,8 @@ const copilotIframeRef = ref<HTMLIFrameElement | null>(null);
 // never reload the iframe (live theme changes use postMessage instead).
 const copilotIframeSrc = ref(`/copilot/?mode=widget&theme=${themeMode.value}`);
 
-async function openCopilot() {
+function openCopilot() {
   copilotOpen.value = true;
-  if (copilotLoaded.value) return; // already loaded, don't rebuild src
-
-  // Look up the user's last thread so the iframe resumes it instead of
-  // starting fresh. Fall back to the root if no thread exists yet.
-  try {
-    const { threadId } = await fetch("/api/copilot/last-thread").then((r) =>
-      r.json(),
-    );
-    const base = threadId ? `/copilot/thread/${threadId}` : `/copilot/`;
-    copilotIframeSrc.value = `${base}?mode=widget&theme=${themeMode.value}`;
-  } catch {
-    // network error — keep default src
-  }
-
   copilotLoaded.value = true;
 }
 
