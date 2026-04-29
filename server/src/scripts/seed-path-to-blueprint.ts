@@ -370,4 +370,7 @@ async function seed() {
   await neon.end();
 }
 
-seed().catch((err) => { console.error(err); process.exit(1); });
+seed().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

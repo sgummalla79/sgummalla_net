@@ -70,57 +70,76 @@ async function handleLogout() {
     @logout="handleLogout"
   >
     <div class="vz-draft-page">
-    <!-- Draft banner — top of page, non-sticky -->
-    <div class="vz-draft-banner">
-      <div class="vz-draft-banner__left">
-        <span class="vz-draft-banner__badge">Draft Preview</span>
-        <span class="vz-draft-banner__msg">This article is not yet published. Reviewing below as it will appear publicly.</span>
-      </div>
-      <div class="vz-draft-banner__actions">
-        <button class="vz-draft-banner__back" @click="router.push('/drafts')">← Back to Drafts</button>
-        <button
-          class="vz-draft-banner__publish"
-          :disabled="publishing || published"
-          @click="handlePublish"
-        >
-          {{ published ? "Published ✓" : publishing ? "Publishing…" : "Publish Article" }}
-        </button>
-      </div>
-    </div>
-
-    <div v-if="article" class="vz-article-wrapper">
-      <div class="vz-article-nav">
-        <span class="vz-article-date">Published {{ article.date }}</span>
-      </div>
-
-      <div
-        class="vz-article-body"
-        :class="{ 'vz-article-body--light': isLight }"
-        v-html="article.content"
-      />
-
-      <div class="vz-article-disclaimer">
-        <strong>Disclaimer:</strong> The information in this article is based on
-        generally available (GA) features and publicly accessible documentation
-        at the time of publication. It does not represent official guidance from
-        any employer or organisation and does not disclose any confidential,
-        pre-release, or proprietary information. Product features, behaviour,
-        and documentation may change over time. Please refer to the latest
-        official documentation and verify all information before making any
-        technical or business decisions.
+      <!-- Draft banner — top of page, non-sticky -->
+      <div class="vz-draft-banner">
+        <div class="vz-draft-banner__left">
+          <span class="vz-draft-banner__badge">Draft Preview</span>
+          <span class="vz-draft-banner__msg"
+            >This article is not yet published. Reviewing below as it will
+            appear publicly.</span
+          >
+        </div>
+        <div class="vz-draft-banner__actions">
+          <button class="vz-draft-banner__back" @click="router.push('/drafts')">
+            ← Back to Drafts
+          </button>
+          <button
+            class="vz-draft-banner__publish"
+            :disabled="publishing || published"
+            @click="handlePublish"
+          >
+            {{
+              published
+                ? "Published ✓"
+                : publishing
+                  ? "Publishing…"
+                  : "Publish Article"
+            }}
+          </button>
+        </div>
       </div>
 
-      <div class="vz-draft-publish-bottom">
-        <button class="vz-draft-banner__back" @click="router.push('/drafts')">← Back to Drafts</button>
-        <button
-          class="vz-draft-banner__publish"
-          :disabled="publishing || published"
-          @click="handlePublish"
-        >
-          {{ published ? "Published ✓" : publishing ? "Publishing…" : "Publish Article" }}
-        </button>
+      <div v-if="article" class="vz-article-wrapper">
+        <div class="vz-article-nav">
+          <span class="vz-article-date">Published {{ article.date }}</span>
+        </div>
+
+        <div
+          class="vz-article-body"
+          :class="{ 'vz-article-body--light': isLight }"
+          v-html="article.content"
+        />
+
+        <div class="vz-article-disclaimer">
+          <strong>Disclaimer:</strong> The information in this article is based
+          on generally available (GA) features and publicly accessible
+          documentation at the time of publication. It does not represent
+          official guidance from any employer or organisation and does not
+          disclose any confidential, pre-release, or proprietary information.
+          Product features, behaviour, and documentation may change over time.
+          Please refer to the latest official documentation and verify all
+          information before making any technical or business decisions.
+        </div>
+
+        <div class="vz-draft-publish-bottom">
+          <button class="vz-draft-banner__back" @click="router.push('/drafts')">
+            ← Back to Drafts
+          </button>
+          <button
+            class="vz-draft-banner__publish"
+            :disabled="publishing || published"
+            @click="handlePublish"
+          >
+            {{
+              published
+                ? "Published ✓"
+                : publishing
+                  ? "Publishing…"
+                  : "Publish Article"
+            }}
+          </button>
+        </div>
       </div>
-    </div>
     </div>
   </AppLayout>
 </template>
@@ -251,7 +270,6 @@ async function handleLogout() {
   justify-content: space-between;
   gap: 1rem;
 }
-
 
 .vz-article-date {
   font-family: var(--vz-font-mono);
