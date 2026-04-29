@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useTheme } from "../theme/plugin";
 import { defaultTheme, lightTheme } from "../theme/default";
@@ -97,6 +97,18 @@ function openCopilot() {
   copilotOpen.value = true;
   copilotLoaded.value = true;
 }
+
+// Kill Chainlit session when user logs out so the next user gets a fresh iframe
+watch(
+  () => props.isAuthenticated,
+  (authenticated) => {
+    if (!authenticated) {
+      copilotOpen.value = false;
+      copilotLoaded.value = false;
+      copilotPinned.value = false;
+    }
+  }
+);
 
 function togglePin() {
   copilotPinned.value = !copilotPinned.value;
