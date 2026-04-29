@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# Chainlit runtime state (local session data, not source)
+.chainlit/
+
 # Logs
 logs
 *.log
