@@ -53,8 +53,8 @@ const html = `
     <div class="cell center last-col"><span class="partial">Unchanged</span><span class="note-small">Locker rules unchanged; LWS-on-Aura follows org-level rules</span></div>
 
     <div class="cell dim">Head Markup control</div>
-    <div class="cell center"><span class="yes">Full control</span><span class="note-small">Complete access to default head markup in Experience Builder</span></div>
-    <div class="cell center last-col"><span class="partial">Partial</span><span class="note-small">Head Markup available but with more restrictions</span></div>
+    <div class="cell center"><span class="yes">✓ Full control</span><span class="note-small">Can view and edit the <strong>default</strong> built-in markup (meta charset, title tag, SLDS stylesheet links) AND inject custom scripts/styles. Default markup is exposed in the Head Markup window.</span></div>
+    <div class="cell center last-col"><span class="partial">✓  Inject only</span><span class="note-small">Can inject additional custom scripts and stylesheets via the Head Markup window. The Salesforce-generated default markup (meta charset, title, stylesheet links) is <strong>not exposed</strong> — it cannot be viewed or edited. Script injection itself works identically to LWR.</span></div>
 
     <div class="cell dim last-row">Visualforce Page component in Experience Builder</div>
     <div class="cell center last-row"><span class="no">✗ Not available</span><span class="note-small">LWR is LWC-only. VF pages are accessible via <code>vforcesite</code> URL path but cannot be dragged into the layout. Overlay requires a custom LWC wrapper iframe or Head Markup injection.</span></div>
@@ -120,8 +120,8 @@ const html = `
 
     <div class="cell dim">window.postMessage works correctly (widget ↔ host page events, minimize/maximize)</div>
     <div class="cell center">
-      <span class="no">✗ No</span>
-      <span class="note-small">Proxy window ≠ real window; listeners register on the wrong object</span>
+      <span class="partial">✓  Conditional</span>
+      <span class="note-small">Broken without Trusted Mode (proxy window ≠ real window). Works correctly with Trusted Mode enabled on a static-resource bundle.</span>
     </div>
     <div class="cell center">
       <span class="yes">✓ Yes</span>
@@ -169,7 +169,7 @@ const html = `
 <!-- ─────────────────────────────────────────────────────────────────────── -->
 <div class="section">
   <div class="section-label">02 — Root Cause</div>
-  <div class="section-title">Why LWC + loadScript Fails — and When It Conditionally Works (Spring '26)</div>
+  <div class="section-title">Why LWC + External loadScript Doesn't Work — and the Conditional Path via Trusted Mode</div>
   <p class="section-desc">
     On <strong>Aura sites</strong>, LWS wraps all globals in membrane proxies — components never touch real
     browser objects. On <strong>LWR sites</strong>, LWS is less restrictive: <code>window</code>,
@@ -223,30 +223,30 @@ const html = `
     <div class="cell last-col">WebSocket connections are not proxied</div>
 
     <div class="cell dim"><code>window.postMessage</code> — host page → widget iframe</div>
-    <div class="cell center"><span class="no">✗ Broken</span></div>
-    <div class="cell last-col">Proxy window ≠ real window; message never arrives at the iframe</div>
+    <div class="cell center"><span class="no">✗ Broken</span><span class="note-small">Without Trusted Mode</span></div>
+    <div class="cell last-col">Proxy window ≠ real window; message never arrives at the iframe. With Trusted Mode enabled, real window access is restored and postMessage works.</div>
 
     <div class="cell dim"><code>window.addEventListener('message', handler)</code></div>
-    <div class="cell center"><span class="no">✗ Broken</span></div>
-    <div class="cell last-col">Listener is on the proxy; the iframe posts to the real window</div>
+    <div class="cell center"><span class="no">✗ Broken</span><span class="note-small">Without Trusted Mode</span></div>
+    <div class="cell last-col">Listener registers on the proxy; the iframe posts to the real window. Fixed by Trusted Mode.</div>
 
     <div class="cell dim">Minimize / maximize toggle</div>
-    <div class="cell center"><span class="no">✗ Broken</span></div>
-    <div class="cell last-col">Depends on a postMessage round-trip between host and iframe</div>
+    <div class="cell center"><span class="no">✗ Broken</span><span class="note-small">Without Trusted Mode</span></div>
+    <div class="cell last-col">Depends on a postMessage round-trip between host and iframe. Works with Trusted Mode.</div>
 
     <div class="cell dim last-row">Injecting host page context into the widget (e.g. record ID, user data)</div>
-    <div class="cell center last-row"><span class="no">✗ Broken</span></div>
-    <div class="cell last-col last-row">Depends on postMessage from host into widget iframe</div>
+    <div class="cell center last-row"><span class="no">✗ Broken</span><span class="note-small">Without Trusted Mode</span></div>
+    <div class="cell last-col last-row">Depends on postMessage from host into widget iframe. Works with Trusted Mode.</div>
 
   </div>
 
   <div class="callout danger">
-    <strong>Without Trusted Mode, there is no supported escape path from LWS.</strong> <code>eval()</code>,
+    <strong>Without Trusted Mode, there is no supported escape path from LWS for external URLs.</strong> <code>eval()</code>,
     <code>Function()</code>, <code>document.createElement('script')</code>, and frame reference tricks
     (<code>window[0]</code>, <code>window.frames[0]</code>) are all intercepted on both runtimes. Salesforce
-    actively closes these as they are discovered. The <code>loadScript</code> path — pointing at an
-    <strong>external URL</strong> — remains a dead end: external scripts loaded by URL still execute inside
-    the LWS sandbox regardless of which runtime the site uses.
+    actively closes these as they are discovered. The <code>loadScript</code> path pointing at an
+    <strong>external URL</strong> still executes inside the LWS sandbox regardless of which runtime the site
+    uses — Trusted Mode does not apply to external URLs, only to static resources.
   </div>
 
   <div class="callout warning">
@@ -496,7 +496,7 @@ Visualforce.remoting.Manager.<span class="fn">invokeAction</span>(
           <div class="step-num">2</div>
           <div class="step-content">
             <strong>Salesforce POSTs a signed request to your Canvas App URL</strong>
-            <p>Payload is HMAC-SHA256 signed with your Connected App secret. Contains user ID, email, org ID, OAuth access token, and the community URL.</p>
+            <p>Payload is HMAC-SHA256 signed with your app secret (Connected App consumer secret or External Client App credentials). Contains user ID, email, org ID, OAuth access token, and the community URL.</p>
           </div>
         </div>
         <div class="flow-step">
@@ -630,12 +630,11 @@ Visualforce.remoting.Manager.<span class="fn">invokeAction</span>(
 <span class="cmt">&lt;!-- Step 1: Load the widget bundle from your server --&gt;</span>
 &lt;<span class="tag">script</span> <span class="attr">src</span>=<span class="str">"https://widget.yourserver.com/widget/index.js"</span> defer&gt;&lt;/<span class="tag">script</span>&gt;
 
-<span class="cmt">&lt;!-- Step 2: Fetch token asynchronously, then mount --&gt;</span>
+<span class="cmt">&lt;!-- Step 2: Fetch token from an Apex REST endpoint, then mount.
+     No Authorization header is needed — the browser automatically includes
+     the Salesforce session cookie for same-origin requests in Experience Cloud. --&gt;</span>
 &lt;<span class="tag">script</span>&gt;
-    <span class="cmt">// No Apex available here — must call a REST endpoint for the token</span>
-    <span class="fn">fetch</span>(<span class="str">'/services/apexrest/WidgetToken'</span>, {
-        headers: { <span class="str">'Authorization'</span>: <span class="str">'Bearer '</span> + userInfo.sessionId }
-    })
+    <span class="fn">fetch</span>(<span class="str">'/services/apexrest/WidgetToken'</span>)
     .<span class="fn">then</span>(<span class="kw">function</span>(response) { <span class="kw">return</span> response.<span class="fn">json</span>(); })
     .<span class="fn">then</span>(<span class="kw">function</span>(data) {
         window.<span class="fn">mountWidget</span>({
@@ -714,7 +713,7 @@ Visualforce.remoting.Manager.<span class="fn">invokeAction</span>(
     <div class="cell dim">Setup complexity</div>
     <div class="cell center"><span class="partial">Medium–High</span><span class="note-small">Trusted Mode config + static resource + admin approval</span></div>
     <div class="cell center"><span class="yes">Low</span></div>
-    <div class="cell center"><span class="no">High</span><span class="note-small">Connected App + sig verify</span></div>
+    <div class="cell center"><span class="no">High</span><span class="note-small">External Client App + sig verify (Spring '26: Connected App creation disabled by default)</span></div>
     <div class="cell center last-col"><span class="partial">Medium</span></div>
 
     <div class="cell dim">Apex required</div>
@@ -755,7 +754,7 @@ Visualforce.remoting.Manager.<span class="fn">invokeAction</span>(
   <div class="decision-tree">
     <div class="dt-row">
       <div class="dt-condition">
-        <strong>Always-authenticated users</strong> + willing to configure a Connected App +
+        <strong>Always-authenticated users</strong> + willing to configure an External Client App +
         want the cleanest authentication model with no Apex
       </div>
       <div class="dt-arrow">→</div>
@@ -898,7 +897,7 @@ Visualforce.remoting.Manager.<span class="fn">invokeAction</span>(
         <div class="cell last-col">All cross-origin iframe cookies blocked. Storage Access API requires user gesture.</div>
 
         <div class="cell dim">Firefox (default)</div>
-        <div class="cell center"><span class="partial">Partitioned</span><span class="note-small">Total Cookie Protection — isolated per top-level site since v102</span></div>
+        <div class="cell center"><span class="partial">Partitioned</span><span class="note-small">Total Cookie Protection — isolated per top-level site, default for all users since v103 (July 2022)</span></div>
         <div class="cell last-col">Cookies are partitioned: same widget embedded on two different Salesforce pages gets separate cookie jars.</div>
 
         <div class="cell dim last-row">Firefox (Strict mode)</div>
