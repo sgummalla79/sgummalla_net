@@ -22,11 +22,6 @@ RUN pnpm --filter @sgw/client build
 # ── Stage 2: Production ───────────────────────────────────────────────────────
 FROM node:20-slim AS production
 
-# Python for Chainlit
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip \
-    && rm -rf /var/lib/apt/lists/*
-
 RUN npm install -g tsx pnpm@9
 
 WORKDIR /app
@@ -38,24 +33,14 @@ COPY server/package.json ./server/
 
 RUN pnpm install --prod --no-frozen-lockfile
 
-# Python dependencies
-COPY copilot/requirements.txt ./copilot/requirements.txt
-RUN pip3 install --no-cache-dir --break-system-packages -r copilot/requirements.txt
-
 COPY server/src ./server/src
 COPY server/tsconfig.json ./server/
 
-# Copilot app
-COPY copilot ./copilot
-
 COPY --from=builder /app/client/dist ./public
-
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
 EXPOSE 3000
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["tsx", "server/src/index.ts"]

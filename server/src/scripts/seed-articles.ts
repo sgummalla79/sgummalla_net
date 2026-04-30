@@ -12,7 +12,7 @@ const neon = postgres(process.env.NEON_DB_URL!, { ssl: "require" });
 // Extract the HTML string from the TS file at runtime
 // The file exports: const html = `...`; export default html;
 const tsSource = readFileSync(
-  join(__dirname, "../../../client/src/data/articles/chainlit-salesforce.ts"),
+  join(__dirname, "../../../client/src/data/articles/salesforce-widget.ts"),
   "utf-8",
 );
 // Strip the TS wrapper — extract everything between the first backtick and `export default`
