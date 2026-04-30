@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useTheme } from "../theme/plugin";
 import { defaultTheme, lightTheme } from "../theme/default";
@@ -16,15 +16,11 @@ import logoDark from "../assets/logo-dark.svg";
 const OWNER_NAV = [
   { name: "auths", label: "Applications", href: "/auths" },
   { name: "configuration", label: "Configuration", href: "/configuration" },
-  { name: "copilot-clients", label: "Clients", href: "/copilot-clients" },
   { name: "drafts", label: "Drafts", href: "/drafts" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
 
-const AUTH_NAV = [
-  { name: "copilot-clients", label: "Clients", href: "/copilot-clients" },
-  { name: "blog", label: "Blog", href: "/blog" },
-];
+const AUTH_NAV = [{ name: "blog", label: "Blog", href: "/blog" }];
 
 const GUEST_NAV = [{ name: "blog", label: "Blog", href: "/blog" }];
 
@@ -77,48 +73,6 @@ function toggleTheme() {
   themeMode.value = themeMode.value === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_STORAGE_KEY, themeMode.value);
   setTheme(themeMode.value === "light" ? lightTheme : defaultTheme);
-  copilotIframeRef.value?.contentWindow?.postMessage(
-    { type: "set-theme", theme: themeMode.value },
-    "*",
-  );
-}
-
-// ── Copilot sidebar ───────────────────────────────────────────────────────────
-
-const copilotOpen = ref(false);
-const copilotLoaded = ref(false);
-const copilotPinned = ref(false);
-const copilotIframeReady = ref(false);
-const copilotIframeRef = ref<HTMLIFrameElement | null>(null);
-// Set once before the iframe is first shown — not reactive, so theme changes
-// never reload the iframe (live theme changes use postMessage instead).
-const copilotIframeSrc = ref(`/copilot/?mode=widget&theme=${themeMode.value}`);
-
-function openCopilot() {
-  copilotOpen.value = true;
-  copilotLoaded.value = true;
-}
-
-// Kill Chainlit session when user logs out so the next user gets a fresh iframe
-watch(
-  () => props.isAuthenticated,
-  (authenticated) => {
-    if (!authenticated) {
-      copilotOpen.value = false;
-      copilotLoaded.value = false;
-      copilotPinned.value = false;
-      copilotIframeReady.value = false;
-    }
-  },
-);
-
-function togglePin() {
-  copilotPinned.value = !copilotPinned.value;
-  if (copilotPinned.value) openCopilot();
-}
-
-function openCopilotPage() {
-  window.open("/copilot", "_blank");
 }
 </script>
 
@@ -148,36 +102,6 @@ function openCopilotPage() {
         >
           {{ link.label }}
         </NavLink>
-        <button
-          v-if="isAuthenticated"
-          class="vz-nav-link vz-nav-copilot-btn"
-          :class="{ 'vz-nav-link--active': copilotOpen }"
-          title="AI Copilot"
-          @click="
-            copilotOpen && !copilotPinned
-              ? (copilotOpen = false)
-              : openCopilot()
-          "
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="17"
-            height="17"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 8V4H8" />
-            <rect width="16" height="12" x="4" y="8" rx="2" />
-            <path d="M2 14h2" />
-            <path d="M20 14h2" />
-            <path d="M15 13v2" />
-            <path d="M9 13v2" />
-          </svg>
-        </button>
       </template>
 
       <template #right>
@@ -207,93 +131,14 @@ function openCopilotPage() {
           @profile="handleProfile"
           @logout="emit('logout')"
           @toggle-theme="toggleTheme"
-          @copilot="openCopilotPage"
         />
       </template>
     </NavBar>
 
-    <!-- Body — sidebar sits beside main so content adjusts rather than overlaps -->
     <div class="vz-shell__body">
       <main class="vz-shell__main">
         <slot />
       </main>
-
-      <div
-        v-if="isAuthenticated && copilotLoaded"
-        class="vz-copilot-sidebar"
-        :class="{ 'vz-copilot-sidebar--open': copilotOpen }"
-      >
-        <div class="vz-copilot-header">
-          <span class="vz-copilot-title">AI Copilot</span>
-          <div class="vz-copilot-actions">
-            <button
-              class="vz-copilot-pin"
-              :class="{ 'vz-copilot-pin--active': copilotPinned }"
-              :title="copilotPinned ? 'Unpin' : 'Pin'"
-              @click="togglePin"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <line x1="12" y1="17" x2="12" y2="22" />
-                <path
-                  d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"
-                />
-              </svg>
-            </button>
-            <button
-              class="vz-copilot-close"
-              @click="
-                copilotOpen = false;
-                copilotPinned = false;
-              "
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-        <div class="vz-copilot-body">
-          <div v-if="!copilotIframeReady" class="vz-copilot-loading">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="vz-copilot-loading__icon"
-            >
-              <path d="M12 8V4H8" />
-              <rect width="16" height="12" x="4" y="8" rx="2" />
-              <path d="M2 14h2" />
-              <path d="M20 14h2" />
-              <path d="M15 13v2" />
-              <path d="M9 13v2" />
-            </svg>
-            <span class="vz-copilot-loading__text">Loading AI Copilot</span>
-            <div class="vz-copilot-loading__dots"><span /><span /><span /></div>
-          </div>
-          <iframe
-            :src="copilotIframeSrc"
-            ref="copilotIframeRef"
-            class="vz-copilot-frame"
-            :class="{ 'vz-copilot-frame--ready': copilotIframeReady }"
-            allow="microphone"
-            @load="copilotIframeReady = true"
-          />
-        </div>
-      </div>
     </div>
 
     <footer class="vz-shell__footer">
@@ -355,14 +200,6 @@ function openCopilotPage() {
   letter-spacing: 0.06em;
   color: var(--vz-text3);
   white-space: nowrap;
-}
-
-.vz-nav-copilot-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-left: auto;
-  padding: 0 0.75rem;
 }
 
 .vz-shell {
@@ -456,185 +293,6 @@ function openCopilotPage() {
   }
 }
 
-/* ── Copilot sidebar ─────────────────────────────────────────────────────── */
-
-.vz-copilot-sidebar {
-  width: 0;
-  flex-shrink: 0;
-  background: var(--vz-bg);
-  border-left: none;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-  z-index: 200;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.vz-copilot-sidebar--open {
-  width: 380px;
-  border-left: 1px solid var(--vz-border);
-}
-
-.vz-copilot-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--vz-border);
-  flex-shrink: 0;
-}
-
-.vz-copilot-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.vz-copilot-pin {
-  background: none;
-  border: none;
-  color: var(--vz-text3);
-  cursor: pointer;
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--vz-radius-sm);
-  transition:
-    color 0.15s,
-    background 0.15s;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-}
-
-.vz-copilot-pin:hover {
-  color: var(--vz-text);
-  background: var(--vz-surface2);
-}
-
-.vz-copilot-pin--active {
-  color: var(--vz-green);
-}
-
-.vz-copilot-pin--active:hover {
-  color: var(--vz-green);
-}
-
-.vz-copilot-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--vz-text);
-  letter-spacing: 0.01em;
-}
-
-.vz-copilot-close {
-  background: none;
-  border: none;
-  color: var(--vz-text3);
-  font-size: 0.9rem;
-  cursor: pointer;
-  padding: 0.2rem 0.4rem;
-  border-radius: var(--vz-radius-sm);
-  transition:
-    color 0.15s,
-    background 0.15s;
-  line-height: 1;
-}
-
-.vz-copilot-close:hover {
-  color: var(--vz-text);
-  background: var(--vz-surface2);
-}
-
-.vz-copilot-body {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-
-.vz-copilot-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: var(--vz-text3);
-  background: var(--vz-bg);
-}
-
-.vz-copilot-loading__icon {
-  opacity: 0.4;
-  animation: vz-copilot-pulse 2.5s ease-in-out infinite;
-}
-
-.vz-copilot-loading__text {
-  font-family: var(--vz-font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--vz-text3);
-}
-
-.vz-copilot-loading__dots {
-  display: flex;
-  gap: 0.3rem;
-}
-
-.vz-copilot-loading__dots span {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--vz-text3);
-  animation: vz-copilot-dot 1.2s ease-in-out infinite;
-}
-
-.vz-copilot-loading__dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.vz-copilot-loading__dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-@keyframes vz-copilot-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-@keyframes vz-copilot-dot {
-  0%,
-  80%,
-  100% {
-    transform: scale(0.6);
-    opacity: 0.4;
-  }
-  40% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.vz-copilot-frame {
-  position: absolute;
-  inset: 0;
-  border: none;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.vz-copilot-frame--ready {
-  opacity: 1;
-  pointer-events: auto;
-}
-
 @media (max-width: 680px) {
   .vz-shell {
     height: auto;
@@ -647,9 +305,6 @@ function openCopilotPage() {
   }
   .vz-shell__footer {
     padding: 0.85rem 1.25rem;
-  }
-  .vz-copilot-sidebar--open {
-    width: 100vw;
   }
 }
 </style>

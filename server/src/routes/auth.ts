@@ -70,10 +70,6 @@ router.post(
 
 router.post("/logout", (_req, res) => {
   res.clearCookie(getCookieName(), { path: "/" });
-  // Clear Chainlit's auth cookies so the next user gets a completely fresh
-  // copilot session instead of inheriting the previous user's session.
-  res.clearCookie("access_token", { path: "/" });
-  res.clearCookie("X-Chainlit-Session-id", { path: "/" });
   res.json({ message: "Logged out successfully" });
 });
 
