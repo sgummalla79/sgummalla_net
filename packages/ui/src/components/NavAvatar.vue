@@ -47,22 +47,12 @@ onUnmounted(() =>
 <template>
   <div ref="containerRef" class="vz-avatar-wrap">
     <button class="vz-avatar-btn" :aria-expanded="open" @click="toggle">
-      <!-- Guest: generic person icon -->
-      <svg
-        v-if="isGuest"
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        class="vz-avatar-guest-icon"
-      >
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-      </svg>
-      <span v-else class="vz-avatar-initials">{{ initials }}</span>
+      <!-- Brand icon — shown for both guest and authenticated users without a photo -->
+      <img
+        :src="themeMode === 'light' ? '/favicon-dark.png' : '/favicon-light.png'"
+        alt="Profile"
+        class="vz-avatar-icon"
+      />
     </button>
 
     <transition name="vz-dropdown">
@@ -101,7 +91,6 @@ onUnmounted(() =>
             </svg>
             Profile
           </button>
-
         </template>
 
         <!-- Theme toggle — always shown -->
@@ -212,17 +201,12 @@ onUnmounted(() =>
   background: var(--vz-surface);
 }
 
-.vz-avatar-initials {
-  font-family: var(--vz-font-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--vz-text);
-  user-select: none;
-}
-
-.vz-avatar-guest-icon {
-  color: var(--vz-text3);
+.vz-avatar-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 
 /* Dropdown */
