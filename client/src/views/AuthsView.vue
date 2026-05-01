@@ -34,7 +34,16 @@ async function launch(portal: Portal) {
 }
 
 function toggleDropdown(portalId: string) {
-  openDropdownPortal.value = openDropdownPortal.value === portalId ? null : portalId;
+  if (openDropdownPortal.value === portalId) {
+    openDropdownPortal.value = null;
+    return;
+  }
+  openDropdownPortal.value = portalId;
+  // Close on the next click anywhere — setTimeout 0 skips the current click
+  setTimeout(() => {
+    const close = () => { openDropdownPortal.value = null; };
+    window.addEventListener("click", close, { once: true });
+  }, 0);
 }
 
 async function launchForClient(clientId: string) {
@@ -162,6 +171,7 @@ function iconFor(status: FrontdoorLog["status"]) {
                   </svg>
                 </button>
                 <div v-if="openDropdownPortal === portal.id" class="vz-te-menu">
+                  <div class="vz-te-menu-header">Select organisation</div>
                   <button
                     v-for="c in portal.clients"
                     :key="c.id"
@@ -189,9 +199,6 @@ function iconFor(status: FrontdoorLog["status"]) {
       </div>
     </div>
   </AppLayout>
-
-  <!-- Dropdown backdrop — closes any open dropdown when clicking outside -->
-  <div v-if="openDropdownPortal" class="vz-te-backdrop" @click="openDropdownPortal = null"/>
 
   <!-- Token Exchange log modal -->
   <Teleport to="body">
@@ -356,31 +363,44 @@ function iconFor(status: FrontdoorLog["status"]) {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  min-width: 180px;
-  max-width: 240px;
-  background: var(--vz-bg2);
-  border: 1px solid var(--vz-green);
+  min-width: 190px;
+  max-width: 260px;
+  background: var(--vz-bg);
+  border: 1.5px solid var(--vz-green);
   border-radius: var(--vz-radius-md);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.1);
-  z-index: 50;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 16px rgba(90, 232, 154, 0.08);
+  z-index: 100;
   overflow: hidden;
-  padding: 0.25rem 0;
+}
+
+.vz-te-menu-header {
+  padding: 0.45rem 0.85rem 0.3rem;
+  font-family: var(--vz-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vz-green);
+  border-bottom: 1px solid var(--vz-green-dim);
+  margin-bottom: 0.2rem;
 }
 
 .vz-te-menu-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   width: 100%;
   text-align: left;
-  padding: 0.55rem 0.85rem;
+  padding: 0.6rem 0.85rem;
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--vz-text);
   background: none;
   border: none;
+  border-left: 2px solid transparent;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -389,23 +409,21 @@ function iconFor(status: FrontdoorLog["status"]) {
 .vz-te-menu-item::before {
   content: '';
   flex-shrink: 0;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--vz-green);
-  opacity: 0.5;
-  transition: opacity 0.15s;
+  opacity: 0.25;
+  transition: opacity 0.12s, transform 0.12s;
 }
 .vz-te-menu-item:hover {
   background: var(--vz-green-dim);
   color: var(--vz-green);
+  border-left-color: var(--vz-green);
 }
-.vz-te-menu-item:hover::before { opacity: 1; }
-
-.vz-te-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 49;
+.vz-te-menu-item:hover::before {
+  opacity: 1;
+  transform: scale(1.25);
 }
 
 @media (max-width: 680px) {
