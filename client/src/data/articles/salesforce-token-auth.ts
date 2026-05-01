@@ -44,7 +44,7 @@ const html = `
     <div class="cell center last-col">Identity claim inside IdP token</div>
 
     <div class="cell dim">Salesforce app type</div>
-    <div class="cell center">Connected App or External Client App</div>
+    <div class="cell center">External Client App</div>
     <div class="cell center last-col">External Client App (required)</div>
 
     <div class="cell dim">Custom Apex required</div>
@@ -75,10 +75,10 @@ const html = `
   <h3 style="font-size:22px;font-weight:700;color:var(--text);margin:28px 0 8px;">How It Works</h3>
   <p style="font-size:15px;color:var(--text-dim);line-height:1.8;margin-bottom:20px;">
     The server mints a short-lived JWT signed with its RSA private key. The JWT carries three
-    critical claims: <code>iss</code> (Consumer Key of the Connected App),
+    critical claims: <code>iss</code> (Consumer Key of the External Client App),
     <code>sub</code> (the Salesforce username to impersonate), and
     <code>aud</code> (the Salesforce token endpoint). Salesforce verifies the RS256 signature
-    against the certificate on the Connected App, checks that the user is pre-authorised, and
+    against the certificate on the External Client App, checks that the user is pre-authorised, and
     returns an access token. The private key never leaves the server.
   </p>
 
@@ -124,10 +124,10 @@ const html = `
 <!-- 02 — JWT BEARER SETUP -->
 <div class="section">
   <div class="section-label">02 — JWT Bearer Setup</div>
-  <div class="section-title">Salesforce Configuration — Connected App &amp; Certificate</div>
+  <div class="section-title">Salesforce Configuration — External Client App &amp; Certificate</div>
   <p class="section-desc">
-    This flow requires a Salesforce Connected App (classic) or External Client App (Spring '25+)
-    with a digital certificate and the <code>jwt-bearer</code> OAuth policy enabled.
+    This flow requires a Salesforce External Client App with a digital certificate and the
+    <code>jwt-bearer</code> OAuth policy enabled.
   </p>
 
   <h3 style="font-size:22px;font-weight:700;color:var(--text);margin:28px 0 12px;">Step 1 — Generate an RSA Key Pair</h3>
@@ -146,9 +146,9 @@ openssl req -new -x509 -key private.pem \
   -subj "/CN=your-app-name"
 </pre>
 
-  <h3 style="font-size:22px;font-weight:700;color:var(--text);margin:28px 0 12px;">Step 2 — Create the Connected App</h3>
+  <h3 style="font-size:22px;font-weight:700;color:var(--text);margin:28px 0 12px;">Step 2 — Create the External Client App</h3>
   <p style="font-size:15px;color:var(--text-dim);line-height:1.8;margin-bottom:12px;">
-    In Salesforce Setup → App Manager → New Connected App:
+    In Salesforce Setup → External Client Apps → New:
   </p>
 
   <div class="data-grid" style="grid-template-columns: 1fr 2fr;">
@@ -176,11 +176,11 @@ openssl req -new -x509 -key private.pem \
 
   <h3 style="font-size:22px;font-weight:700;color:var(--text);margin:28px 0 12px;">Step 3 — Enable the JWT Bearer Policy</h3>
   <p style="font-size:15px;color:var(--text-dim);line-height:1.8;margin-bottom:12px;">
-    After saving the Connected App, go to <strong>Manage → Edit Policies</strong>:
+    After saving the External Client App, open its OAuth settings and configure policies:
   </p>
   <ul style="font-size:15px;color:var(--text-dim);line-height:2;padding-left:1.5rem;margin-bottom:20px;">
-    <li>Set <strong>OAuth Policies → Permitted Users</strong> to <em>Admin approved users are pre-authorized</em></li>
-    <li>Under <strong>Pre-Authorized Connected Apps</strong>, add the profiles or permission sets that should be eligible</li>
+    <li>Set <strong>Permitted Users</strong> to <em>Admin approved users are pre-authorized</em></li>
+    <li>Add the profiles or permission sets that should be eligible under the pre-authorization section</li>
     <li>Note the <strong>Consumer Key</strong> — this becomes the <code>iss</code> claim in your JWT</li>
   </ul>
 
@@ -210,19 +210,19 @@ grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer
 
   <p style="font-size:15px;color:var(--text-dim);line-height:1.8;margin-top:16px;">
     A successful response returns <code>access_token</code>, <code>instance_url</code>,
-    and optionally <code>refresh_token</code> (if the Connected App has refresh token scope enabled).
+    and optionally <code>refresh_token</code> (if the External Client App has refresh token scope enabled).
     Use <code>instance_url</code> as the base URL for all subsequent Salesforce API calls.
   </p>
 
   <div class="callout warning">
     <strong>Sandbox vs Production.</strong> Use <code>https://test.salesforce.com</code> as the
     <code>aud</code> claim and token endpoint when targeting a sandbox org.
-    The Connected App must exist in the org you are authenticating against.
+    The External Client App must exist in the org you are authenticating against.
   </div>
 
   <div class="callout success">
     <strong>No user interaction required.</strong> Once a Salesforce user is pre-authorised on the
-    Connected App, any server holding the private key can obtain a token for that user at any time.
+    External Client App, any server holding the private key can obtain a token for that user at any time.
     This makes the JWT Bearer flow well-suited to background jobs, ETL pipelines, and multi-tenant
     SaaS integrations where each tenant maps to a named Salesforce user.
   </div>
@@ -518,7 +518,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
     <div class="cell center last-col"><span class="yes">Server holds short-lived IdP tokens only</span></div>
 
     <div class="cell dim">Salesforce org type</div>
-    <div class="cell center">Connected App (all API versions) or External Client App (63.0+)</div>
+    <div class="cell center">External Client App (API 63.0+)</div>
     <div class="cell center last-col"><span class="partial">External Client App required (63.0+)</span></div>
 
     <div class="cell dim last-row">Custom code on Salesforce side</div>
@@ -530,9 +530,9 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 
   <div class="callout warning">
     <strong>JWT Bearer — Pre-authorisation is mandatory.</strong>
-    Users must be pre-authorised on the Connected App before the first token request.
+    Users must be pre-authorised on the External Client App before the first token request.
     A request for a user who is not pre-authorised returns an immediate error.
-    Automate pre-authorisation via Profiles or Permission Sets assigned to the Connected App.
+    Automate pre-authorisation via Profiles or Permission Sets assigned to the External Client App.
   </div>
 
   <div class="callout warning">
