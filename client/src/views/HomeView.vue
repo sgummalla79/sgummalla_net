@@ -276,7 +276,11 @@ import { AppLayout } from "@sgw/ui";
     </div>
 
     <template #footer>
-      <span>Ideas in Motion, Think. Build. Demo.</span>
+      <div class="sgw-footer-live">
+        <span class="sgw-footer-dot" />
+        Live
+      </div>
+      <span class="sgw-footer-tagline">Ideas in Motion, Think. Build. Demo.</span>
     </template>
   </AppLayout>
 </template>
@@ -557,6 +561,40 @@ import { AppLayout } from "@sgw/ui";
   line-height: 1.55;
   color: var(--vz-text2);
   margin: 0;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────── */
+.sgw-footer-live {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--vz-font-mono);
+  font-size: 0.69rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3);
+}
+
+.sgw-footer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--vz-red);
+  flex-shrink: 0;
+  animation: sgw-dot-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes sgw-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+.sgw-footer-tagline {
+  font-family: var(--vz-font-mono);
+  font-size: 0.69rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3);
 }
 
 /* ── Responsive ───────────────────────────────────────────────────── */

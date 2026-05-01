@@ -1,8 +1,6 @@
 <script setup lang="ts">
 defineProps<{
   brand?: string;
-  /** Color of the live indicator dot next to the brand */
-  dotColor?: "green" | "red";
 }>();
 
 defineEmits<{ "toggle-theme": [] }>();
@@ -12,10 +10,6 @@ defineEmits<{ "toggle-theme": [] }>();
   <nav class="vz-nav">
     <!-- Brand -->
     <a href="/" class="vz-nav-brand">
-      <span
-        class="vz-nav-dot"
-        :class="dotColor === 'red' ? 'vz-nav-dot--red' : 'vz-nav-dot--green'"
-      />
       <slot name="brand">{{ brand }}</slot>
     </a>
 
@@ -66,31 +60,6 @@ defineEmits<{ "toggle-theme": [] }>();
   opacity: 0.75;
 }
 
-.vz-nav-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  animation: vz-nav-pulse 2.5s ease-in-out infinite;
-}
-
-.vz-nav-dot--green {
-  background: var(--vz-green);
-}
-
-.vz-nav-dot--red {
-  background: var(--vz-red);
-}
-
-@keyframes vz-nav-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.25;
-  }
-}
 
 .vz-nav-links {
   display: flex;

@@ -1,14 +1,24 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
 import { listArticles, type Article } from "../api/articles";
 
+const PAGE_SIZE = 10;
+
 const router = useRouter();
 const auth = useAuthStore();
 const articles = ref<Article[]>([]);
 const loading = ref(true);
+const page = ref(1);
+
+const visible = computed(() =>
+  articles.value.slice(0, page.value * PAGE_SIZE),
+);
+const hasMore = computed(
+  () => visible.value.length < articles.value.length,
+);
 
 onMounted(async () => {
   try {
@@ -47,30 +57,45 @@ async function handleLogout() {
       </div>
 
       <div class="vz-blog__list">
-        <article
-          v-for="article in articles"
-          :key="article.slug"
-          class="vz-blog__item"
-          @click="router.push(`/blog/${article.slug}`)"
-        >
-          <div class="vz-blog__item-top">
-            <span class="vz-blog__date">{{ article.date }}</span>
-            <div class="vz-blog__tags">
-              <span
-                v-for="tag in article.tags"
-                :key="tag"
-                class="vz-blog__tag"
-                >{{ tag }}</span
-              >
+        <template v-for="(article, idx) in visible" :key="article.slug">
+          <article
+            class="vz-blog__item"
+            @click="router.push(`/blog/${article.slug}`)"
+          >
+            <div class="vz-blog__item-top">
+              <span class="vz-blog__date">{{ article.date }}</span>
+              <div class="vz-blog__tags">
+                <span
+                  v-for="tag in article.tags"
+                  :key="tag"
+                  class="vz-blog__tag"
+                  >{{ tag }}</span
+                >
+              </div>
             </div>
-          </div>
-          <h2 class="vz-blog__item-title">{{ article.title }}</h2>
-          <p class="vz-blog__item-subtitle">{{ article.subtitle }}</p>
-          <p class="vz-blog__item-desc">{{ article.description }}</p>
-          <div class="vz-blog__read">Read article →</div>
-        </article>
+            <h2 class="vz-blog__item-title">{{ article.title }}</h2>
+            <p class="vz-blog__item-subtitle">{{ article.subtitle }}</p>
+            <p class="vz-blog__item-desc">{{ article.description }}</p>
+            <div class="vz-blog__read">Read article →</div>
+          </article>
+          <hr v-if="idx < visible.length - 1" class="vz-blog__sep" />
+        </template>
+      </div>
+
+      <div v-if="hasMore" class="vz-blog__more">
+        <button class="vz-blog__more-btn" @click="page++">
+          Load more
+        </button>
       </div>
     </div>
+
+    <template #footer>
+      <div class="vz-blog-footer-live">
+        <span class="vz-blog-footer-dot" />
+        Live
+      </div>
+      <span class="vz-blog-footer-tagline">Ideas in Motion, Think. Build. Demo.</span>
+    </template>
   </AppLayout>
 </template>
 
@@ -115,22 +140,20 @@ async function handleLogout() {
 .vz-blog__list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+}
+
+.vz-blog__sep {
+  border: none;
+  border-top: 1px solid var(--vz-border);
+  margin: 0;
 }
 
 .vz-blog__item {
   padding: 2rem 0;
-  border-bottom: 1px solid var(--vz-border);
   cursor: pointer;
-  transition: background 0.15s;
-}
-
-.vz-blog__item:last-child {
-  border-bottom: none;
 }
 
 .vz-blog__item:hover .vz-blog__item-title {
-  color: var(--vz-text);
   opacity: 0.8;
 }
 
@@ -189,11 +212,10 @@ async function handleLogout() {
 }
 
 .vz-blog__item-subtitle {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--vz-text3);
   margin-bottom: 0.6rem;
   font-family: var(--vz-font-mono);
-  font-size: 0.75rem;
   letter-spacing: 0.02em;
 }
 
@@ -212,5 +234,65 @@ async function handleLogout() {
   color: var(--vz-text3);
   opacity: 0.6;
   transition: opacity 0.15s;
+}
+
+.vz-blog__more {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0 0;
+}
+
+.vz-blog__more-btn {
+  font-family: var(--vz-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3);
+  background: none;
+  border: 1px solid var(--vz-border);
+  border-radius: var(--vz-radius-md);
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.vz-blog__more-btn:hover {
+  color: var(--vz-text);
+  border-color: var(--vz-border2);
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+
+.vz-blog-footer-live {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--vz-font-mono);
+  font-size: 0.69rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3);
+}
+
+.vz-blog-footer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--vz-green);
+  flex-shrink: 0;
+  animation: vz-dot-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes vz-dot-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+.vz-blog-footer-tagline {
+  font-family: var(--vz-font-mono);
+  font-size: 0.69rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3);
 }
 </style>

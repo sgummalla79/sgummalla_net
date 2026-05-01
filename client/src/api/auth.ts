@@ -9,6 +9,12 @@ export interface ApiUser {
   provider: "credentials" | "auth0" | "saml" | "oidc";
 }
 
+export interface Auth0Connection {
+  name: string;
+  label: string;
+  strategy: string;
+}
+
 interface LoginPayload {
   email: string;
   password: string;
@@ -34,10 +40,32 @@ export async function me(): Promise<ApiUser> {
   return data.user;
 }
 
+export async function fetchIdToken(): Promise<string | null> {
+  try {
+    const { data } = await client.get<{ idToken: string }>("/auth/id-token");
+    return data.idToken;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchAuth0Connections(): Promise<Auth0Connection[]> {
+  try {
+    const { data } = await client.get<Auth0Connection[]>("/auth0/connections");
+    return data;
+  } catch {
+    return [];
+  }
+}
+
 // ── Federated auth initiators — browser redirects ─────────────────────────────
 // These are not Axios calls — the browser navigates directly to the server
 // which handles the redirect to the identity provider.
 
-export function initiateAuth0(): void {
-  window.location.href = `${import.meta.env.VITE_API_URL ?? ""}/api/auth0/initiate`;
+export function initiateAuth0(connection?: string): void {
+  const base = `${import.meta.env.VITE_API_URL ?? ""}/api/auth0/initiate`;
+  const url = connection
+    ? `${base}?connection=${encodeURIComponent(connection)}`
+    : base;
+  window.location.href = url;
 }

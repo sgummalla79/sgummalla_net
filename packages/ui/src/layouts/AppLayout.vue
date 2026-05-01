@@ -82,7 +82,7 @@ function toggleTheme() {
   <div class="vz-shell" :class="{ 'vz-shell--scrollable': scrollable }">
     <SymbolLayer />
 
-    <NavBar dot-color="green">
+    <NavBar>
       <template #brand>
         <div class="vz-nav-brand-inner">
           <img
@@ -249,6 +249,7 @@ function toggleTheme() {
           <span class="vz-shell__footer-dot" />
           Live
         </div>
+        <span class="vz-shell__footer-tagline">Ideas in Motion, Think. Build. Demo.</span>
       </slot>
     </footer>
   </div>
@@ -313,13 +314,6 @@ function toggleTheme() {
   overflow: hidden;
 }
 
-.vz-shell--scrollable {
-  height: auto;
-  min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
 .vz-shell__body {
   display: flex;
   flex-direction: row;
@@ -339,13 +333,10 @@ function toggleTheme() {
   box-sizing: border-box;
 }
 
-.vz-shell--scrollable .vz-shell__body {
-  overflow-y: auto;
-}
-
 .vz-shell--scrollable .vz-shell__main {
   align-items: flex-start;
   padding: 3rem 2rem 4rem;
+  overflow-y: auto;
 }
 
 .vz-shell__footer {
@@ -370,6 +361,14 @@ function toggleTheme() {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  font-family: var(--vz-font-mono, monospace);
+  font-size: 0.69rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3, rgba(255, 255, 255, 0.3));
+}
+
+.vz-shell__footer-tagline {
   font-family: var(--vz-font-mono, monospace);
   font-size: 0.69rem;
   letter-spacing: 0.08em;
