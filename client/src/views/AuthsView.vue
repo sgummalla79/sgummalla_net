@@ -178,6 +178,12 @@ function iconFor(status: FrontdoorLog["status"]) {
                     class="vz-te-menu-item"
                     @click.stop="launchForClient(c.id)"
                   >
+                    <svg class="vz-te-org-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="2" width="16" height="20" rx="2"/>
+                      <path d="M9 22V12h6v10"/>
+                      <path d="M8 7h.01M16 7h.01M12 7h.01"/>
+                      <path d="M8 11h.01M16 11h.01M12 11h.01"/>
+                    </svg>
                     {{ c.label }}
                   </button>
                 </div>
@@ -406,24 +412,21 @@ function iconFor(status: FrontdoorLog["status"]) {
   text-overflow: ellipsis;
   font-family: var(--vz-font-sans);
 }
-.vz-te-menu-item::before {
-  content: '';
-  flex-shrink: 0;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--vz-green);
-  opacity: 0.25;
-  transition: opacity 0.12s, transform 0.12s;
-}
 .vz-te-menu-item:hover {
   background: var(--vz-green-dim);
   color: var(--vz-green);
   border-left-color: var(--vz-green);
 }
-.vz-te-menu-item:hover::before {
+
+.vz-te-org-icon {
+  flex-shrink: 0;
+  color: var(--vz-green);
+  opacity: 0.4;
+  transition: opacity 0.12s, transform 0.12s;
+}
+.vz-te-menu-item:hover .vz-te-org-icon {
   opacity: 1;
-  transform: scale(1.25);
+  transform: scale(1.1);
 }
 
 @media (max-width: 680px) {
