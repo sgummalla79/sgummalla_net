@@ -354,38 +354,53 @@ function iconFor(status: FrontdoorLog["status"]) {
 
 .vz-te-menu {
   position: absolute;
-  bottom: calc(100% + 4px);
+  top: calc(100% + 6px);
   left: 0;
-  min-width: 160px;
-  max-width: 220px;
+  min-width: 180px;
+  max-width: 240px;
   background: var(--vz-bg2);
-  border: 1px solid var(--vz-border2);
+  border: 1px solid var(--vz-green);
   border-radius: var(--vz-radius-md);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.1);
   z-index: 50;
   overflow: hidden;
+  padding: 0.25rem 0;
 }
 
 .vz-te-menu-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   width: 100%;
   text-align: left;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.78rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: var(--vz-text2);
+  color: var(--vz-text);
   background: none;
   border: none;
   cursor: pointer;
-  transition: background 0.1s, color 0.1s;
+  transition: background 0.15s, color 0.15s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: var(--vz-font-sans);
+}
+.vz-te-menu-item::before {
+  content: '';
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--vz-green);
+  opacity: 0.5;
+  transition: opacity 0.15s;
 }
 .vz-te-menu-item:hover {
   background: var(--vz-green-dim);
   color: var(--vz-green);
 }
+.vz-te-menu-item:hover::before { opacity: 1; }
 
 .vz-te-backdrop {
   position: fixed;
