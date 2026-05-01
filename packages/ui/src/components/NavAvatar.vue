@@ -112,7 +112,7 @@ onUnmounted(() =>
         <button
           v-if="themeMode !== undefined"
           class="vz-avatar-item vz-avatar-item--theme"
-          @click="$emit('toggle-theme')"
+          @click="() => { open = false; $emit('toggle-theme'); }"
         >
           <svg
             v-if="themeMode === 'dark'"
