@@ -81,7 +81,7 @@ onMounted(async () => {
 <style scoped>
 .vz-auths {
   width: 100%;
-  max-width: 900px;
+  max-width: 720px;
   animation: vz-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
   padding-bottom: 2rem;
 }
@@ -135,6 +135,21 @@ onMounted(async () => {
 .vz-auths__grid :deep(.vz-auth-card) {
   border: 1px solid var(--vz-border);
   border-radius: var(--vz-radius-md);
+  padding: 0.75rem 1rem;
+  gap: 0.35rem;
+}
+
+.vz-auths__grid :deep(.vz-auth-card__title) {
+  font-size: 0.875rem;
+}
+
+.vz-auths__grid :deep(.vz-auth-card__desc) {
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.vz-auths__grid :deep(.vz-auth-card__action) {
+  margin-top: 0.25rem;
 }
 
 @media (max-width: 680px) {
