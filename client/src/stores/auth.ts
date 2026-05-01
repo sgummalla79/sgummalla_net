@@ -58,6 +58,7 @@ export const useAuthStore = defineStore("auth", () => {
       await apiLogout();
     } finally {
       user.value = null;
+      bootstrapped.value = false;
       loading.value = false;
     }
   }

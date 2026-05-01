@@ -288,7 +288,7 @@ function cellValue(row: Record<string, unknown>, col: string): string {
 
 async function handleLogout() {
   await auth.logout();
-  await router.push({ name: "home" });
+  await router.push({ name: "login" });
 }
 
 onMounted(loadClients);

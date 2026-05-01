@@ -13,7 +13,7 @@ const launching = ref<string | null>(null);
 
 async function handleLogout() {
   await auth.logout();
-  await router.push({ name: "home" });
+  await router.push({ name: "login" });
 }
 
 async function launch(portal: Portal) {
