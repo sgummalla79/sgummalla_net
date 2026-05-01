@@ -47,7 +47,7 @@
 
         <!-- 4: Salesforce self — Validate -->
         <div class="seq-step n">
-          <div class="seq-note" style="--nc:var(--sf-c);--nb:var(--sf-note);grid-column:7/9;grid-row:1">
+          <div class="seq-note" style="--nc:var(--sf-c);--nb:var(--sf-note);grid-column:6/9;grid-row:1">
             <span class="note-title">4. Validate JWT with certificate</span>
           </div>
         </div>
