@@ -128,12 +128,13 @@ onMounted(async () => {
 .vz-auths__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--vz-border);
-  border: 1px solid var(--vz-border);
-  border-radius: var(--vz-radius-lg);
-  overflow: hidden;
+  gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.vz-auths__grid :deep(.vz-auth-card) {
+  border: 1px solid var(--vz-border);
+  border-radius: var(--vz-radius-md);
 }
 
 @media (max-width: 680px) {
