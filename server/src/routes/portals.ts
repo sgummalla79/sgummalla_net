@@ -59,7 +59,7 @@ router.get("/", async (req: Request, res: Response) => {
       name: "Token Exchange Login",
       protocol: "token-exchange",
       description:
-        "Exchange your web session for a Salesforce user session using OAuth 2.0 Token Exchange — opens Salesforce directly in the browser.",
+        "Exchange your web session for a Salesforce user session using OAuth 2.0 Token Exchange",
       external: false,
       clients: exchangeClients.map((r) => ({ id: r.id, label: r.label })),
       allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],

@@ -10,7 +10,7 @@ const router = useRouter();
 const auth = useAuthStore();
 const portals = ref<Portal[]>([]);
 const launching = ref<string | null>(null);
-const selectedClientId = ref<Record<string, string>>({});
+const openDropdownPortal = ref<string | null>(null);
 
 async function handleLogout() {
   await auth.logout();
@@ -19,11 +19,6 @@ async function handleLogout() {
 
 async function launch(portal: Portal) {
   if (portal.disabled) return;
-  if (portal.protocol === "token-exchange") {
-    const clientId = selectedClientId.value[portal.id];
-    if (clientId) await openLogModal(clientId);
-    return;
-  }
   if (!portal.external && portal.launchUrl) {
     router.push(portal.launchUrl);
     return;
@@ -38,14 +33,17 @@ async function launch(portal: Portal) {
   }
 }
 
+function toggleDropdown(portalId: string) {
+  openDropdownPortal.value = openDropdownPortal.value === portalId ? null : portalId;
+}
+
+async function launchForClient(clientId: string) {
+  openDropdownPortal.value = null;
+  await openLogModal(clientId);
+}
+
 onMounted(async () => {
   portals.value = await getPortals();
-  // Pre-select first client for each token-exchange portal
-  portals.value.forEach((p) => {
-    if (p.protocol === "token-exchange" && p.clients?.length) {
-      selectedClientId.value[p.id] = p.clients[0].id;
-    }
-  });
 });
 
 // ── Log modal ─────────────────────────────────────────────────────────────────
@@ -135,29 +133,46 @@ function iconFor(status: FrontdoorLog["status"]) {
           :class="{ 'vz-auth-card--disabled': portal.disabled }"
         >
           <template #action>
-            <!-- Disabled: coming soon label -->
+            <!-- Disabled -->
             <span v-if="portal.disabled" class="vz-coming-soon">Coming soon</span>
 
-            <!-- Token Exchange: client selector + launch -->
-            <div v-else-if="portal.protocol === 'token-exchange'" class="vz-te-action">
-              <select
-                v-if="(portal.clients?.length ?? 0) > 1"
-                v-model="selectedClientId[portal.id]"
-                class="vz-te-select"
+            <!-- Token Exchange: single client → plain button; multiple → dropdown -->
+            <div v-else-if="portal.protocol === 'token-exchange'" class="vz-te-wrap">
+
+              <!-- Single client: just a button -->
+              <button
+                v-if="(portal.clients?.length ?? 0) <= 1"
+                class="vz-te-btn"
+                :disabled="logModal.open && logModal.loading"
+                @click="launchForClient(portal.clients![0].id)"
               >
-                <option
-                  v-for="c in portal.clients"
-                  :key="c.id"
-                  :value="c.id"
-                >{{ c.label }}</option>
-              </select>
-              <Button
-                variant="ghost"
-                :loading="logModal.open && logModal.loading"
-                @click="launch(portal)"
-              >
-                Login ↗
-              </Button>
+                {{ portal.clients![0]?.label ?? 'Login' }} ↗
+              </button>
+
+              <!-- Multiple clients: dropdown button -->
+              <div v-else class="vz-te-dropdown">
+                <button
+                  class="vz-te-btn vz-te-btn--chevron"
+                  :disabled="logModal.open && logModal.loading"
+                  @click.stop="toggleDropdown(portal.id)"
+                >
+                  <span>Login ↗</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                <div v-if="openDropdownPortal === portal.id" class="vz-te-menu">
+                  <button
+                    v-for="c in portal.clients"
+                    :key="c.id"
+                    class="vz-te-menu-item"
+                    @click.stop="launchForClient(c.id)"
+                  >
+                    {{ c.label }}
+                  </button>
+                </div>
+              </div>
+
             </div>
 
             <!-- Normal launch -->
@@ -174,6 +189,9 @@ function iconFor(status: FrontdoorLog["status"]) {
       </div>
     </div>
   </AppLayout>
+
+  <!-- Dropdown backdrop — closes any open dropdown when clicking outside -->
+  <div v-if="openDropdownPortal" class="vz-te-backdrop" @click="openDropdownPortal = null"/>
 
   <!-- Token Exchange log modal -->
   <Teleport to="body">
@@ -306,27 +324,69 @@ function iconFor(status: FrontdoorLog["status"]) {
   height: 2rem; /* matches button height so action rows are visually equal */
 }
 
-/* Token Exchange action row: select + button */
-.vz-te-action {
-  display: flex;
+/* Token Exchange dropdown button */
+.vz-te-wrap { display: flex; align-items: center; }
+
+.vz-te-dropdown { position: relative; }
+
+.vz-te-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.8rem;
+  font-family: var(--vz-font-sans);
+  color: var(--vz-text2);
+  background: none;
+  border: none;
+  border-radius: var(--vz-radius-sm);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vz-te-btn:hover:not(:disabled) { color: var(--vz-text); background: var(--vz-surface); }
+.vz-te-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.vz-te-btn--chevron { padding-right: 0.4rem; }
+
+.vz-te-menu {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  min-width: 160px;
+  max-width: 220px;
+  background: var(--vz-bg2);
+  border: 1px solid var(--vz-border2);
+  border-radius: var(--vz-radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 50;
+  overflow: hidden;
 }
 
-.vz-te-select {
-  flex: 1;
-  min-width: 0;
-  font-size: 0.75rem;
-  font-family: var(--vz-font-mono);
-  color: var(--vz-text);
-  background: var(--vz-surface);
-  border: 1px solid var(--vz-border);
-  border-radius: var(--vz-radius-sm);
-  padding: 0.25rem 0.4rem;
+.vz-te-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
+  color: var(--vz-text2);
+  background: none;
+  border: none;
   cursor: pointer;
-  outline: none;
+  transition: background 0.1s, color 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.vz-te-select:focus { border-color: var(--vz-border2); }
+.vz-te-menu-item:hover { background: var(--vz-surface2); color: var(--vz-text); }
+
+.vz-te-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+}
 
 @media (max-width: 680px) {
   .vz-auths__grid { grid-template-columns: 1fr; }
