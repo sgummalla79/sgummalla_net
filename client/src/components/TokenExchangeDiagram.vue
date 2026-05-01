@@ -17,7 +17,7 @@
     <!-- Body: lifelines + steps -->
     <div class="seq-body">
       <!--
-        Grid: 14 cols = 5 × (0.5fr 0.5fr) + 4 × 60px
+        Grid: 14 cols = 5 × (0.5fr 0.5fr) + 4 × 66px
         Lifeline centers at grid-lines 2, 5, 8, 11, 14.
         Arrow grid-column:2/8 goes center-of-Browser → center-of-Server (long skip).
       -->
@@ -186,26 +186,26 @@
 
 /* ── Container ── */
 .seq {
-  width: 860px;
+  width: 960px;
   background: var(--seq-bg);
-  border-radius: 8px;
-  padding: 1rem;
+  border-radius: 10px;
+  padding: 1.25rem;
   font-family: ui-monospace, 'SF Mono', 'Fira Code', monospace;
   display: flex;
   flex-direction: column;
 }
 
-/* ── Actors (full-width — unchanged) ── */
+/* ── Actors ── */
 .seq-actors { display: flex; align-items: stretch; }
 .seq-actor {
   flex: 1;
   text-align: center;
-  padding: 0.4rem 0.5rem;
-  border-radius: 5px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
   border: 1.5px solid var(--c);
   background: var(--bg);
   color: var(--tx);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -214,7 +214,7 @@
 .actor-server  { --c: var(--server-c);  --bg: var(--server-bg);  --tx: var(--server-tx); }
 .actor-sf      { --c: var(--sf-c);      --bg: var(--sf-bg);      --tx: var(--sf-tx); }
 .actor-apex    { --c: var(--apex-c);    --bg: var(--apex-bg);    --tx: var(--apex-tx); }
-.seq-gap { width: 60px; flex-shrink: 0; }
+.seq-gap { width: 66px; flex-shrink: 0; }
 
 /* ── Body + lifelines ── */
 .seq-body { position: relative; }
@@ -222,7 +222,7 @@
 .lifelines {
   position: absolute; inset: 0;
   display: grid;
-  grid-template-columns: 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr;
+  grid-template-columns: 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr;
   pointer-events: none;
 }
 .ll { position: relative; }
@@ -231,7 +231,7 @@
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 0;
-  border-left: 1px dashed var(--c);
+  border-left: 1.5px dashed var(--c);
   opacity: var(--ll-op);
 }
 
@@ -244,15 +244,15 @@
 
 .seq-phase-row {
   display: grid;
-  grid-template-columns: 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr;
+  grid-template-columns: 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr;
   padding: 2px 0 5px;
 }
 .seq-phase {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border: 1px solid var(--pc);
   background: var(--pb);
   border-radius: 3px;
@@ -261,7 +261,7 @@
 
 .seq-step {
   display: grid;
-  grid-template-columns: 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr 60px 0.5fr 0.5fr;
+  grid-template-columns: 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr 66px 0.5fr 0.5fr;
   grid-template-rows: 1fr auto;
   min-height: 44px;
   padding: 2px 0;
@@ -269,11 +269,11 @@
 .seq-step.n { min-height: unset; }
 
 .seq-label {
-  font-size: 10px;
+  font-size: 12px;
   overflow-wrap: break-word;
   min-width: 0;
   color: var(--label-c);
-  padding: 0 4px 2px;
+  padding: 0 6px 3px;
   align-self: end;
   text-align: center;
   z-index: 2;
@@ -281,59 +281,59 @@
 
 /* ── Arrows ── */
 .seq-arrow-r, .seq-arrow-l {
-  height: 1.5px;
+  height: 2px;
   background: var(--ac);
   position: relative;
   align-self: end;
-  margin-bottom: 8px;
+  margin-bottom: 9px;
   z-index: 2;
 }
 .seq-arrow-r::after {
   content: '';
   position: absolute;
-  right: 0; top: -4px;
-  border: 5px solid transparent;
-  border-left: 8px solid var(--ac);
+  right: 0; top: -5px;
+  border: 6px solid transparent;
+  border-left: 9px solid var(--ac);
 }
 .seq-arrow-l::before {
   content: '';
   position: absolute;
-  left: 0; top: -4px;
-  border: 5px solid transparent;
-  border-right: 8px solid var(--ac);
+  left: 0; top: -5px;
+  border: 6px solid transparent;
+  border-right: 9px solid var(--ac);
 }
 
-/* ── Note boxes — sized to content, not stretched across the full grid span ── */
+/* ── Note boxes ── */
 .seq-note {
   border: 1px solid var(--nc);
   background: var(--nb);
   border-radius: 4px;
-  padding: 5px 9px;
+  padding: 6px 11px;
   display: inline-flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   z-index: 2;
   margin: 3px 0 3px 6px;
   align-self: center;
   width: fit-content;
   max-width: 100%;
 }
-.note-title { font-size: 9.5px; font-weight: 600; color: var(--note-title); white-space: nowrap; }
-.note-sub   { font-size: 9px;   color: var(--note-sub); white-space: nowrap; }
+.note-title { font-size: 11px; font-weight: 600; color: var(--note-title); white-space: nowrap; }
+.note-sub   { font-size: 10px; color: var(--note-sub); white-space: nowrap; }
 
 /* ── Legend ── */
 .seq-legend {
-  margin-top: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  margin-top: 0.875rem;
+  padding: 0.5rem 0.875rem;
   background: var(--legend-bg);
   border: 1px solid var(--legend-bd);
-  border-radius: 5px;
-  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-  font-size: 9.5px; color: var(--legend-c);
+  border-radius: 6px;
+  display: flex; align-items: center; gap: 0.875rem; flex-wrap: wrap;
+  font-size: 11px; color: var(--legend-c);
 }
 .leg-dot {
-  width: 7px; height: 7px; border-radius: 2px;
-  display: inline-block; margin-right: 3px; flex-shrink: 0;
+  width: 8px; height: 8px; border-radius: 2px;
+  display: inline-block; margin-right: 4px; flex-shrink: 0;
 }
-.leg-note { width: 100%; font-size: 8.5px; color: var(--legend-nc); }
+.leg-note { width: 100%; font-size: 10px; color: var(--legend-nc); }
 </style>
