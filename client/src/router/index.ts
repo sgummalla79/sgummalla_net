@@ -22,7 +22,7 @@ const routes: RouteRecordRaw[] = [
     path: "/auths",
     name: "auths",
     component: () => import("../views/AuthsView.vue"),
-    meta: { requiresAuth: true, ownerOnly: true },
+    meta: { requiresAuth: true },
   },
   {
     path: "/configuration",
@@ -34,13 +34,13 @@ const routes: RouteRecordRaw[] = [
     path: "/salesforce",
     name: "salesforce",
     component: () => import("../views/SalesforceView.vue"),
-    meta: { requiresAuth: true, ownerOnly: true },
+    meta: { requiresAuth: true },
   },
   {
     path: "/salesforce-exchange",
     name: "salesforce-exchange",
     component: () => import("../views/SalesforceExchangeView.vue"),
-    meta: { requiresAuth: true, ownerOnly: true },
+    meta: { requiresAuth: true },
   },
   {
     path: "/profile",
@@ -58,6 +58,12 @@ const routes: RouteRecordRaw[] = [
     path: "/blog/:slug",
     name: "blog-article",
     component: () => import("../views/BlogArticleView.vue"),
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/link-accounts",
+    name: "link-accounts",
+    component: () => import("../views/LinkAccountsView.vue"),
     meta: { requiresAuth: false },
   },
   {
@@ -119,7 +125,7 @@ router.beforeEach(async (to) => {
     auth.isAuthenticated &&
     ["login", "home"].includes(to.name as string)
   ) {
-    return auth.isOwner ? { name: "auths" } : { name: "blog" };
+    return { name: "auths" };
   }
 
   return true;

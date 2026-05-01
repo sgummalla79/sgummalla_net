@@ -40,6 +40,21 @@ export async function me(): Promise<ApiUser> {
   return data.user;
 }
 
+export interface PendingLink {
+  primaryProvider: string;
+  secondaryProvider: string;
+  email: string;
+}
+
+export async function fetchPendingLink(): Promise<PendingLink | null> {
+  try {
+    const { data } = await client.get<PendingLink>("/auth0/pending-link");
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchIdToken(): Promise<string | null> {
   try {
     const { data } = await client.get<{ idToken: string }>("/auth/id-token");

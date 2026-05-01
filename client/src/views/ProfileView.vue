@@ -53,7 +53,13 @@ const CLAIM_LABELS: Record<string, string> = {
   sid: "Session ID",
 };
 
-const TIMESTAMP_CLAIMS = new Set(["iat", "exp", "nbf", "auth_time", "updated_at"]);
+const TIMESTAMP_CLAIMS = new Set([
+  "iat",
+  "exp",
+  "nbf",
+  "auth_time",
+  "updated_at",
+]);
 
 function formatClaimValue(key: string, value: unknown): string {
   if (TIMESTAMP_CLAIMS.has(key) && typeof value === "number") {
@@ -65,16 +71,33 @@ function formatClaimValue(key: string, value: unknown): string {
       minute: "2-digit",
     });
   }
-  if (Array.isArray(value)) return value.map((v) => (typeof v === "object" ? JSON.stringify(v) : String(v))).join(", ");
+  if (Array.isArray(value))
+    return value
+      .map((v) => (typeof v === "object" ? JSON.stringify(v) : String(v)))
+      .join(", ");
   if (typeof value === "object" && value !== null) return JSON.stringify(value);
   return String(value);
 }
 
-function claimType(key: string, value: unknown): "bool" | "timestamp" | "url" | "array-obj" | "default" {
+function claimType(
+  key: string,
+  value: unknown,
+): "bool" | "timestamp" | "url" | "array-obj" | "default" {
   if (typeof value === "boolean") return "bool";
   if (TIMESTAMP_CLAIMS.has(key)) return "timestamp";
-  if (key === "picture" && typeof value === "string" && value.startsWith("http")) return "url";
-  if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object" && value[0] !== null) return "array-obj";
+  if (
+    key === "picture" &&
+    typeof value === "string" &&
+    value.startsWith("http")
+  )
+    return "url";
+  if (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    typeof value[0] === "object" &&
+    value[0] !== null
+  )
+    return "array-obj";
   return "default";
 }
 
@@ -87,10 +110,21 @@ function toggleClaim(key: string) {
 
 const orderedClaims = computed(() => {
   if (!claims.value) return [];
-  const priority = ["sub", "name", "given_name", "family_name", "nickname", "email", "email_verified", "picture"];
+  const priority = [
+    "sub",
+    "name",
+    "given_name",
+    "family_name",
+    "nickname",
+    "email",
+    "email_verified",
+    "picture",
+  ];
   const entries = Object.entries(claims.value);
   const sorted = [
-    ...priority.filter((k) => k in claims.value!).map((k) => [k, claims.value![k]] as [string, unknown]),
+    ...priority
+      .filter((k) => k in claims.value!)
+      .map((k) => [k, claims.value![k]] as [string, unknown]),
     ...entries.filter(([k]) => !priority.includes(k)),
   ];
   return sorted;
@@ -114,6 +148,8 @@ async function handleLogout() {
     :user-email="auth.email"
     :scrollable="true"
     @logout="handleLogout"
+    :debug-mode="auth.debugMode"
+    @toggle-debug="auth.toggleDebugMode"
   >
     <div class="vz-profile">
       <!-- ── Identity header ────────────────────────────────────────── -->
@@ -171,31 +207,59 @@ async function handleLogout() {
               <div
                 class="vz-token__claim"
                 :class="{
-                  'vz-token__claim--expandable': claimType(key, value) === 'array-obj',
-                  'vz-token__claim--open': claimType(key, value) === 'array-obj' && expandedClaims.has(key),
+                  'vz-token__claim--expandable':
+                    claimType(key, value) === 'array-obj',
+                  'vz-token__claim--open':
+                    claimType(key, value) === 'array-obj' &&
+                    expandedClaims.has(key),
                 }"
-                @click="claimType(key, value) === 'array-obj' && toggleClaim(key)"
+                @click="
+                  claimType(key, value) === 'array-obj' && toggleClaim(key)
+                "
               >
-                <span class="vz-token__claim-key">{{ CLAIM_LABELS[key] ?? key }}</span>
+                <span class="vz-token__claim-key">{{
+                  CLAIM_LABELS[key] ?? key
+                }}</span>
 
                 <span
                   v-if="claimType(key, value) === 'bool'"
-                  :class="['vz-token__claim-badge', value ? 'vz-token__claim-badge--green' : 'vz-token__claim-badge--red']"
-                >{{ value ? "Yes" : "No" }}</span>
+                  :class="[
+                    'vz-token__claim-badge',
+                    value
+                      ? 'vz-token__claim-badge--green'
+                      : 'vz-token__claim-badge--red',
+                  ]"
+                  >{{ value ? "Yes" : "No" }}</span
+                >
 
-                <span v-else-if="claimType(key, value) === 'url'" class="vz-token__claim-url">
+                <span
+                  v-else-if="claimType(key, value) === 'url'"
+                  class="vz-token__claim-url"
+                >
                   {{ formatClaimValue(key, value) }}
                 </span>
 
-                <div v-else-if="claimType(key, value) === 'array-obj'" class="vz-token__claim-expandable-value">
+                <div
+                  v-else-if="claimType(key, value) === 'array-obj'"
+                  class="vz-token__claim-expandable-value"
+                >
                   <span class="vz-token__claim-value">
                     {{ (value as unknown[]).length }} salesforce client(s)
                   </span>
                   <svg
                     class="vz-token__chevron"
-                    width="12" height="12" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    :style="{ transform: expandedClaims.has(key) ? 'rotate(180deg)' : 'rotate(0deg)' }"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    :style="{
+                      transform: expandedClaims.has(key)
+                        ? 'rotate(180deg)'
+                        : 'rotate(0deg)',
+                    }"
                   >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
@@ -203,12 +267,24 @@ async function handleLogout() {
 
                 <span
                   v-else
-                  :class="['vz-token__claim-value', claimType(key, value) === 'timestamp' ? 'vz-token__claim-value--ts' : '']"
-                >{{ formatClaimValue(key, value) }}</span>
+                  :class="[
+                    'vz-token__claim-value',
+                    claimType(key, value) === 'timestamp'
+                      ? 'vz-token__claim-value--ts'
+                      : '',
+                  ]"
+                  >{{ formatClaimValue(key, value) }}</span
+                >
               </div>
 
               <!-- Expanded table for array-of-objects -->
-              <div v-if="claimType(key, value) === 'array-obj' && expandedClaims.has(key)" class="vz-token__subtable-wrap">
+              <div
+                v-if="
+                  claimType(key, value) === 'array-obj' &&
+                  expandedClaims.has(key)
+                "
+                class="vz-token__subtable-wrap"
+              >
                 <table class="vz-token__subtable">
                   <thead>
                     <tr>
@@ -219,12 +295,12 @@ async function handleLogout() {
                   </thead>
                   <tbody>
                     <tr
-                      v-for="(item, idx) in (value as Record<string, unknown>[])"
+                      v-for="(item, idx) in value as Record<string, unknown>[]"
                       :key="idx"
                     >
-                      <td>{{ item['appDeveloperName'] ?? '—' }}</td>
-                      <td>{{ item['orgUrl'] ?? '—' }}</td>
-                      <td>{{ item['sf_username'] ?? '—' }}</td>
+                      <td>{{ item["appDeveloperName"] ?? "—" }}</td>
+                      <td>{{ item["orgUrl"] ?? "—" }}</td>
+                      <td>{{ item["sf_username"] ?? "—" }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -245,8 +321,14 @@ async function handleLogout() {
 }
 
 @keyframes vz-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
@@ -320,7 +402,9 @@ async function handleLogout() {
   transition: background 0.15s;
 }
 
-.vz-profile__card:hover { background: var(--vz-surface); }
+.vz-profile__card:hover {
+  background: var(--vz-surface);
+}
 
 .vz-profile__card-label {
   font-family: var(--vz-font-mono);
@@ -358,8 +442,13 @@ async function handleLogout() {
 }
 
 @keyframes vz-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 .vz-profile__badge {
@@ -407,7 +496,6 @@ async function handleLogout() {
   margin-top: 0.2rem;
 }
 
-
 .vz-token__claims {
   background: var(--vz-bg);
 }
@@ -437,8 +525,12 @@ async function handleLogout() {
   transition: background 0.12s;
 }
 
-.vz-token__claim:last-child { border-bottom: none; }
-.vz-token__claim:hover      { background: var(--vz-surface); }
+.vz-token__claim:last-child {
+  border-bottom: none;
+}
+.vz-token__claim:hover {
+  background: var(--vz-surface);
+}
 
 .vz-token__claim-key {
   font-family: var(--vz-font-mono);
@@ -562,8 +654,16 @@ async function handleLogout() {
 /* ── Responsive ─────────────────────────────────────────────── */
 
 @media (max-width: 600px) {
-  .vz-profile__grid { grid-template-columns: 1fr; }
-  .vz-profile__header { flex-direction: column; align-items: flex-start; }
-  .vz-token__claim { grid-template-columns: 1fr; gap: 0.25rem; }
+  .vz-profile__grid {
+    grid-template-columns: 1fr;
+  }
+  .vz-profile__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .vz-token__claim {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
 }
 </style>

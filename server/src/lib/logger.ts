@@ -1,7 +1,84 @@
-/**
- * Structured debug logger — logs formatted info to console.
- * Set LOG_LEVEL=debug in .env to enable verbose output.
- */
+// ── Structured logging framework ─────────────────────────────────────────────
+// Debug mode is toggled at runtime via the owner debug toggle.
+// Console sink is active when debug mode is ON.
+// Designed to swap in a MongoDB sink later without changing call sites.
+
+export type LogLevel = "info" | "warn" | "error";
+export type LogType = "incoming" | "outgoing";
+
+export interface LogEntry {
+  timestamp: string;
+  level: LogLevel;
+  type: LogType;
+  method: string;
+  url: string;
+  status?: number | undefined;
+  durationMs?: number | undefined;
+  userId?: string | undefined;
+  context?: string | undefined;
+  error?: string | undefined;
+}
+
+let debugMode = false;
+
+export function setDebugMode(enabled: boolean): void {
+  debugMode = enabled;
+}
+
+export function isDebugMode(): boolean {
+  return debugMode;
+}
+
+export function log(entry: LogEntry): void {
+  if (!debugMode) return;
+  const status = entry.status != null ? ` ${entry.status}` : "";
+  const duration = entry.durationMs != null ? ` ${entry.durationMs}ms` : "";
+  const user = entry.userId ? ` [${entry.userId}]` : "";
+  const ctx = entry.context ? ` — ${entry.context}` : "";
+  const err = entry.error ? ` ERROR: ${entry.error}` : "";
+  const arrow = entry.type === "incoming" ? "→" : "↗";
+  const line = `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.type}]${user} ${arrow} ${entry.method} ${entry.url}${status}${duration}${ctx}${err}`;
+  if (entry.level === "error") console.error(line);
+  else if (entry.level === "warn") console.warn(line);
+  else console.log(line);
+}
+
+export async function loggedFetch(
+  url: string,
+  options?: RequestInit,
+  context?: string,
+): Promise<Response> {
+  const method = (options?.method ?? "GET").toUpperCase();
+  const start = Date.now();
+  try {
+    const res = await fetch(url, options);
+    log({
+      timestamp: new Date().toISOString(),
+      level: res.ok ? "info" : "warn",
+      type: "outgoing",
+      method,
+      url,
+      status: res.status,
+      durationMs: Date.now() - start,
+      context,
+    });
+    return res;
+  } catch (err) {
+    log({
+      timestamp: new Date().toISOString(),
+      level: "error",
+      type: "outgoing",
+      method,
+      url,
+      durationMs: Date.now() - start,
+      context,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    throw err;
+  }
+}
+
+// ── Legacy verbose logger (SAML / OIDC flow traces) ──────────────────────────
 
 const isDebug =
   process.env.LOG_LEVEL === "debug" || process.env.NODE_ENV === "development";

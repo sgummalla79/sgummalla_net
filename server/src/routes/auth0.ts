@@ -4,9 +4,13 @@ import {
   signToken,
   cookieOptions,
   getCookieName,
+  signPendingLink,
+  verifyPendingLink,
+  getPendingLinkCookieName,
   type AuthUser,
   type SfAccount,
 } from "../lib/jwt.js";
+import { loggedFetch } from "../lib/logger.js";
 import sql from "../lib/db.js";
 
 const router: import("express").Router = Router();
@@ -73,16 +77,20 @@ async function getMgmtToken(domain: string): Promise<string> {
     return mgmtTokenCache.token;
   }
 
-  const res = await fetch(`https://${domain}/oauth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      grant_type: "client_credentials",
-      client_id: process.env.AUTH0_CLIENT_ID,
-      client_secret: process.env.AUTH0_CLIENT_SECRET,
-      audience: `https://${domain}/api/v2/`,
-    }),
-  });
+  const res = await loggedFetch(
+    `https://${domain}/oauth/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        grant_type: "client_credentials",
+        client_id: process.env.AUTH0_CLIENT_ID,
+        client_secret: process.env.AUTH0_CLIENT_SECRET,
+        audience: `https://${domain}/api/v2/`,
+      }),
+    },
+    "Auth0 Management API — get token",
+  );
 
   if (!res.ok) throw new Error(`Management token fetch failed: ${res.status}`);
 
@@ -108,9 +116,10 @@ async function fetchConnections(): Promise<Auth0Connection[]> {
   const clientId = process.env.AUTH0_CLIENT_ID!;
   const token = await getMgmtToken(domain);
 
-  const res = await fetch(
+  const res = await loggedFetch(
     `https://${domain}/api/v2/connections?client_id=${encodeURIComponent(clientId)}&fields=name,strategy,display_name,enabled_clients`,
     { headers: { Authorization: `Bearer ${token}` } },
+    "Auth0 Management API — fetch connections",
   );
 
   if (!res.ok) throw new Error(`Connections fetch failed: ${res.status}`);
@@ -214,6 +223,54 @@ router.get("/callback", async (req: Request, res: Response) => {
       }
     }
 
+    // Check for email conflict across providers
+    if (userinfo.email) {
+      try {
+        const domain = process.env.AUTH0_DOMAIN!;
+        const mgmtToken = await getMgmtToken(domain);
+        const emailRes = await loggedFetch(
+          `https://${domain}/api/v2/users-by-email?email=${encodeURIComponent(userinfo.email as string)}&fields=user_id,identities,created_at`,
+          { headers: { Authorization: `Bearer ${mgmtToken}` } },
+          "Auth0 Management API — users by email (conflict check)",
+        );
+        if (emailRes.ok) {
+          const allUsers = (await emailRes.json()) as Array<{
+            user_id: string;
+            identities: Array<{ provider: string }>;
+            created_at: string;
+          }>;
+          const others = allUsers.filter((u) => u.user_id !== userinfo.sub);
+          if (others.length > 0) {
+            const primary = others.sort(
+              (a, b) =>
+                new Date(a.created_at).getTime() -
+                new Date(b.created_at).getTime(),
+            )[0];
+            const currentSub = userinfo.sub as string;
+            const pendingToken = signPendingLink({
+              primaryUserId: primary.user_id,
+              primaryProvider: primary.identities[0].provider,
+              secondaryUserId: currentSub,
+              secondaryProvider: currentSub.split("|")[0],
+              email: userinfo.email as string,
+            });
+            res.cookie(getPendingLinkCookieName(), pendingToken, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+              maxAge: 10 * 60 * 1000,
+              path: "/",
+            });
+            res.redirect("/link-accounts");
+            return;
+          }
+        }
+      } catch (err) {
+        console.error("[Auth0 conflict check]", err);
+        // Non-fatal — fall through to normal login
+      }
+    }
+
     // Persist the Auth0 id_token for Token Exchange flow
     if (tokenSet.id_token) {
       await sql`
@@ -231,6 +288,122 @@ router.get("/callback", async (req: Request, res: Response) => {
   } catch (err) {
     console.error("[Sgummalla Works Auth0]", err);
     res.redirect("/login?error=auth0_failed");
+  }
+});
+
+// ── GET /api/auth0/pending-link ───────────────────────────────────────────────
+
+router.get("/pending-link", (req: Request, res: Response) => {
+  const token = req.cookies[getPendingLinkCookieName()] as string | undefined;
+  if (!token) {
+    res.status(404).json({ error: "No pending link" });
+    return;
+  }
+  try {
+    const data = verifyPendingLink(token);
+    res.json({
+      primaryProvider: data.primaryProvider,
+      secondaryProvider: data.secondaryProvider,
+      email: data.email,
+    });
+  } catch {
+    res.status(404).json({ error: "No pending link" });
+  }
+});
+
+// ── GET /api/auth0/link ───────────────────────────────────────────────────────
+
+router.get("/link", async (req: Request, res: Response) => {
+  const token = req.cookies[getPendingLinkCookieName()] as string | undefined;
+  if (!token) {
+    res.redirect("/login?error=link_expired");
+    return;
+  }
+
+  res.clearCookie(getPendingLinkCookieName(), { path: "/" });
+
+  try {
+    const data = verifyPendingLink(token);
+    const domain = process.env.AUTH0_DOMAIN!;
+    const mgmtToken = await getMgmtToken(domain);
+
+    if (req.query.action === "skip") {
+      // Keep accounts separate — log in as the secondary (current) user
+      const profileRes = await loggedFetch(
+        `https://${domain}/api/v2/users/${encodeURIComponent(data.secondaryUserId)}`,
+        { headers: { Authorization: `Bearer ${mgmtToken}` } },
+        "Auth0 Management API — fetch secondary user profile",
+      );
+      if (!profileRes.ok) {
+        res.redirect("/login?error=link_failed");
+        return;
+      }
+      const profile = (await profileRes.json()) as {
+        user_id: string;
+        email?: string;
+        name?: string;
+        nickname?: string;
+      };
+      const user: AuthUser = {
+        id: profile.user_id,
+        email: profile.email ?? "",
+        name: profile.name ?? profile.nickname ?? profile.email ?? "",
+        provider: "auth0",
+        sfAccounts: [],
+      };
+      const sessionToken = signToken(user);
+      res.cookie(getCookieName(), sessionToken, cookieOptions());
+      res.redirect("/auths");
+      return;
+    }
+
+    // Link secondary identity into primary account
+    const [secProvider, secUserId] = data.secondaryUserId.split("|");
+    const linkRes = await loggedFetch(
+      `https://${domain}/api/v2/users/${encodeURIComponent(data.primaryUserId)}/identities`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${mgmtToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ provider: secProvider, user_id: secUserId }),
+      },
+      "Auth0 Management API — link identities",
+    );
+    if (!linkRes.ok) {
+      console.error("[Auth0 link]", await linkRes.text());
+      res.redirect("/login?error=link_failed");
+      return;
+    }
+
+    // Fetch primary user profile to build the session
+    const profileRes = await loggedFetch(
+      `https://${domain}/api/v2/users/${encodeURIComponent(data.primaryUserId)}`,
+      { headers: { Authorization: `Bearer ${mgmtToken}` } },
+      "Auth0 Management API — fetch primary user profile",
+    );
+    const profile = (await profileRes.json()) as {
+      user_id: string;
+      email?: string;
+      name?: string;
+      nickname?: string;
+      app_metadata?: { sf_accounts?: SfAccount[] };
+    };
+    const user: AuthUser = {
+      id: profile.user_id,
+      email: profile.email ?? "",
+      name: profile.name ?? profile.nickname ?? profile.email ?? "",
+      provider: "auth0",
+      sfAccounts: profile.app_metadata?.sf_accounts ?? [],
+    };
+    const sessionToken = signToken(user);
+    res.cookie(getCookieName(), sessionToken, cookieOptions());
+    res.redirect("/auths");
+  } catch (err) {
+    console.error("[Auth0 link]", err);
+    res.clearCookie(getPendingLinkCookieName(), { path: "/" });
+    res.redirect("/login?error=link_failed");
   }
 });
 

@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { requireOwner } from "../middleware/requireOwner.js";
 import sql from "../lib/db.js";
 import { exchangeWebAppToken } from "../lib/sfTokenExchangeFlow.js";
 import { refreshAccessToken } from "../lib/sfBearerFlow.js";
@@ -28,7 +29,7 @@ router.get("/clients", async (_req: Request, res: Response) => {
 
 // ── POST /api/salesforce-exchange/clients ────────────────────────────────────
 
-router.post("/clients", async (req: Request, res: Response) => {
+router.post("/clients", requireOwner, async (req: Request, res: Response) => {
   const {
     label,
     client_id,
@@ -69,7 +70,7 @@ router.post("/clients", async (req: Request, res: Response) => {
 
 // ── PATCH /api/salesforce-exchange/clients/:id ───────────────────────────────
 
-router.patch("/clients/:id", async (req: Request, res: Response) => {
+router.patch("/clients/:id", requireOwner, async (req: Request, res: Response) => {
   const { id } = req.params;
   const { label, client_id, login_url, private_key } = req.body as Record<
     string,
@@ -119,7 +120,7 @@ router.patch("/clients/:id", async (req: Request, res: Response) => {
 
 // ── DELETE /api/salesforce-exchange/clients/:id ──────────────────────────────
 
-router.delete("/clients/:id", async (req: Request, res: Response) => {
+router.delete("/clients/:id", requireOwner, async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const [row] = await sql`
@@ -160,6 +161,7 @@ router.get("/clients/:id/tokens", async (req: Request, res: Response) => {
 
 router.delete(
   "/clients/:id/tokens/:sf_username",
+  requireOwner,
   async (req: Request, res: Response) => {
     const { id, sf_username } = req.params;
     try {

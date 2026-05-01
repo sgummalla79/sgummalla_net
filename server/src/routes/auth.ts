@@ -9,6 +9,7 @@ import {
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validate } from "../middleware/validate.js";
 import sql from "../lib/db.js";
+import { loggedFetch } from "../lib/logger.js";
 
 const router: import("express").Router = Router();
 
@@ -33,19 +34,23 @@ async function loginWithAuth0(
     throw new Error("Auth0 is not configured");
   }
 
-  const tokenRes = await fetch(`https://${domain}/oauth/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      grant_type: "password",
-      username: email,
-      password,
-      client_id: clientId,
-      client_secret: clientSecret,
-      scope: "openid profile email",
-      connection: "Username-Password-Authentication",
-    }),
-  });
+  const tokenRes = await loggedFetch(
+    `https://${domain}/oauth/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: email,
+        password,
+        client_id: clientId,
+        client_secret: clientSecret,
+        scope: "openid profile email",
+        connection: "Username-Password-Authentication",
+      }),
+    },
+    "Auth0 — ROPC token request",
+  );
 
   if (!tokenRes.ok) {
     const err = (await tokenRes.json().catch(() => ({}))) as {
@@ -59,9 +64,11 @@ async function loginWithAuth0(
     id_token?: string;
   };
 
-  const userinfoRes = await fetch(`https://${domain}/userinfo`, {
-    headers: { Authorization: `Bearer ${tokens.access_token}` },
-  });
+  const userinfoRes = await loggedFetch(
+    `https://${domain}/userinfo`,
+    { headers: { Authorization: `Bearer ${tokens.access_token}` } },
+    "Auth0 — fetch userinfo",
+  );
 
   if (!userinfoRes.ok) throw new Error("Failed to retrieve user info");
 
@@ -76,8 +83,7 @@ async function loginWithAuth0(
   const user: AuthUser = {
     id: userinfo.sub,
     email: userinfo.email ?? "",
-    name:
-      userinfo.name ?? userinfo.nickname ?? userinfo.email ?? "",
+    name: userinfo.name ?? userinfo.nickname ?? userinfo.email ?? "",
     provider: "auth0",
     sfAccounts: userinfo.sf_accounts ?? [],
   };

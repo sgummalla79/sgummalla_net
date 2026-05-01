@@ -75,6 +75,8 @@ async function handleLogout() {
     :scrollable="true"
     @profile="router.push({ name: 'profile' })"
     @logout="handleLogout"
+    :debug-mode="auth.debugMode"
+    @toggle-debug="auth.toggleDebugMode"
   >
     <div class="vz-draft-page">
       <!-- Draft banner — top of page, non-sticky -->

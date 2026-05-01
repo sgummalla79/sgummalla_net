@@ -15,6 +15,8 @@ import articlesRouter from "./routes/articles.js";
 import salesforceRouter from "./routes/salesforce.js";
 import salesforceExchangeRouter from "./routes/salesforceExchange.js";
 import { ensureTables } from "./lib/ensureTables.js";
+import { requestLogger } from "./middleware/requestLogger.js";
+import debugRouter from "./routes/debug.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -36,9 +38,11 @@ if (isProd && CANONICAL_HOST) {
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
 
 // ── API routes ────────────────────────────────────────────────────────────────
 app.use("/api", healthRouter);
+app.use("/api/debug", debugRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/auth0", auth0Router);
 app.use("/api/saml", samlRouter);

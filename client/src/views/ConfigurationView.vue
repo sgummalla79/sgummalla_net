@@ -60,6 +60,8 @@ async function fetchMeta(type: "saml" | "oidc") {
     @profile="router.push({ name: 'profile' })"
     :scrollable="true"
     @logout="handleLogout"
+    :debug-mode="auth.debugMode"
+    @toggle-debug="auth.toggleDebugMode"
   >
     <div class="vz-config">
       <div class="vz-config__section-header">

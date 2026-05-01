@@ -13,12 +13,8 @@ const articles = ref<Article[]>([]);
 const loading = ref(true);
 const page = ref(1);
 
-const visible = computed(() =>
-  articles.value.slice(0, page.value * PAGE_SIZE),
-);
-const hasMore = computed(
-  () => visible.value.length < articles.value.length,
-);
+const visible = computed(() => articles.value.slice(0, page.value * PAGE_SIZE));
+const hasMore = computed(() => visible.value.length < articles.value.length);
 
 onMounted(async () => {
   try {
@@ -44,6 +40,8 @@ async function handleLogout() {
     :scrollable="true"
     @profile="router.push({ name: 'profile' })"
     @logout="handleLogout"
+    :debug-mode="auth.debugMode"
+    @toggle-debug="auth.toggleDebugMode"
   >
     <div class="vz-blog">
       <div class="vz-blog__header">
@@ -83,9 +81,7 @@ async function handleLogout() {
       </div>
 
       <div v-if="hasMore" class="vz-blog__more">
-        <button class="vz-blog__more-btn" @click="page++">
-          Load more
-        </button>
+        <button class="vz-blog__more-btn" @click="page++">Load more</button>
       </div>
     </div>
 
@@ -94,7 +90,9 @@ async function handleLogout() {
         <span class="vz-blog-footer-dot" />
         Live
       </div>
-      <span class="vz-blog-footer-tagline">Ideas in Motion, Think. Build. Demo.</span>
+      <span class="vz-blog-footer-tagline"
+        >Ideas in Motion, Think. Build. Demo.</span
+      >
     </template>
   </AppLayout>
 </template>
@@ -253,7 +251,9 @@ async function handleLogout() {
   border-radius: var(--vz-radius-md);
   padding: 0.5rem 1.25rem;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .vz-blog__more-btn:hover {
@@ -284,8 +284,13 @@ async function handleLogout() {
 }
 
 @keyframes vz-dot-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.25; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 
 .vz-blog-footer-tagline {

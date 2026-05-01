@@ -315,6 +315,8 @@ onMounted(loadClients);
     @profile="router.push({ name: 'profile' })"
     :scrollable="true"
     @logout="handleLogout"
+    :debug-mode="auth.debugMode"
+    @toggle-debug="auth.toggleDebugMode"
   >
     <div class="sf-page">
       <!-- Header -->

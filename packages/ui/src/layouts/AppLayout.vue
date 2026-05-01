@@ -33,6 +33,7 @@ withDefaults(
     activePage?: string;
     isOwner?: boolean;
     isAuthenticated?: boolean;
+    debugMode?: boolean;
     navLinks?: Array<{ name: string; label: string; href: string }>;
   }>(),
   {
@@ -47,6 +48,7 @@ withDefaults(
 const emit = defineEmits<{
   logout: [];
   profile: [];
+  "toggle-debug": [];
 }>();
 
 const router = useRouter();
@@ -98,7 +100,7 @@ function toggleTheme() {
       <template #links>
         <!-- Demos dropdown — owner only -->
         <NavGroup
-          v-if="isOwner"
+          v-if="isAuthenticated"
           label="Demos"
           :active="DEMOS_NAV.some((d) => d.name === activePage)"
         >
@@ -228,11 +230,13 @@ function toggleTheme() {
           :guest="!userName"
           :theme-mode="themeMode"
           :is-owner="!!isOwner"
+          :debug-mode="debugMode ?? false"
           @profile="handleProfile"
           @configuration="handleConfiguration"
           @article-drafts="handleArticleDrafts"
           @logout="emit('logout')"
           @toggle-theme="toggleTheme"
+          @toggle-debug="emit('toggle-debug')"
         />
       </template>
     </NavBar>
@@ -249,7 +253,9 @@ function toggleTheme() {
           <span class="vz-shell__footer-dot" />
           Live
         </div>
-        <span class="vz-shell__footer-tagline">Ideas in Motion, Think. Build. Demo.</span>
+        <span class="vz-shell__footer-tagline"
+          >Ideas in Motion, Think. Build. Demo.</span
+        >
       </slot>
     </footer>
   </div>

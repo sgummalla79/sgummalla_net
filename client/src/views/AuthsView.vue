@@ -133,6 +133,8 @@ function iconFor(status: FrontdoorLog["status"]) {
     @profile="router.push({ name: 'profile' })"
     :scrollable="true"
     @logout="handleLogout"
+    :debug-mode="auth.debugMode"
+    @toggle-debug="auth.toggleDebugMode"
   >
     <div class="vz-auths">
       <div class="vz-auths__section-header">

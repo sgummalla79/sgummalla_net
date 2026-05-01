@@ -70,6 +70,30 @@ export function verifyToken(token: string): JwtPayload {
   return decoded as JwtPayload;
 }
 
+// ── Pending link (account linking flow) ──────────────────────────────────────
+
+export interface PendingLinkPayload {
+  primaryUserId: string;
+  primaryProvider: string;
+  secondaryUserId: string;
+  secondaryProvider: string;
+  email: string;
+}
+
+export function getPendingLinkCookieName(): string {
+  return "sgw_pending_link";
+}
+
+export function signPendingLink(data: PendingLinkPayload): string {
+  return jwt.sign(data, getSecret(), { expiresIn: "10m", algorithm: "HS256" });
+}
+
+export function verifyPendingLink(token: string): PendingLinkPayload {
+  const decoded = jwt.verify(token, getSecret(), { algorithms: ["HS256"] });
+  if (typeof decoded === "string") throw new Error("Invalid token payload");
+  return decoded as PendingLinkPayload;
+}
+
 // ── Cookie options ────────────────────────────────────────────────────────────
 
 export function cookieOptions(maxAgeMs: number = 60 * 60 * 1000) {

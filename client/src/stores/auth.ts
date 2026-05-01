@@ -6,6 +6,7 @@ import {
   me,
   type ApiUser,
 } from "../api/auth";
+import { fetchDebugMode, setDebugMode as apiSetDebugMode } from "../api/debug";
 
 export const useAuthStore = defineStore("auth", () => {
   // ── State ───────────────────────────────────────────────────────────────────
@@ -13,6 +14,7 @@ export const useAuthStore = defineStore("auth", () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   const bootstrapped = ref(false);
+  const debugMode = ref(false);
 
   // ── Getters ─────────────────────────────────────────────────────────────────
   const isAuthenticated = computed(() => user.value !== null);
@@ -32,11 +34,18 @@ export const useAuthStore = defineStore("auth", () => {
     if (bootstrapped.value) return;
     try {
       user.value = await me();
+      if (isOwner.value) {
+        debugMode.value = await fetchDebugMode();
+      }
     } catch {
       user.value = null;
     } finally {
       bootstrapped.value = true;
     }
+  }
+
+  async function toggleDebugMode(): Promise<void> {
+    debugMode.value = await apiSetDebugMode(!debugMode.value);
   }
 
   async function login(email: string, password: string): Promise<void> {
@@ -73,6 +82,7 @@ export const useAuthStore = defineStore("auth", () => {
     loading,
     error,
     bootstrapped,
+    debugMode,
     // getters
     isAuthenticated,
     isOwner,
@@ -83,5 +93,6 @@ export const useAuthStore = defineStore("auth", () => {
     login,
     logout,
     clearError,
+    toggleDebugMode,
   };
 });

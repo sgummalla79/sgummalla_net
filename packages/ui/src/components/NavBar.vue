@@ -60,7 +60,6 @@ defineEmits<{ "toggle-theme": [] }>();
   opacity: 0.75;
 }
 
-
 .vz-nav-links {
   display: flex;
   align-items: center;

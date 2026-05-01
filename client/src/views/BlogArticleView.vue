@@ -61,6 +61,8 @@ async function handleLogout() {
     :scrollable="true"
     @profile="router.push({ name: 'profile' })"
     @logout="handleLogout"
+    :debug-mode="auth.debugMode"
+    @toggle-debug="auth.toggleDebugMode"
   >
     <div v-if="article" class="vz-article-wrapper">
       <div class="vz-article-nav">

@@ -7,6 +7,7 @@ const props = defineProps<{
   themeMode?: "dark" | "light";
   guest?: boolean;
   isOwner?: boolean;
+  debugMode?: boolean;
 }>();
 
 defineEmits<{
@@ -15,6 +16,7 @@ defineEmits<{
   "article-drafts": [];
   logout: [];
   "toggle-theme": [];
+  "toggle-debug": [];
 }>();
 
 const open = ref(false);
@@ -201,6 +203,46 @@ onUnmounted(() =>
           </span>
           <span class="vz-avatar-item__badge">
             {{ themeMode === "dark" ? "Dark" : "Light" }}
+          </span>
+        </button>
+
+        <!-- Debug mode toggle — owner only, temporary -->
+        <button
+          v-if="props.isOwner"
+          class="vz-avatar-item vz-avatar-item--theme"
+          @click="
+            () => {
+              open = false;
+              $emit('toggle-debug');
+            }
+          "
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 22c1.1 0 2-.9 2-2H10c0 1.1.9 2 2 2z" />
+            <path
+              d="M18 16v-5a6 6 0 0 0-5-5.91V4a1 1 0 0 0-2 0v1.09A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z"
+            />
+          </svg>
+          <span class="vz-avatar-item__label">Debug Mode</span>
+          <span
+            class="vz-avatar-item__badge"
+            :style="
+              props.debugMode
+                ? 'color: var(--vz-green); border-color: var(--vz-green)'
+                : ''
+            "
+          >
+            {{ props.debugMode ? "ON" : "OFF" }}
           </span>
         </button>
 

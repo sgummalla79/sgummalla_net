@@ -20,8 +20,7 @@ type PortalEntry = {
   allowedUserIds?: string[];
 };
 
-router.get("/", async (req: Request, res: Response) => {
-  const userId = req.user?.id ?? "";
+router.get("/", async (_req: Request, res: Response) => {
 
   const allPortals: PortalEntry[] = [
     {
@@ -33,7 +32,6 @@ router.get("/", async (req: Request, res: Response) => {
       launchUrl: "https://support.sgummalla.net/login",
       external: true,
       disabled: true,
-      allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
     },
     {
       id: "help-portal",
@@ -44,7 +42,6 @@ router.get("/", async (req: Request, res: Response) => {
       launchUrl: "https://help.sgummalla.net/login",
       external: true,
       disabled: true,
-      allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
     },
   ];
 
@@ -64,13 +61,10 @@ router.get("/", async (req: Request, res: Response) => {
         "Exchange your web session for a Salesforce user session using OAuth 2.0 Token Exchange",
       external: false,
       clients: exchangeClients.map((r) => ({ id: r.id, label: r.label })),
-      allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
     });
   }
 
-  const portals = allPortals
-    .filter((p) => !p.allowedUserIds || p.allowedUserIds.includes(userId))
-    .map(({ allowedUserIds: _, ...rest }) => rest);
+  const portals = allPortals.map(({ allowedUserIds: _, ...rest }) => rest);
 
   res.json({ portals });
 });

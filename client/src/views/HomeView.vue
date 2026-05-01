@@ -280,7 +280,9 @@ import { AppLayout } from "@sgw/ui";
         <span class="sgw-footer-dot" />
         Live
       </div>
-      <span class="sgw-footer-tagline">Ideas in Motion, Think. Build. Demo.</span>
+      <span class="sgw-footer-tagline"
+        >Ideas in Motion, Think. Build. Demo.</span
+      >
     </template>
   </AppLayout>
 </template>
@@ -585,8 +587,13 @@ import { AppLayout } from "@sgw/ui";
 }
 
 @keyframes sgw-dot-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.25; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 
 .sgw-footer-tagline {
