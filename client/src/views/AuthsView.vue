@@ -332,24 +332,25 @@ function iconFor(status: FrontdoorLog["status"]) {
 .vz-te-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.55rem;
-  font-size: 0.8rem;
+  gap: 0.35rem;
+  padding: 0.32rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   font-family: var(--vz-font-sans);
-  color: var(--vz-text2);
-  background: none;
-  border: none;
+  color: var(--vz-green);
+  background: var(--vz-green-dim);
+  border: 1px solid var(--vz-green);
   border-radius: var(--vz-radius-sm);
   cursor: pointer;
-  transition: color 0.15s, background 0.15s;
+  transition: background 0.15s, opacity 0.15s;
   white-space: nowrap;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: 0.01em;
 }
-.vz-te-btn:hover:not(:disabled) { color: var(--vz-text); background: var(--vz-surface); }
-.vz-te-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.vz-te-btn--chevron { padding-right: 0.4rem; }
+.vz-te-btn:hover:not(:disabled) { background: var(--vz-green-dim); opacity: 0.8; }
+.vz-te-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .vz-te-menu {
   position: absolute;
@@ -371,6 +372,7 @@ function iconFor(status: FrontdoorLog["status"]) {
   text-align: left;
   padding: 0.45rem 0.75rem;
   font-size: 0.78rem;
+  font-weight: 500;
   color: var(--vz-text2);
   background: none;
   border: none;
@@ -380,7 +382,10 @@ function iconFor(status: FrontdoorLog["status"]) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.vz-te-menu-item:hover { background: var(--vz-surface2); color: var(--vz-text); }
+.vz-te-menu-item:hover {
+  background: var(--vz-green-dim);
+  color: var(--vz-green);
+}
 
 .vz-te-backdrop {
   position: fixed;
