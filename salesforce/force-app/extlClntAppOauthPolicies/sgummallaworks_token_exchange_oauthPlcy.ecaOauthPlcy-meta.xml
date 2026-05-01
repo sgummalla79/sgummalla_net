@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtlClntAppOauthConfigurablePolicies xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apexHandler>WebAppExtClntAppHandler</apexHandler>
+    <commaSeparatedProfile>System Administrator</commaSeparatedProfile>
+    <executeHandlerAs>sgummalla@exp-cloud.org</executeHandlerAs>
+    <externalClientApplication>sgummallaworks_token_exchange</externalClientApplication>
+    <ipRelaxationPolicyType>Bypass</ipRelaxationPolicyType>
+    <isClientCredentialsFlowEnabled>false</isClientCredentialsFlowEnabled>
+    <isGuestCodeCredFlowEnabled>false</isGuestCodeCredFlowEnabled>
+    <isNamedUserJwtEnabled>false</isNamedUserJwtEnabled>
+    <isTokenExchangeFlowEnabled>true</isTokenExchangeFlowEnabled>
+    <label>sgummallaworks_token_exchange_oauthPlcy</label>
+    <permittedUsersPolicyType>AdminApprovedPreAuthorized</permittedUsersPolicyType>
+    <refreshTokenPolicyType>Infinite</refreshTokenPolicyType>
+    <requiredSessionLevel>STANDARD</requiredSessionLevel>
+</ExtlClntAppOauthConfigurablePolicies>

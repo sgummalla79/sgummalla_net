@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtlClntAppGlobalOauthSettings xmlns="http://soap.sforce.com/2006/04/metadata">
+    <callbackUrl>https://localhost</callbackUrl>
+    <certificate>MIIDATCCAemgAwIBAgIUI5cp36FXGzIt48mPwua/pmzGPjYwDQYJKoZIhvcNAQEL
+BQAwEDEOMAwGA1UEAwwFTXlBcHAwHhcNMjYwNDMwMjAwMzI4WhcNMzYwNDI3MjAw
+MzI4WjAQMQ4wDAYDVQQDDAVNeUFwcDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC
+AQoCggEBAJMa0ToPPxpINixB0vNoUUKqV47BznE7MtAGq1AmPkAWFwPJSqV/nPS3
+7a4EeUOTGlvvsowNTT3qJQp3wzMXtj2ryUtyH7EgtyW/2bgI05OPZS1WYyr5jJOZ
+A/xpRAbhAsFW76snzKfBERnjl5asCYH/nuHDzpsKVwjnySECulIdCekLRYQVWYoo
+V7pxM1pmqYCQ8+TVg50nd06wVJ0t8ZrBQhLB20E0pcDFOKFFZpx2RrEgALE8FsHK
+BM1c+5+l2Ps1/qk6rxKZWbN1sjXxjqvBBNWdfHxV24oRdFt47S4Q5IghqrBCP/EU
+y+8LvVbNG/lN4vwqKO1BtVc7DFstWK0CAwEAAaNTMFEwHQYDVR0OBBYEFJovCh0L
+lXjwwc+doxWWhc3LDiltMB8GA1UdIwQYMBaAFJovCh0LlXjwwc+doxWWhc3LDilt
+MA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAC3DpKbLfkN27bKH
+B6qz7PUByFMB5PgC8JShosLNSz9RD8wD4wT++udKUkE+oY4sqO1guvjEPeq8zCrm
+DvIDaxx5p32FEseYot8dd3hBd2vXXISo3yeVMOA6F449KXMoXpLL5d35BpZCIHSJ
+k+KgsPVINR362IjFwSGYtZHCIhvr/9+VbI0UHyFPBFFTPhlqaRThO7NQHy29ebgx
+HpjLzJmc3NpkfziDqY1n9Pc9WJZNDcHJeAZIpNtKr7fcbiGRShEMqU09BU9IBG3O
+2C/6fLHvaoBMyz02pHiKry3SATk67QgEnI0aP84pGB10MeIcNgSoXEDWBB8CXND9
+Rlp4lj0=</certificate>
+    <consumerKey>3MVG9yAAFCYW6OqWfsuHYi9uta0bazCwrUHyA6mMUD1rCybm64qZG_KacsZooL4d63xax5L8RrBrR90fKj_O2</consumerKey>
+    <externalClientApplication>SgummallaWorks</externalClientApplication>
+    <isClientCredentialsFlowEnabled>false</isClientCredentialsFlowEnabled>
+    <isCodeCredFlowEnabled>false</isCodeCredFlowEnabled>
+    <isCodeCredPostOnly>false</isCodeCredPostOnly>
+    <isConsumerSecretOptional>true</isConsumerSecretOptional>
+    <isDeviceFlowEnabled>false</isDeviceFlowEnabled>
+    <isIntrospectAllTokens>false</isIntrospectAllTokens>
+    <isNamedUserJwtEnabled>false</isNamedUserJwtEnabled>
+    <isPkceRequired>false</isPkceRequired>
+    <isRefreshTokenRotationEnabled>false</isRefreshTokenRotationEnabled>
+    <isSecretRequiredForRefreshToken>true</isSecretRequiredForRefreshToken>
+    <isSecretRequiredForTokenExchange>true</isSecretRequiredForTokenExchange>
+    <isTokenExchangeEnabled>false</isTokenExchangeEnabled>
+    <label>SgummallaWorks_glbloauth</label>
+    <shouldRotateConsumerKey>false</shouldRotateConsumerKey>
+    <shouldRotateConsumerSecret>false</shouldRotateConsumerSecret>
+</ExtlClntAppGlobalOauthSettings>

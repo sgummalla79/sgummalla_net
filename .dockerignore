@@ -1,3 +1,10 @@
+salesforce
+.sfdx
+**/.sfdx
+keystore.jks
+keystore.p12
+private.pem
+certificate.crt
 node_modules
 **/node_modules
 dist

@@ -7,6 +7,7 @@ import {
   type AuthUser,
   type SfAccount,
 } from "../lib/jwt.js";
+import sql from "../lib/db.js";
 
 const router: import("express").Router = Router();
 
@@ -76,6 +77,30 @@ router.get("/callback", async (req: Request, res: Response) => {
       provider: "auth0",
       sfAccounts,
     };
+
+    // Debug: log the Auth0 id_token claims
+    if (tokenSet.id_token) {
+      try {
+        const [, payloadB64] = tokenSet.id_token.split(".");
+        const claims = JSON.parse(
+          Buffer.from(payloadB64, "base64url").toString("utf-8"),
+        );
+        console.log("[Auth0 id_token claims]", JSON.stringify(claims, null, 2));
+      } catch {
+        console.log("[Auth0 id_token] could not decode payload");
+      }
+    }
+
+    // Persist the Auth0 id_token for Token Exchange flow
+    if (tokenSet.id_token) {
+      await sql`
+        INSERT INTO user_id_tokens (user_id, id_token)
+        VALUES (${user.id}, ${tokenSet.id_token})
+        ON CONFLICT (user_id) DO UPDATE SET
+          id_token   = EXCLUDED.id_token,
+          updated_at = now()
+      `;
+    }
 
     const token = signToken(user);
     res.cookie(getCookieName(), token, cookieOptions());

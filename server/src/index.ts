@@ -12,6 +12,9 @@ import portalsRouter from "./routes/portals.js";
 import samlIdpRouter from "./routes/samlIdp.js";
 import oidcIdpRouter from "./routes/oidcIdp.js";
 import articlesRouter from "./routes/articles.js";
+import salesforceRouter from "./routes/salesforce.js";
+import salesforceExchangeRouter from "./routes/salesforceExchange.js";
+import { ensureTables } from "./lib/ensureTables.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -43,6 +46,8 @@ app.use("/api/portals", portalsRouter);
 app.use("/api/saml", samlIdpRouter);
 app.use("/api/oidc", oidcIdpRouter);
 app.use("/api/articles", articlesRouter);
+app.use("/api/salesforce", salesforceRouter);
+app.use("/api/salesforce-exchange", salesforceExchangeRouter);
 
 // ── Static files (production) ─────────────────────────────────────────────────
 if (isProd) {
@@ -87,6 +92,8 @@ if (!isProd) {
   });
   app.use(vite.middlewares);
 }
+
+await ensureTables();
 
 httpServer.listen(PORT, () => {
   console.log(`[Sgummalla Works] Server running on http://localhost:${PORT}`);

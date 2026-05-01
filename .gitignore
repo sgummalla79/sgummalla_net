@@ -144,3 +144,10 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Salesforce CLI
+.sfdx/
+**/.sfdx/
+
+# Secrets — private keys, keystores, certificates (never commit)
+secrets/

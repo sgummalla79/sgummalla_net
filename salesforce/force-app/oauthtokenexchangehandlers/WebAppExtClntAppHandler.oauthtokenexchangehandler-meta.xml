@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OauthTokenExchangeHandler xmlns="http://soap.sforce.com/2006/04/metadata">
+    <developerName>WebAppExtClntAppHandler</developerName>
+    <masterLabel>WebApp Ext Client App Handler</masterLabel>
+    <description>Runtime registry entry for sgummallaworks_token_exchange token exchange</description>
+    <isEnabled>true</isEnabled>
+    <isAccessTokenSupported>true</isAccessTokenSupported>
+    <isIdTokenSupported>false</isIdTokenSupported>
+    <isJwtSupported>true</isJwtSupported>
+    <isProtected>false</isProtected>
+    <isRefreshTokenSupported>false</isRefreshTokenSupported>
+    <isSaml2Supported>false</isSaml2Supported>
+    <isUserCreationAllowed>false</isUserCreationAllowed>
+    <tokenHandlerApex>WebAppExtClntAppHandler</tokenHandlerApex>
+</OauthTokenExchangeHandler>

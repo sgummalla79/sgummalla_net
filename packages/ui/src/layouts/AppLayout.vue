@@ -5,6 +5,7 @@ import { useTheme } from "../theme/plugin";
 import { defaultTheme, lightTheme } from "../theme/default";
 import NavBar from "../components/NavBar.vue";
 import NavLink from "../components/NavLink.vue";
+import NavGroup from "../components/NavGroup.vue";
 import NavAvatar from "../components/NavAvatar.vue";
 import SymbolLayer from "../components/SymbolLayer.vue";
 import logoLight from "../assets/logo-light.svg";
@@ -13,9 +14,13 @@ import logoDark from "../assets/logo-dark.svg";
 // ── Nav tiers — single source of truth ───────────────────────────────────────
 // Add / remove items here only. No view should build its own nav list.
 
+const DEMOS_NAV = [
+  { name: "auths", label: "Experience Cloud Auths", href: "/auths" },
+  { name: "salesforce", label: "JWT Bearer Auth", href: "/salesforce" },
+  { name: "salesforce-exchange", label: "Token Exchange Auth", href: "/salesforce-exchange" },
+];
+
 const OWNER_NAV = [
-  { name: "auths", label: "Applications", href: "/auths" },
-  { name: "configuration", label: "Configuration", href: "/configuration" },
   { name: "drafts", label: "Drafts", href: "/drafts" },
   { name: "blog", label: "Blog", href: "/blog" },
 ];
@@ -62,6 +67,14 @@ function handleProfile() {
   router.push("/profile");
 }
 
+function handleConfiguration() {
+  router.push("/configuration");
+}
+
+function handleArticleDrafts() {
+  router.push("/drafts");
+}
+
 const { setTheme } = useTheme();
 const THEME_STORAGE_KEY = "sgw-theme-mode";
 const themeMode = ref<"dark" | "light">(
@@ -94,18 +107,53 @@ function toggleTheme() {
         </div>
       </template>
       <template #links>
-        <NavLink
-          v-for="link in effectiveNavLinks"
-          :key="link.name"
-          :href="link.href"
-          :active="activePage === link.name"
+        <!-- Demos dropdown — owner only -->
+        <NavGroup
+          v-if="isOwner"
+          label="Demos"
+          :active="DEMOS_NAV.some(d => d.name === activePage)"
         >
-          {{ link.label }}
+          <template #icon>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </template>
+          <NavLink href="/auths" :active="activePage === 'auths'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+            </svg>
+            Experience Cloud Auths
+          </NavLink>
+          <NavLink href="/salesforce" :active="activePage === 'salesforce'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="7.5" cy="15.5" r="5.5"/>
+              <path d="m21 2-9.6 9.6"/>
+              <path d="m15.5 7.5 3 3L22 7l-3-3"/>
+            </svg>
+            JWT Bearer Auth
+          </NavLink>
+          <NavLink href="/salesforce-exchange" :active="activePage === 'salesforce-exchange'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m16 3 4 4-4 4"/>
+              <path d="M20 7H4"/>
+              <path d="m8 21-4-4 4-4"/>
+              <path d="M4 17h16"/>
+            </svg>
+            Token Exchange Auth
+          </NavLink>
+        </NavGroup>
+
+        <!-- Blog — everyone -->
+        <NavLink href="/blog" :active="activePage === 'blog'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+          </svg>
+          Blog
         </NavLink>
       </template>
 
       <template #right>
-        <a v-if="!userName" href="/login" class="vz-nav-signin">
+        <a v-if="!userName && router.currentRoute.value.path !== '/login'" href="/login" class="vz-nav-signin">
           <svg
             width="13"
             height="13"
@@ -128,7 +176,10 @@ function toggleTheme() {
           "
           :guest="!userName"
           :theme-mode="themeMode"
+          :is-owner="isOwner"
           @profile="handleProfile"
+          @configuration="handleConfiguration"
+          @article-drafts="handleArticleDrafts"
           @logout="emit('logout')"
           @toggle-theme="toggleTheme"
         />

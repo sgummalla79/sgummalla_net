@@ -19,6 +19,7 @@ defineProps<{
 .vz-nav-link {
   display: inline-flex;
   align-items: center;
+  gap: 0.4rem;
   height: 100%;
   padding: 0 1rem;
   font-size: 0.82rem;

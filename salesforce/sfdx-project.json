@@ -1,0 +1,7 @@
+{
+  "packageDirectories": [{ "path": "force-app", "default": true }],
+  "name": "sgummalla-net-salesforce",
+  "namespace": "",
+  "sfdcLoginUrl": "https://exp-cloud.my.salesforce.com",
+  "sourceApiVersion": "62.0"
+}

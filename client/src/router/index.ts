@@ -31,6 +31,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, ownerOnly: true },
   },
   {
+    path: "/salesforce",
+    name: "salesforce",
+    component: () => import("../views/SalesforceView.vue"),
+    meta: { requiresAuth: true, ownerOnly: true },
+  },
+  {
+    path: "/salesforce-exchange",
+    name: "salesforce-exchange",
+    component: () => import("../views/SalesforceExchangeView.vue"),
+    meta: { requiresAuth: true, ownerOnly: true },
+  },
+  {
     path: "/profile",
     name: "profile",
     component: () => import("../views/ProfileView.vue"),

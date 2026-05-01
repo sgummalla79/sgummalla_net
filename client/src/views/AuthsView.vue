@@ -1,21 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { useStorage } from "@vueuse/core";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout, AuthCard, Button } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
-import { getPortals, launchExperienceCloud, type Portal } from "../api/portals";
+import { getPortals, type Portal } from "../api/portals";
 
 const router = useRouter();
 const auth = useAuthStore();
 const portals = ref<Portal[]>([]);
 const launching = ref<string | null>(null);
-const ecPortal = ref<"support" | "help">("support");
-
-const themeMode = useStorage("sgw-theme-mode", "dark");
-const selectColorScheme = computed(() =>
-  themeMode.value === "dark" ? "dark" : "light",
-);
 
 async function handleLogout() {
   await auth.logout();
@@ -23,11 +16,13 @@ async function handleLogout() {
 }
 
 async function launch(portal: Portal) {
+  if (!portal.external && portal.launchUrl) {
+    router.push(portal.launchUrl);
+    return;
+  }
   launching.value = portal.id;
   try {
-    if (portal.id === "experience-cloud") {
-      await launchExperienceCloud(ecPortal.value);
-    } else if (portal.external && portal.launchUrl) {
+    if (portal.launchUrl) {
       window.open(portal.launchUrl, "_blank", "noopener,noreferrer");
     }
   } finally {
@@ -69,25 +64,7 @@ onMounted(async () => {
           status="active"
         >
           <template #action>
-            <div v-if="portal.id === 'experience-cloud'" class="vz-ec-action">
-              <select
-                v-model="ecPortal"
-                class="vz-ec-select"
-                :style="{ colorScheme: selectColorScheme }"
-              >
-                <option value="support">Support Portal</option>
-                <option value="help">Help Portal</option>
-              </select>
-              <Button
-                variant="ghost"
-                :loading="launching === portal.id"
-                @click="launch(portal)"
-              >
-                {{ portal.name }} ↗
-              </Button>
-            </div>
             <Button
-              v-else
               variant="ghost"
               :loading="launching === portal.id"
               @click="launch(portal)"
@@ -163,41 +140,5 @@ onMounted(async () => {
   .vz-auths__grid {
     grid-template-columns: 1fr;
   }
-}
-
-.vz-ec-action {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.vz-ec-select {
-  width: 100%;
-  padding: 0.35rem 0.6rem;
-  font-size: 0.85rem;
-  font-family: var(--vz-font-sans);
-  color: var(--vz-text);
-  background-color: transparent;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.6rem center;
-  padding-right: 2rem;
-  border: 1px solid var(--vz-border);
-  border-radius: var(--vz-radius);
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-/* Fallback for Windows/Firefox where option elements accept direct CSS */
-.vz-ec-select option {
-  background-color: var(--vz-bg);
-  color: var(--vz-text);
-}
-
-.vz-ec-select:focus {
-  border-color: var(--vz-border2);
 }
 </style>

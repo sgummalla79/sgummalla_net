@@ -5,3 +5,4 @@ export { default as NavLink } from "./NavLink.vue";
 export { default as SymbolLayer } from "./SymbolLayer.vue";
 export { default as AuthCard } from "./AuthCard.vue";
 export { default as NavAvatar } from "./NavAvatar.vue";
+export { default as NavGroup } from "./NavGroup.vue";
