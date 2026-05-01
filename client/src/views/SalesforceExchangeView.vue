@@ -13,6 +13,7 @@ import {
   createExchangeClient,
   updateExchangeClient,
   deleteExchangeClient,
+  deleteCachedExchangeToken,
   getExchangeClientTokens,
   getExchangeToken,
   refreshExchangeToken,
@@ -196,6 +197,23 @@ async function handleRefreshToken(
     console.error("Refresh failed:", e?.response?.data?.error);
   } finally {
     row.refreshing = false;
+  }
+}
+
+async function handleDeleteToken(
+  clientId: string,
+  row: SfUserToken & { deleting?: boolean },
+) {
+  row.deleting = true;
+  try {
+    await deleteCachedExchangeToken(clientId, row.sf_username);
+    userTokens.value[clientId] = userTokens.value[clientId].filter(
+      (t) => t.sf_username !== row.sf_username,
+    );
+  } catch (err: unknown) {
+    const e = err as { response?: { data?: { error?: string } } };
+    console.error("Delete token failed:", e?.response?.data?.error);
+    row.deleting = false;
   }
 }
 
@@ -420,6 +438,7 @@ onMounted(loadClients);
                               <th>Status</th>
                               <th class="sf-th--center">Refresh Token</th>
                               <th class="sf-th--center">CLI</th>
+                              <th class="sf-th--center">Delete</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -468,18 +487,24 @@ onMounted(loadClients);
                                   title="SOQL Query"
                                   @click="openCli(c, row.sf_username)"
                                 >
-                                  <svg
-                                    width="15"
-                                    height="15"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.75"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                  >
+                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="4 17 10 11 4 5" />
                                     <line x1="12" y1="19" x2="20" y2="19" />
+                                  </svg>
+                                </button>
+                              </td>
+                              <td class="sf-utd sf-utd--action">
+                                <button
+                                  class="sf-icon-btn sf-icon-btn--danger"
+                                  title="Delete cached token"
+                                  :disabled="!!row.deleting"
+                                  @click="handleDeleteToken(c.id, row)"
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6l-1 14H6L5 6" />
+                                    <path d="M10 11v6M14 11v6" />
+                                    <path d="M9 6V4h6v2" />
                                   </svg>
                                 </button>
                               </td>

@@ -35,6 +35,10 @@ export async function deleteExchangeClient(id: string): Promise<void> {
 
 // ── Token Exchange-specific endpoints ─────────────────────────────────────────
 
+export async function deleteCachedExchangeToken(id: string, sf_username: string): Promise<void> {
+  await client.delete(`/salesforce-exchange/clients/${id}/tokens/${encodeURIComponent(sf_username)}`);
+}
+
 export async function getExchangeClientTokens(
   id: string,
 ): Promise<SfUserToken[]> {

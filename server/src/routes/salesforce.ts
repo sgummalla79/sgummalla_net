@@ -177,6 +177,28 @@ router.get("/clients/:id/tokens", async (req: Request, res: Response) => {
   }
 });
 
+// ── DELETE /api/salesforce/clients/:id/tokens/:sf_username ──────────────────
+// Wipes the cached access_token and refresh_token for one user under a client.
+
+router.delete(
+  "/clients/:id/tokens/:sf_username",
+  async (req: Request, res: Response) => {
+    const { id, sf_username } = req.params;
+    try {
+      const [row] = await sql`
+        DELETE FROM sf_tokens
+        WHERE client_db_id = ${id} AND sf_username = ${sf_username}
+        RETURNING sf_username
+      `;
+      if (!row) { res.status(404).json({ error: "Token not found" }); return; }
+      res.json({ ok: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to delete token";
+      res.status(500).json({ error: msg });
+    }
+  },
+);
+
 // ── POST /api/salesforce/clients/:id/token ────────────────────────────────────
 // Returns the saved token if not expired, otherwise mints a new one.
 
