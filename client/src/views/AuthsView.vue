@@ -265,6 +265,7 @@ function iconFor(status: FrontdoorLog["status"]) {
   border-radius: var(--vz-radius-md);
   padding: 0.75rem 1rem;
   gap: 0.35rem;
+  height: 100%; /* fill the grid cell so all tiles in a row are equal height */
 }
 
 .vz-auths__grid :deep(.vz-auth-card__title) { font-size: 0.875rem; }
@@ -272,9 +273,20 @@ function iconFor(status: FrontdoorLog["status"]) {
 .vz-auths__grid :deep(.vz-auth-card__desc) {
   font-size: 0.78rem;
   line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
-.vz-auths__grid :deep(.vz-auth-card__action) { margin-top: 0.25rem; }
+/* Pin action row to a fixed height so all tiles align at the bottom */
+.vz-auths__grid :deep(.vz-auth-card__action) {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+}
 
 /* Disabled tiles */
 .vz-auths__grid :deep(.vz-auth-card.vz-auth-card--disabled) {
@@ -289,6 +301,9 @@ function iconFor(status: FrontdoorLog["status"]) {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--vz-text3);
+  display: flex;
+  align-items: center;
+  height: 2rem; /* matches button height so action rows are visually equal */
 }
 
 /* Token Exchange action row: select + button */
