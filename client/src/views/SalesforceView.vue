@@ -149,7 +149,7 @@ async function handleDelete(c: SfClient) {
 
 // Map of clientId → list of user token rows
 const userTokens = ref<
-  Record<string, (SfUserToken & { refreshing?: boolean })[]>
+  Record<string, (SfUserToken & { refreshing?: boolean; deleting?: boolean })[]>
 >({});
 const tokensLoading = ref<Record<string, boolean>>({});
 const newUsernameInputs = ref<Record<string, string>>({});
@@ -323,10 +323,28 @@ onMounted(loadClients);
           <p class="sf-page__eyebrow">Salesforce</p>
           <div class="sf-page__title-row">
             <h1 class="sf-page__title">JWT Bearer Authentication</h1>
-            <button class="sf-diagram-btn" title="View sequence diagram" @click="diagramOpen = true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/>
-                <path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/>
+            <button
+              class="sf-diagram-btn"
+              title="View sequence diagram"
+              @click="diagramOpen = true"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="5" height="5" rx="1" />
+                <rect x="16" y="3" width="5" height="5" rx="1" />
+                <rect x="3" y="16" width="5" height="5" rx="1" />
+                <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+                <path d="M21 21v.01" />
+                <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+                <path d="M3 12h.01" />
               </svg>
             </button>
           </div>
@@ -505,7 +523,16 @@ onMounted(loadClients);
                                   title="SOQL Query"
                                   @click="openCli(c, row.sf_username)"
                                 >
-                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                  <svg
+                                    width="15"
+                                    height="15"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.75"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                  >
                                     <polyline points="4 17 10 11 4 5" />
                                     <line x1="12" y1="19" x2="20" y2="19" />
                                   </svg>
@@ -518,7 +545,16 @@ onMounted(loadClients);
                                   :disabled="!!row.deleting"
                                   @click="handleDeleteToken(c.id, row)"
                                 >
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.75"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                  >
                                     <polyline points="3 6 5 6 21 6" />
                                     <path d="M19 6l-1 14H6L5 6" />
                                     <path d="M10 11v6M14 11v6" />
@@ -760,7 +796,11 @@ onMounted(loadClients);
   </Teleport>
 
   <!-- Sequence diagram modal -->
-  <DiagramModal :open="diagramOpen" title="JWT Bearer Authentication — Sequence Diagram" @close="diagramOpen = false">
+  <DiagramModal
+    :open="diagramOpen"
+    title="JWT Bearer Authentication — Sequence Diagram"
+    @close="diagramOpen = false"
+  >
     <JwtBearerDiagram />
   </DiagramModal>
 </template>
@@ -829,7 +869,10 @@ onMounted(loadClients);
   background: var(--vz-surface);
   cursor: pointer;
   color: var(--vz-text3);
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s,
+    background 0.15s;
   flex-shrink: 0;
   margin-top: 2px;
 }
