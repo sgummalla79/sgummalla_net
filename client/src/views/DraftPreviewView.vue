@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { AppLayout } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
@@ -32,13 +32,20 @@ const article = ref<Article | null>(null);
 const publishing = ref(false);
 const published = ref(false);
 
-onMounted(async () => {
-  try {
-    article.value = await getDraft(route.params.slug as string);
-  } catch {
-    router.replace("/drafts");
-  }
-});
+watch(
+  () => route.params.slug,
+  async (slug) => {
+    article.value = null;
+    publishing.value = false;
+    published.value = false;
+    try {
+      article.value = await getDraft(slug as string);
+    } catch {
+      router.replace("/drafts");
+    }
+  },
+  { immediate: true },
+);
 
 async function handlePublish() {
   if (!article.value || publishing.value) return;

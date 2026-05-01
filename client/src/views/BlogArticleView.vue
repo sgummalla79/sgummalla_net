@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { AppLayout } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
@@ -32,13 +32,18 @@ onUnmounted(() => themeObserver?.disconnect());
 
 const article = ref<Article | null>(null);
 
-onMounted(async () => {
-  try {
-    article.value = await getArticle(route.params.slug as string);
-  } catch {
-    router.replace("/blog");
-  }
-});
+watch(
+  () => route.params.slug,
+  async (slug) => {
+    article.value = null;
+    try {
+      article.value = await getArticle(slug as string);
+    } catch {
+      router.replace("/blog");
+    }
+  },
+  { immediate: true },
+);
 
 async function handleLogout() {
   await auth.logout();
