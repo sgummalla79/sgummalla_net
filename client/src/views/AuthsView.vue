@@ -4,7 +4,10 @@ import { useRouter } from "vue-router";
 import { AppLayout, AuthCard, Button } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
 import { getPortals, type Portal } from "../api/portals";
-import { getSfFrontdoorUrl, type FrontdoorLog } from "../api/salesforceExchange";
+import {
+  getSfFrontdoorUrl,
+  type FrontdoorLog,
+} from "../api/salesforceExchange";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -41,7 +44,9 @@ function toggleDropdown(portalId: string) {
   openDropdownPortal.value = portalId;
   // Close on the next click anywhere — setTimeout 0 skips the current click
   setTimeout(() => {
-    const close = () => { openDropdownPortal.value = null; };
+    const close = () => {
+      openDropdownPortal.value = null;
+    };
     window.addEventListener("click", close, { once: true });
   }, 0);
 }
@@ -74,7 +79,13 @@ const logModal = ref<LogModal>({
 });
 
 async function openLogModal(clientId: string) {
-  logModal.value = { open: true, loading: true, visibleLines: [], url: null, error: null };
+  logModal.value = {
+    open: true,
+    loading: true,
+    visibleLines: [],
+    url: null,
+    error: null,
+  };
 
   try {
     const result = await getSfFrontdoorUrl(clientId);
@@ -143,11 +154,15 @@ function iconFor(status: FrontdoorLog["status"]) {
         >
           <template #action>
             <!-- Disabled -->
-            <span v-if="portal.disabled" class="vz-coming-soon">Coming soon</span>
+            <span v-if="portal.disabled" class="vz-coming-soon"
+              >Coming soon</span
+            >
 
             <!-- Token Exchange: single client → plain button; multiple → dropdown -->
-            <div v-else-if="portal.protocol === 'token-exchange'" class="vz-te-wrap">
-
+            <div
+              v-else-if="portal.protocol === 'token-exchange'"
+              class="vz-te-wrap"
+            >
               <!-- Single client: just a button -->
               <button
                 v-if="(portal.clients?.length ?? 0) <= 1"
@@ -155,7 +170,7 @@ function iconFor(status: FrontdoorLog["status"]) {
                 :disabled="logModal.open && logModal.loading"
                 @click="launchForClient(portal.clients![0].id)"
               >
-                {{ portal.clients![0]?.label ?? 'Login' }} ↗
+                {{ portal.clients![0]?.label ?? "Login" }} ↗
               </button>
 
               <!-- Multiple clients: dropdown button -->
@@ -166,8 +181,16 @@ function iconFor(status: FrontdoorLog["status"]) {
                   @click.stop="toggleDropdown(portal.id)"
                 >
                   <span>Login ↗</span>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <polyline points="6 9 12 15 18 9"/>
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
                 <div v-if="openDropdownPortal === portal.id" class="vz-te-menu">
@@ -178,17 +201,26 @@ function iconFor(status: FrontdoorLog["status"]) {
                     class="vz-te-menu-item"
                     @click.stop="launchForClient(c.id)"
                   >
-                    <svg class="vz-te-org-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="4" y="2" width="16" height="20" rx="2"/>
-                      <path d="M9 22V12h6v10"/>
-                      <path d="M8 7h.01M16 7h.01M12 7h.01"/>
-                      <path d="M8 11h.01M16 11h.01M12 11h.01"/>
+                    <svg
+                      class="vz-te-org-icon"
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.75"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="4" y="2" width="16" height="20" rx="2" />
+                      <path d="M9 22V12h6v10" />
+                      <path d="M8 7h.01M16 7h.01M12 7h.01" />
+                      <path d="M8 11h.01M16 11h.01M12 11h.01" />
                     </svg>
                     {{ c.label }}
                   </button>
                 </div>
               </div>
-
             </div>
 
             <!-- Normal launch -->
@@ -212,13 +244,18 @@ function iconFor(status: FrontdoorLog["status"]) {
       <div v-if="logModal.open" class="sf-overlay" @click.self="closeLogModal">
         <div class="sf-modal">
           <div class="sf-modal__header">
-            <span class="sf-modal__title">Salesforce Login · Token Exchange</span>
+            <span class="sf-modal__title"
+              >Salesforce Login · Token Exchange</span
+            >
             <button class="sf-modal__close" @click="closeLogModal">✕</button>
           </div>
 
           <div class="sf-modal__body">
             <!-- Pending spinner -->
-            <div v-if="logModal.loading" class="sf-log-line sf-log-line--pending">
+            <div
+              v-if="logModal.loading"
+              class="sf-log-line sf-log-line--pending"
+            >
               <span class="sf-spinner">◌</span>
               <span>Connecting to Salesforce...</span>
             </div>
@@ -263,11 +300,19 @@ function iconFor(status: FrontdoorLog["status"]) {
 }
 
 @keyframes vz-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.vz-auths__section-header { margin-bottom: 1.5rem; }
+.vz-auths__section-header {
+  margin-bottom: 1.5rem;
+}
 
 .vz-auths__title {
   font-size: 2rem;
@@ -299,7 +344,9 @@ function iconFor(status: FrontdoorLog["status"]) {
   height: 100%; /* fill the grid cell so all tiles in a row are equal height */
 }
 
-.vz-auths__grid :deep(.vz-auth-card__title) { font-size: 0.875rem; }
+.vz-auths__grid :deep(.vz-auth-card__title) {
+  font-size: 0.875rem;
+}
 
 .vz-auths__grid :deep(.vz-auth-card__desc) {
   font-size: 0.78rem;
@@ -338,9 +385,14 @@ function iconFor(status: FrontdoorLog["status"]) {
 }
 
 /* Token Exchange dropdown button */
-.vz-te-wrap { display: flex; align-items: center; }
+.vz-te-wrap {
+  display: flex;
+  align-items: center;
+}
 
-.vz-te-dropdown { position: relative; }
+.vz-te-dropdown {
+  position: relative;
+}
 
 .vz-te-btn {
   display: inline-flex;
@@ -355,15 +407,23 @@ function iconFor(status: FrontdoorLog["status"]) {
   border: 1px solid var(--vz-green);
   border-radius: var(--vz-radius-sm);
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
   white-space: nowrap;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: 0.01em;
 }
-.vz-te-btn:hover:not(:disabled) { background: var(--vz-green-dim); opacity: 0.8; }
-.vz-te-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.vz-te-btn:hover:not(:disabled) {
+  background: var(--vz-green-dim);
+  opacity: 0.8;
+}
+.vz-te-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .vz-te-menu {
   position: absolute;
@@ -406,7 +466,10 @@ function iconFor(status: FrontdoorLog["status"]) {
   border: none;
   border-left: 2px solid transparent;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -422,7 +485,9 @@ function iconFor(status: FrontdoorLog["status"]) {
   flex-shrink: 0;
   color: var(--vz-green);
   opacity: 0.4;
-  transition: opacity 0.12s, transform 0.12s;
+  transition:
+    opacity 0.12s,
+    transform 0.12s;
 }
 .vz-te-menu-item:hover .vz-te-org-icon {
   opacity: 1;
@@ -430,7 +495,9 @@ function iconFor(status: FrontdoorLog["status"]) {
 }
 
 @media (max-width: 680px) {
-  .vz-auths__grid { grid-template-columns: 1fr; }
+  .vz-auths__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Log modal ──────────────────────────────────────────────────────────────── */
@@ -454,7 +521,7 @@ function iconFor(status: FrontdoorLog["status"]) {
   max-width: 94vw;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
   overflow: hidden;
-  font-family: ui-monospace, 'SF Mono', 'Fira Code', monospace;
+  font-family: ui-monospace, "SF Mono", "Fira Code", monospace;
 }
 
 .sf-modal__header {
@@ -480,7 +547,9 @@ function iconFor(status: FrontdoorLog["status"]) {
   font-size: 0.8rem;
   padding: 0.15rem 0.3rem;
   border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 .sf-modal__close:hover {
   color: rgba(255, 255, 255, 0.8);
@@ -511,14 +580,30 @@ function iconFor(status: FrontdoorLog["status"]) {
   font-size: 0.75rem;
 }
 
-.sf-log-line--ok    .sf-log-icon { color: #4ade80; }
-.sf-log-line--ok                  { color: rgba(255, 255, 255, 0.75); }
-.sf-log-line--cached .sf-log-icon { color: #fbbf24; }
-.sf-log-line--cached               { color: rgba(255, 255, 255, 0.6); }
-.sf-log-line--info  .sf-log-icon  { color: #60a5fa; }
-.sf-log-line--error .sf-log-icon  { color: #f87171; }
-.sf-log-line--error                { color: #f87171; }
-.sf-log-line--pending              { color: rgba(255, 255, 255, 0.35); }
+.sf-log-line--ok .sf-log-icon {
+  color: #4ade80;
+}
+.sf-log-line--ok {
+  color: rgba(255, 255, 255, 0.75);
+}
+.sf-log-line--cached .sf-log-icon {
+  color: #fbbf24;
+}
+.sf-log-line--cached {
+  color: rgba(255, 255, 255, 0.6);
+}
+.sf-log-line--info .sf-log-icon {
+  color: #60a5fa;
+}
+.sf-log-line--error .sf-log-icon {
+  color: #f87171;
+}
+.sf-log-line--error {
+  color: #f87171;
+}
+.sf-log-line--pending {
+  color: rgba(255, 255, 255, 0.35);
+}
 
 .sf-spinner {
   display: inline-block;
@@ -528,8 +613,12 @@ function iconFor(status: FrontdoorLog["status"]) {
 }
 
 @keyframes sf-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .sf-modal__footer {
@@ -551,13 +640,28 @@ function iconFor(status: FrontdoorLog["status"]) {
   font-family: inherit;
   transition: background 0.15s;
 }
-.sf-btn-open:hover { background: #2563eb; }
+.sf-btn-open:hover {
+  background: #2563eb;
+}
 
 /* Modal enter/leave */
-.sf-fade-enter-active, .sf-fade-leave-active { transition: opacity 0.2s; }
-.sf-fade-enter-from,   .sf-fade-leave-to     { opacity: 0; }
+.sf-fade-enter-active,
+.sf-fade-leave-active {
+  transition: opacity 0.2s;
+}
+.sf-fade-enter-from,
+.sf-fade-leave-to {
+  opacity: 0;
+}
 
 /* Log line enter */
-.sf-line-enter-active { transition: opacity 0.18s, transform 0.18s; }
-.sf-line-enter-from   { opacity: 0; transform: translateX(-6px); }
+.sf-line-enter-active {
+  transition:
+    opacity 0.18s,
+    transform 0.18s;
+}
+.sf-line-enter-from {
+  opacity: 0;
+  transform: translateX(-6px);
+}
 </style>

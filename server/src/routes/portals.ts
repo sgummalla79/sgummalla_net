@@ -28,7 +28,8 @@ router.get("/", async (req: Request, res: Response) => {
       id: "support-portal",
       name: "Support Portal",
       protocol: "saml",
-      description: "SP-initiated SAML 2.0 SSO — browser redirects to your Identity Provider for assertion-based authentication.",
+      description:
+        "SP-initiated SAML 2.0 SSO — browser redirects to your Identity Provider for assertion-based authentication.",
       launchUrl: "https://support.sgummalla.net/login",
       external: true,
       disabled: true,
@@ -38,7 +39,8 @@ router.get("/", async (req: Request, res: Response) => {
       id: "help-portal",
       name: "Help Portal",
       protocol: "oidc",
-      description: "OpenID Connect authorization code flow — Identity Provider issues tokens on successful user authentication.",
+      description:
+        "OpenID Connect authorization code flow — Identity Provider issues tokens on successful user authentication.",
       launchUrl: "https://help.sgummalla.net/login",
       external: true,
       disabled: true,

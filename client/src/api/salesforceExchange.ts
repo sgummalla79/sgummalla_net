@@ -1,6 +1,16 @@
 import client from "./client";
-export type { SfClient, SfUserToken, SfTokenResult, SoqlResult } from "./salesforce";
-import type { SfClient, SfUserToken, SfTokenResult, SoqlResult } from "./salesforce";
+export type {
+  SfClient,
+  SfUserToken,
+  SfTokenResult,
+  SoqlResult,
+} from "./salesforce";
+import type {
+  SfClient,
+  SfUserToken,
+  SfTokenResult,
+  SoqlResult,
+} from "./salesforce";
 
 // ── Client CRUD (token_exchange flow_type) ────────────────────────────────────
 
@@ -17,15 +27,26 @@ export async function createExchangeClient(payload: {
   login_url: string;
   private_key: string;
 }): Promise<SfClient> {
-  const { data } = await client.post<SfClient>("/salesforce-exchange/clients", payload);
+  const { data } = await client.post<SfClient>(
+    "/salesforce-exchange/clients",
+    payload,
+  );
   return data;
 }
 
 export async function updateExchangeClient(
   id: string,
-  payload: Partial<{ label: string; client_id: string; login_url: string; private_key: string }>,
+  payload: Partial<{
+    label: string;
+    client_id: string;
+    login_url: string;
+    private_key: string;
+  }>,
 ): Promise<SfClient> {
-  const { data } = await client.patch<SfClient>(`/salesforce-exchange/clients/${id}`, payload);
+  const { data } = await client.patch<SfClient>(
+    `/salesforce-exchange/clients/${id}`,
+    payload,
+  );
   return data;
 }
 
@@ -35,8 +56,13 @@ export async function deleteExchangeClient(id: string): Promise<void> {
 
 // ── Token Exchange-specific endpoints ─────────────────────────────────────────
 
-export async function deleteCachedExchangeToken(id: string, sf_username: string): Promise<void> {
-  await client.delete(`/salesforce-exchange/clients/${id}/tokens/${encodeURIComponent(sf_username)}`);
+export async function deleteCachedExchangeToken(
+  id: string,
+  sf_username: string,
+): Promise<void> {
+  await client.delete(
+    `/salesforce-exchange/clients/${id}/tokens/${encodeURIComponent(sf_username)}`,
+  );
 }
 
 export async function getExchangeClientTokens(

@@ -190,7 +190,10 @@ router.delete(
         WHERE client_db_id = ${id} AND sf_username = ${sf_username}
         RETURNING sf_username
       `;
-      if (!row) { res.status(404).json({ error: "Token not found" }); return; }
+      if (!row) {
+        res.status(404).json({ error: "Token not found" });
+        return;
+      }
       res.json({ ok: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to delete token";

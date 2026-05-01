@@ -11,8 +11,17 @@ defineEmits<{ close: [] }>();
           <div class="dm-header">
             <span class="dm-title">{{ title }}</span>
             <button class="dm-close" @click="$emit('close')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           </div>
@@ -49,7 +58,7 @@ defineEmits<{ close: [] }>();
   max-height: 96vh;
   width: auto;
   max-width: 99vw;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
 }
 
 .dm-header {
@@ -73,15 +82,21 @@ defineEmits<{ close: [] }>();
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px; height: 26px;
+  width: 26px;
+  height: 26px;
   background: none;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   color: var(--vz-text3);
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
-.dm-close:hover { color: var(--vz-text); background: var(--vz-surface2); }
+.dm-close:hover {
+  color: var(--vz-text);
+  background: var(--vz-surface2);
+}
 
 .dm-body {
   overflow: auto;
@@ -89,8 +104,16 @@ defineEmits<{ close: [] }>();
   flex: 1;
   scrollbar-width: none;
 }
-.dm-body::-webkit-scrollbar { display: none; }
+.dm-body::-webkit-scrollbar {
+  display: none;
+}
 
-.dm-fade-enter-active, .dm-fade-leave-active { transition: opacity 0.2s; }
-.dm-fade-enter-from, .dm-fade-leave-to { opacity: 0; }
+.dm-fade-enter-active,
+.dm-fade-leave-active {
+  transition: opacity 0.2s;
+}
+.dm-fade-enter-from,
+.dm-fade-leave-to {
+  opacity: 0;
+}
 </style>

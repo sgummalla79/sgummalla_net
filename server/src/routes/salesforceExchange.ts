@@ -37,7 +37,9 @@ router.post("/clients", async (req: Request, res: Response) => {
   } = req.body as Record<string, string>;
 
   if (!label || !client_id || !private_key) {
-    res.status(400).json({ error: "label, client_id, and private_key are required" });
+    res
+      .status(400)
+      .json({ error: "label, client_id, and private_key are required" });
     return;
   }
 
@@ -45,7 +47,9 @@ router.post("/clients", async (req: Request, res: Response) => {
     !private_key.includes("-----BEGIN") ||
     !private_key.includes("PRIVATE KEY-----")
   ) {
-    res.status(400).json({ error: "private_key must be a PEM-encoded RSA private key" });
+    res
+      .status(400)
+      .json({ error: "private_key must be a PEM-encoded RSA private key" });
     return;
   }
 
@@ -57,7 +61,8 @@ router.post("/clients", async (req: Request, res: Response) => {
     `;
     res.status(201).json(row);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Failed to register client";
+    const msg =
+      err instanceof Error ? err.message : "Failed to register client";
     res.status(500).json({ error: msg });
   }
 });
@@ -66,7 +71,10 @@ router.post("/clients", async (req: Request, res: Response) => {
 
 router.patch("/clients/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { label, client_id, login_url, private_key } = req.body as Record<string, string | undefined>;
+  const { label, client_id, login_url, private_key } = req.body as Record<
+    string,
+    string | undefined
+  >;
 
   if (!label && !client_id && !login_url && !private_key) {
     res.status(400).json({ error: "No fields provided to update" });
@@ -74,10 +82,14 @@ router.patch("/clients/:id", async (req: Request, res: Response) => {
   }
 
   if (
-    private_key !== undefined && private_key !== "" &&
-    (!private_key.includes("-----BEGIN") || !private_key.includes("PRIVATE KEY-----"))
+    private_key !== undefined &&
+    private_key !== "" &&
+    (!private_key.includes("-----BEGIN") ||
+      !private_key.includes("PRIVATE KEY-----"))
   ) {
-    res.status(400).json({ error: "private_key must be a PEM-encoded RSA private key" });
+    res
+      .status(400)
+      .json({ error: "private_key must be a PEM-encoded RSA private key" });
     return;
   }
 
@@ -92,7 +104,10 @@ router.patch("/clients/:id", async (req: Request, res: Response) => {
       RETURNING id, label, client_id, login_url, created_at
     `;
 
-    if (!row) { res.status(404).json({ error: "Client not found" }); return; }
+    if (!row) {
+      res.status(404).json({ error: "Client not found" });
+      return;
+    }
 
     await sql`DELETE FROM sf_tokens WHERE client_db_id = ${id}`;
     res.json(row);
@@ -110,7 +125,10 @@ router.delete("/clients/:id", async (req: Request, res: Response) => {
     const [row] = await sql`
       DELETE FROM sf_clients WHERE id = ${id} AND flow_type = 'token_exchange' RETURNING id
     `;
-    if (!row) { res.status(404).json({ error: "Client not found" }); return; }
+    if (!row) {
+      res.status(404).json({ error: "Client not found" });
+      return;
+    }
     res.json({ ok: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Failed to delete client";
@@ -150,7 +168,10 @@ router.delete(
         WHERE client_db_id = ${id} AND sf_username = ${sf_username}
         RETURNING sf_username
       `;
-      if (!row) { res.status(404).json({ error: "Token not found" }); return; }
+      if (!row) {
+        res.status(404).json({ error: "Token not found" });
+        return;
+      }
       res.json({ ok: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to delete token";
@@ -180,7 +201,8 @@ router.post("/clients/:id/token", async (req: Request, res: Response) => {
 
     if (!tokenRow) {
       res.status(400).json({
-        error: "No Auth0 token found. Please log out and log in again via Auth0.",
+        error:
+          "No Auth0 token found. Please log out and log in again via Auth0.",
       });
       return;
     }
@@ -194,13 +216,17 @@ router.post("/clients/:id/token", async (req: Request, res: Response) => {
       return;
     }
 
-    const { access_token, instance_url, sf_username } = await exchangeWebAppToken(
-      client.client_id as string,
-      tokenRow.id_token as string,
-      client.login_url as string,
-    );
+    const { access_token, instance_url, sf_username } =
+      await exchangeWebAppToken(
+        client.client_id as string,
+        tokenRow.id_token as string,
+        client.login_url as string,
+      );
 
-    const row = await upsertSfToken(id, sf_username, { access_token, instance_url });
+    const row = await upsertSfToken(id, sf_username, {
+      access_token,
+      instance_url,
+    });
     res.json({ sf_username, ...row, from_cache: false });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Token exchange failed";
@@ -219,7 +245,10 @@ type LogEntry = { step: string; status: "ok" | "cached" | "info" };
 router.get("/clients/:id/frontdoor", async (req: Request, res: Response) => {
   const { id } = req.params;
   const userId = req.user?.id;
-  if (!userId) { res.status(401).json({ error: "No authenticated user" }); return; }
+  if (!userId) {
+    res.status(401).json({ error: "No authenticated user" });
+    return;
+  }
 
   const logs: LogEntry[] = [];
 
@@ -229,7 +258,9 @@ router.get("/clients/:id/frontdoor", async (req: Request, res: Response) => {
       SELECT id_token FROM user_id_tokens WHERE user_id = ${userId}
     `;
     if (!idTokenRow) {
-      res.status(400).json({ error: "No Auth0 token found. Please log out and log in again." });
+      res.status(400).json({
+        error: "No Auth0 token found. Please log out and log in again.",
+      });
       return;
     }
     logs.push({ step: "Auth0 identity token found", status: "ok" });
@@ -239,22 +270,34 @@ router.get("/clients/:id/frontdoor", async (req: Request, res: Response) => {
       SELECT id, label, client_id, login_url FROM sf_clients
       WHERE id = ${id} AND flow_type = 'token_exchange'
     `;
-    if (!clientRow) { res.status(404).json({ error: "Token Exchange client not found" }); return; }
+    if (!clientRow) {
+      res.status(404).json({ error: "Token Exchange client not found" });
+      return;
+    }
     logs.push({ step: `Client loaded: ${clientRow.label}`, status: "ok" });
 
     // 3 — Always exchange fresh (cache cannot be used for frontdoor.jsp)
-    logs.push({ step: "Requesting fresh Salesforce session token", status: "info" });
+    logs.push({
+      step: "Requesting fresh Salesforce session token",
+      status: "info",
+    });
     const result = await exchangeWebAppToken(
       clientRow.client_id as string,
       idTokenRow.id_token as string,
       clientRow.login_url as string,
     );
     await upsertSfToken(id, result.sf_username, result);
-    logs.push({ step: `Session token issued · ${result.sf_username}`, status: "ok" });
+    logs.push({
+      step: `Session token issued · ${result.sf_username}`,
+      status: "ok",
+    });
 
     // 4 — Construct FrontDoor URL
     const url = `${result.instance_url}/secur/frontdoor.jsp?sid=${encodeURIComponent(result.access_token)}&retURL=%2F`;
-    logs.push({ step: "FrontDoor URL ready — opening Salesforce", status: "ok" });
+    logs.push({
+      step: "FrontDoor URL ready — opening Salesforce",
+      status: "ok",
+    });
 
     res.json({ url, logs });
   } catch (err) {
@@ -305,7 +348,8 @@ router.post(
           const [tokenRow] = await sql`
             SELECT id_token FROM user_id_tokens WHERE user_id = ${req.user!.id}
           `;
-          if (!tokenRow) throw new Error("No Auth0 token — please log in again");
+          if (!tokenRow)
+            throw new Error("No Auth0 token — please log in again");
           const result = await exchangeWebAppToken(
             client.client_id as string,
             tokenRow.id_token as string,

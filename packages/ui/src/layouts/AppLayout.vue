@@ -44,7 +44,6 @@ withDefaults(
   },
 );
 
-
 const emit = defineEmits<{
   logout: [];
   profile: [];

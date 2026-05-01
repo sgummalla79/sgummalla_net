@@ -61,8 +61,13 @@ export async function deleteSfClient(id: string): Promise<void> {
   await client.delete(`/salesforce/clients/${id}`);
 }
 
-export async function deleteCachedToken(id: string, sf_username: string): Promise<void> {
-  await client.delete(`/salesforce/clients/${id}/tokens/${encodeURIComponent(sf_username)}`);
+export async function deleteCachedToken(
+  id: string,
+  sf_username: string,
+): Promise<void> {
+  await client.delete(
+    `/salesforce/clients/${id}/tokens/${encodeURIComponent(sf_username)}`,
+  );
 }
 
 export async function getClientTokens(id: string): Promise<SfUserToken[]> {

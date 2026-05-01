@@ -2,13 +2,19 @@ import { logger } from "./logger.js";
 
 // ── Resolve Salesforce username from access token ─────────────────────────────
 
-async function fetchSfUsername(accessToken: string, instanceUrl: string): Promise<string> {
+async function fetchSfUsername(
+  accessToken: string,
+  instanceUrl: string,
+): Promise<string> {
   const res = await fetch(`${instanceUrl}/services/oauth2/userinfo`, {
     redirect: "error",
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) throw new Error("Failed to fetch Salesforce user info");
-  const data = await res.json() as { preferred_username?: string; username?: string };
+  const data = (await res.json()) as {
+    preferred_username?: string;
+    username?: string;
+  };
   return data.preferred_username ?? data.username ?? "unknown";
 }
 
@@ -21,7 +27,11 @@ export async function exchangeWebAppToken(
   clientId: string,
   idToken: string,
   loginUrl: string,
-): Promise<{ access_token: string; instance_url: string; sf_username: string }> {
+): Promise<{
+  access_token: string;
+  instance_url: string;
+  sf_username: string;
+}> {
   const tokenUrl = `${loginUrl.replace(/\/$/, "")}/services/oauth2/token`;
 
   console.log("[SF Token Exchange] POST", tokenUrl, { client_id: clientId });
@@ -39,19 +49,45 @@ export async function exchangeWebAppToken(
   });
 
   const text = await res.text();
-  console.log("[SF Token Exchange] response", { status: res.status, body: text });
+  console.log("[SF Token Exchange] response", {
+    status: res.status,
+    body: text,
+  });
 
   if (!res.ok) {
     let parsed: { error?: string; error_description?: string } = {};
-    try { parsed = JSON.parse(text); } catch { /* ignore */ }
-    const msg = parsed.error_description ?? parsed.error ?? `Exchange failed (HTTP ${res.status})`;
-    logger.error("SF Token Exchange — failed", { status: res.status, body: text });
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      /* ignore */
+    }
+    const msg =
+      parsed.error_description ??
+      parsed.error ??
+      `Exchange failed (HTTP ${res.status})`;
+    logger.error("SF Token Exchange — failed", {
+      status: res.status,
+      body: text,
+    });
     throw new Error(msg);
   }
 
-  const data = JSON.parse(text) as { access_token: string; instance_url: string };
-  const sf_username = await fetchSfUsername(data.access_token, data.instance_url);
+  const data = JSON.parse(text) as {
+    access_token: string;
+    instance_url: string;
+  };
+  const sf_username = await fetchSfUsername(
+    data.access_token,
+    data.instance_url,
+  );
 
-  logger.debug("SF Token Exchange — success", { sf_username, instance_url: data.instance_url });
-  return { access_token: data.access_token, instance_url: data.instance_url, sf_username };
+  logger.debug("SF Token Exchange — success", {
+    sf_username,
+    instance_url: data.instance_url,
+  });
+  return {
+    access_token: data.access_token,
+    instance_url: data.instance_url,
+    sf_username,
+  };
 }
