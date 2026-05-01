@@ -1,6 +1,8 @@
 salesforce
 .sfdx
 **/.sfdx
+.sf
+**/.sf
 secrets/
 keystore.jks
 keystore.p12

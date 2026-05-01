@@ -148,3 +148,5 @@ vite.config.ts.timestamp-*
 # Salesforce CLI
 .sfdx/
 **/.sfdx/
+.sf/
+**/.sf/
