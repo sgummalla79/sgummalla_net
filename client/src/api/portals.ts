@@ -7,7 +7,8 @@ export interface Portal {
   description: string;
   launchUrl?: string;
   external?: boolean;
-  clientId?: string;
+  disabled?: boolean;
+  clients?: Array<{ id: string; label: string }>;
 }
 
 interface PortalsResponse {

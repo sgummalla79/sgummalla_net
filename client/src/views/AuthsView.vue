@@ -10,6 +10,7 @@ const router = useRouter();
 const auth = useAuthStore();
 const portals = ref<Portal[]>([]);
 const launching = ref<string | null>(null);
+const selectedClientId = ref<Record<string, string>>({});
 
 async function handleLogout() {
   await auth.logout();
@@ -17,8 +18,10 @@ async function handleLogout() {
 }
 
 async function launch(portal: Portal) {
-  if (portal.protocol === "token-exchange" && portal.clientId) {
-    await openLogModal(portal.clientId);
+  if (portal.disabled) return;
+  if (portal.protocol === "token-exchange") {
+    const clientId = selectedClientId.value[portal.id];
+    if (clientId) await openLogModal(clientId);
     return;
   }
   if (!portal.external && portal.launchUrl) {
@@ -37,6 +40,12 @@ async function launch(portal: Portal) {
 
 onMounted(async () => {
   portals.value = await getPortals();
+  // Pre-select first client for each token-exchange portal
+  portals.value.forEach((p) => {
+    if (p.protocol === "token-exchange" && p.clients?.length) {
+      selectedClientId.value[p.id] = p.clients[0].id;
+    }
+  });
 });
 
 // ── Log modal ─────────────────────────────────────────────────────────────────
@@ -109,9 +118,9 @@ function iconFor(status: FrontdoorLog["status"]) {
   >
     <div class="vz-auths">
       <div class="vz-auths__section-header">
-        <h1 class="vz-auths__title">Applications</h1>
+        <h1 class="vz-auths__title">Integrations</h1>
         <p class="vz-auths__sub">
-          All configured authentication protocols and their entry points.
+          Configured authentication integrations and their entry points.
         </p>
       </div>
 
@@ -122,10 +131,38 @@ function iconFor(status: FrontdoorLog["status"]) {
           :title="portal.name"
           :description="portal.description"
           :protocol="portal.protocol"
-          status="active"
+          :status="portal.disabled ? 'inactive' : 'active'"
+          :class="{ 'vz-auth-card--disabled': portal.disabled }"
         >
           <template #action>
+            <!-- Disabled: coming soon label -->
+            <span v-if="portal.disabled" class="vz-coming-soon">Coming soon</span>
+
+            <!-- Token Exchange: client selector + launch -->
+            <div v-else-if="portal.protocol === 'token-exchange'" class="vz-te-action">
+              <select
+                v-if="(portal.clients?.length ?? 0) > 1"
+                v-model="selectedClientId[portal.id]"
+                class="vz-te-select"
+              >
+                <option
+                  v-for="c in portal.clients"
+                  :key="c.id"
+                  :value="c.id"
+                >{{ c.label }}</option>
+              </select>
+              <Button
+                variant="ghost"
+                :loading="logModal.open && logModal.loading"
+                @click="launch(portal)"
+              >
+                Login ↗
+              </Button>
+            </div>
+
+            <!-- Normal launch -->
             <Button
+              v-else
               variant="ghost"
               :loading="launching === portal.id"
               @click="launch(portal)"
@@ -238,6 +275,43 @@ function iconFor(status: FrontdoorLog["status"]) {
 }
 
 .vz-auths__grid :deep(.vz-auth-card__action) { margin-top: 0.25rem; }
+
+/* Disabled tiles */
+.vz-auths__grid :deep(.vz-auth-card.vz-auth-card--disabled) {
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+}
+
+.vz-coming-soon {
+  font-family: var(--vz-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3);
+}
+
+/* Token Exchange action row: select + button */
+.vz-te-action {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.vz-te-select {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-family: var(--vz-font-mono);
+  color: var(--vz-text);
+  background: var(--vz-surface);
+  border: 1px solid var(--vz-border);
+  border-radius: var(--vz-radius-sm);
+  padding: 0.25rem 0.4rem;
+  cursor: pointer;
+  outline: none;
+}
+.vz-te-select:focus { border-color: var(--vz-border2); }
 
 @media (max-width: 680px) {
   .vz-auths__grid { grid-template-columns: 1fr; }

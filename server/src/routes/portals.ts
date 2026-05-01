@@ -15,7 +15,8 @@ type PortalEntry = {
   description: string;
   launchUrl?: string;
   external?: boolean;
-  clientId?: string;
+  disabled?: boolean;
+  clients?: Array<{ id: string; label: string }>;
   allowedUserIds?: string[];
 };
 
@@ -30,6 +31,7 @@ router.get("/", async (req: Request, res: Response) => {
       description: "SP-initiated SAML 2.0 SSO with RSA-signed assertions.",
       launchUrl: "https://support.sgummalla.net/login",
       external: true,
+      disabled: true,
       allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
     },
     {
@@ -39,28 +41,19 @@ router.get("/", async (req: Request, res: Response) => {
       description: "OpenID Connect authorization code flow.",
       launchUrl: "https://help.sgummalla.net/login",
       external: true,
-      allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
-    },
-    {
-      id: "jwt-bearer",
-      name: "JWT Bearer Flow",
-      protocol: "jwt",
-      description:
-        "Server-side JWT assertion exchanged for a Salesforce user session token — no password required.",
-      launchUrl: "/salesforce",
-      external: false,
+      disabled: true,
       allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
     },
   ];
 
-  // Dynamically add a Token Exchange portal for the first registered client
-  const [exchangeClient] = await sql`
+  // Token Exchange portal — lists all registered clients for selection
+  const exchangeClients = await sql<{ id: string; label: string }[]>`
     SELECT id, label FROM sf_clients
     WHERE flow_type = 'token_exchange'
-    ORDER BY created_at ASC LIMIT 1
+    ORDER BY created_at ASC
   `;
 
-  if (exchangeClient) {
+  if (exchangeClients.length > 0) {
     allPortals.push({
       id: "sf-token-exchange-login",
       name: "Token Exchange Login",
@@ -68,7 +61,7 @@ router.get("/", async (req: Request, res: Response) => {
       description:
         "Exchange your current session token for a Salesforce user session using OAuth 2.0 Token Exchange (RFC 8693) — opens directly in Salesforce.",
       external: false,
-      clientId: exchangeClient.id as string,
+      clients: exchangeClients.map((r) => ({ id: r.id, label: r.label })),
       allowedUserIds: ["auth0|68d40e8f46b12057807fce21"],
     });
   }

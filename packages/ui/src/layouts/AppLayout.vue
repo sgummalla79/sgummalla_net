@@ -15,7 +15,7 @@ import logoDark from "../assets/logo-dark.svg";
 // Add / remove items here only. No view should build its own nav list.
 
 const DEMOS_NAV = [
-  { name: "auths", label: "Experience Cloud Auths", href: "/auths" },
+  { name: "auths", label: "Integrations", href: "/auths" },
   { name: "salesforce", label: "JWT Bearer Auth", href: "/salesforce" },
   { name: "salesforce-exchange", label: "Token Exchange Auth", href: "/salesforce-exchange" },
 ];
@@ -122,7 +122,7 @@ function toggleTheme() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
             </svg>
-            Experience Cloud Auths
+            Integrations
           </NavLink>
           <NavLink href="/salesforce" :active="activePage === 'salesforce'">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
