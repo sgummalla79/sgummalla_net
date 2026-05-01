@@ -253,7 +253,7 @@ router.get("/clients/:id/frontdoor", async (req: Request, res: Response) => {
     logs.push({ step: `Session token issued · ${result.sf_username}`, status: "ok" });
 
     // 4 — Construct FrontDoor URL
-    const url = `${result.instance_url}/secur/frontdoor.jsp?sid=${result.access_token}&retURL=/`;
+    const url = `${result.instance_url}/secur/frontdoor.jsp?sid=${encodeURIComponent(result.access_token)}&retURL=%2F`;
     logs.push({ step: "FrontDoor URL ready — opening Salesforce", status: "ok" });
 
     res.json({ url, logs });
