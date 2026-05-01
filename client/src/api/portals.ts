@@ -3,10 +3,11 @@ import client from "./client";
 export interface Portal {
   id: string;
   name: string;
-  protocol: "saml" | "oidc" | "auth0" | "jwt";
+  protocol: "saml" | "oidc" | "auth0" | "jwt" | "token-exchange";
   description: string;
-  launchUrl: string;
+  launchUrl?: string;
   external?: boolean;
+  clientId?: string;
 }
 
 interface PortalsResponse {

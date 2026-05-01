@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { AppLayout, AuthCard, Button } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
 import { getPortals, type Portal } from "../api/portals";
+import { getSfFrontdoorUrl, type FrontdoorLog } from "../api/salesforceExchange";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -16,6 +17,10 @@ async function handleLogout() {
 }
 
 async function launch(portal: Portal) {
+  if (portal.protocol === "token-exchange" && portal.clientId) {
+    await openLogModal(portal.clientId);
+    return;
+  }
   if (!portal.external && portal.launchUrl) {
     router.push(portal.launchUrl);
     return;
@@ -33,6 +38,62 @@ async function launch(portal: Portal) {
 onMounted(async () => {
   portals.value = await getPortals();
 });
+
+// ── Log modal ─────────────────────────────────────────────────────────────────
+
+interface LogModal {
+  open: boolean;
+  loading: boolean;
+  visibleLines: FrontdoorLog[];
+  url: string | null;
+  error: string | null;
+}
+
+const logModal = ref<LogModal>({
+  open: false,
+  loading: false,
+  visibleLines: [],
+  url: null,
+  error: null,
+});
+
+async function openLogModal(clientId: string) {
+  logModal.value = { open: true, loading: true, visibleLines: [], url: null, error: null };
+
+  try {
+    const result = await getSfFrontdoorUrl(clientId);
+    logModal.value.loading = false;
+
+    // Stagger log lines for a live-replay effect
+    for (let i = 0; i < result.logs.length; i++) {
+      await new Promise((r) => setTimeout(r, 130));
+      logModal.value.visibleLines = result.logs.slice(0, i + 1);
+    }
+
+    logModal.value.url = result.url;
+  } catch (err) {
+    logModal.value.loading = false;
+    logModal.value.error =
+      err instanceof Error ? err.message : "Token exchange failed";
+  }
+}
+
+function closeLogModal() {
+  logModal.value.open = false;
+}
+
+function openSalesforce() {
+  if (logModal.value.url) {
+    window.open(logModal.value.url, "_blank", "noopener,noreferrer");
+    closeLogModal();
+  }
+}
+
+function iconFor(status: FrontdoorLog["status"]) {
+  if (status === "ok") return "✓";
+  if (status === "cached") return "↻";
+  return "→";
+}
 </script>
 
 <template>
@@ -76,6 +137,53 @@ onMounted(async () => {
       </div>
     </div>
   </AppLayout>
+
+  <!-- Token Exchange log modal -->
+  <Teleport to="body">
+    <Transition name="sf-fade">
+      <div v-if="logModal.open" class="sf-overlay" @click.self="closeLogModal">
+        <div class="sf-modal">
+          <div class="sf-modal__header">
+            <span class="sf-modal__title">Salesforce Login · Token Exchange</span>
+            <button class="sf-modal__close" @click="closeLogModal">✕</button>
+          </div>
+
+          <div class="sf-modal__body">
+            <!-- Pending spinner -->
+            <div v-if="logModal.loading" class="sf-log-line sf-log-line--pending">
+              <span class="sf-spinner">◌</span>
+              <span>Connecting to Salesforce...</span>
+            </div>
+
+            <!-- Replayed log entries -->
+            <TransitionGroup name="sf-line">
+              <div
+                v-for="(entry, i) in logModal.visibleLines"
+                :key="i"
+                class="sf-log-line"
+                :class="`sf-log-line--${entry.status}`"
+              >
+                <span class="sf-log-icon">{{ iconFor(entry.status) }}</span>
+                <span>{{ entry.step }}</span>
+              </div>
+            </TransitionGroup>
+
+            <!-- Error -->
+            <div v-if="logModal.error" class="sf-log-line sf-log-line--error">
+              <span class="sf-log-icon">✗</span>
+              <span>{{ logModal.error }}</span>
+            </div>
+          </div>
+
+          <div v-if="logModal.url" class="sf-modal__footer">
+            <button class="sf-btn-open" @click="openSalesforce">
+              Open Salesforce ↗
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -87,28 +195,11 @@ onMounted(async () => {
 }
 
 @keyframes vz-rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.vz-auths__section-header {
-  margin-bottom: 1.5rem;
-}
-
-.vz-auths__eyebrow {
-  font-family: var(--vz-font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--vz-text3);
-  margin-bottom: 0.35rem;
-}
+.vz-auths__section-header { margin-bottom: 1.5rem; }
 
 .vz-auths__title {
   font-size: 2rem;
@@ -139,22 +230,144 @@ onMounted(async () => {
   gap: 0.35rem;
 }
 
-.vz-auths__grid :deep(.vz-auth-card__title) {
-  font-size: 0.875rem;
-}
+.vz-auths__grid :deep(.vz-auth-card__title) { font-size: 0.875rem; }
 
 .vz-auths__grid :deep(.vz-auth-card__desc) {
   font-size: 0.78rem;
   line-height: 1.5;
 }
 
-.vz-auths__grid :deep(.vz-auth-card__action) {
-  margin-top: 0.25rem;
-}
+.vz-auths__grid :deep(.vz-auth-card__action) { margin-top: 0.25rem; }
 
 @media (max-width: 680px) {
-  .vz-auths__grid {
-    grid-template-columns: 1fr;
-  }
+  .vz-auths__grid { grid-template-columns: 1fr; }
 }
+
+/* ── Log modal ──────────────────────────────────────────────────────────────── */
+
+.sf-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sf-modal {
+  background: #0b1120;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  width: 420px;
+  max-width: 94vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  font-family: ui-monospace, 'SF Mono', 'Fira Code', monospace;
+}
+
+.sf-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sf-modal__title {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.sf-modal__close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.sf-modal__close:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.sf-modal__body {
+  padding: 1rem;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.sf-log-line {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sf-log-icon {
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.sf-log-line--ok    .sf-log-icon { color: #4ade80; }
+.sf-log-line--ok                  { color: rgba(255, 255, 255, 0.75); }
+.sf-log-line--cached .sf-log-icon { color: #fbbf24; }
+.sf-log-line--cached               { color: rgba(255, 255, 255, 0.6); }
+.sf-log-line--info  .sf-log-icon  { color: #60a5fa; }
+.sf-log-line--error .sf-log-icon  { color: #f87171; }
+.sf-log-line--error                { color: #f87171; }
+.sf-log-line--pending              { color: rgba(255, 255, 255, 0.35); }
+
+.sf-spinner {
+  display: inline-block;
+  animation: sf-spin 1.2s linear infinite;
+  font-size: 0.8rem;
+  color: #60a5fa;
+}
+
+@keyframes sf-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.sf-modal__footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sf-btn-open {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.sf-btn-open:hover { background: #2563eb; }
+
+/* Modal enter/leave */
+.sf-fade-enter-active, .sf-fade-leave-active { transition: opacity 0.2s; }
+.sf-fade-enter-from,   .sf-fade-leave-to     { opacity: 0; }
+
+/* Log line enter */
+.sf-line-enter-active { transition: opacity 0.18s, transform 0.18s; }
+.sf-line-enter-from   { opacity: 0; transform: translateX(-6px); }
 </style>

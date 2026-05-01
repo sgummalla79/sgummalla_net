@@ -186,6 +186,82 @@ router.post("/clients/:id/token", async (req: Request, res: Response) => {
   }
 });
 
+// ── GET /api/salesforce-exchange/clients/:id/frontdoor ───────────────────────
+// Exchanges the stored Auth0 id_token for a Salesforce access_token (using
+// the cache when available), then returns a FrontDoor URL that logs the user
+// directly into Salesforce. The response also carries a step-by-step log so
+// the client can replay it as a live progress viewer.
+
+type LogEntry = { step: string; status: "ok" | "cached" | "info" };
+
+router.get("/clients/:id/frontdoor", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user?.id;
+  if (!userId) { res.status(401).json({ error: "No authenticated user" }); return; }
+
+  const logs: LogEntry[] = [];
+
+  try {
+    // 1 — Auth0 identity token
+    const [idTokenRow] = await sql`
+      SELECT id_token FROM user_id_tokens WHERE user_id = ${userId}
+    `;
+    if (!idTokenRow) {
+      res.status(400).json({ error: "No Auth0 token found. Please log out and log in again." });
+      return;
+    }
+    logs.push({ step: "Auth0 identity token found", status: "ok" });
+
+    // 2 — Client record
+    const [clientRow] = await sql`
+      SELECT id, label, client_id, login_url FROM sf_clients
+      WHERE id = ${id} AND flow_type = 'token_exchange'
+    `;
+    if (!clientRow) { res.status(404).json({ error: "Token Exchange client not found" }); return; }
+    logs.push({ step: `Client loaded: ${clientRow.label}`, status: "ok" });
+
+    // 3 — Try cache (look for any non-expired token for this client)
+    const [cached] = await sql`
+      SELECT sf_username, access_token, instance_url FROM sf_tokens
+      WHERE client_db_id = ${id}
+        AND (issued_at + INTERVAL '2 hours') > NOW()
+      ORDER BY issued_at DESC LIMIT 1
+    `;
+
+    let access_token: string;
+    let instance_url: string;
+    let sf_username: string;
+
+    if (cached) {
+      access_token = cached.access_token as string;
+      instance_url = cached.instance_url as string;
+      sf_username  = cached.sf_username as string;
+      logs.push({ step: `Cached token found · ${sf_username}`, status: "cached" });
+    } else {
+      logs.push({ step: "No cached token — initiating exchange with Salesforce", status: "info" });
+      const result = await exchangeWebAppToken(
+        clientRow.client_id as string,
+        idTokenRow.id_token as string,
+        clientRow.login_url as string,
+      );
+      await upsertSfToken(id, result.sf_username, result);
+      access_token = result.access_token;
+      instance_url = result.instance_url;
+      sf_username  = result.sf_username;
+      logs.push({ step: `Token exchange complete · ${sf_username}`, status: "ok" });
+    }
+
+    // 4 — Construct FrontDoor URL
+    const url = `${instance_url}/secur/frontdoor.jsp?sid=${access_token}&retURL=/`;
+    logs.push({ step: "FrontDoor URL ready", status: "ok" });
+
+    res.json({ url, logs });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "FrontDoor request failed";
+    res.status(400).json({ error: msg });
+  }
+});
+
 // ── POST /api/salesforce-exchange/clients/:id/token/refresh ──────────────────
 
 router.post(

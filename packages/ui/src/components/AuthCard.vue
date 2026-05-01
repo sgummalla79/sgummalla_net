@@ -2,7 +2,7 @@
 defineProps<{
   title: string;
   description: string;
-  protocol: "jwt" | "saml" | "oidc" | "auth0";
+  protocol: "jwt" | "saml" | "oidc" | "auth0" | "token-exchange";
   status?: "active" | "inactive";
 }>();
 
@@ -11,6 +11,7 @@ const protocolLabel: Record<string, string> = {
   saml: "SAML 2.0",
   oidc: "OIDC",
   auth0: "Auth0",
+  "token-exchange": "Token Exchange",
 };
 </script>
 
@@ -86,6 +87,11 @@ const protocolLabel: Record<string, string> = {
 .vz-auth-card__tag--auth0 {
   background: var(--vz-tag-auth0-bg);
   color: var(--vz-tag-auth0-text);
+}
+
+.vz-auth-card__tag--token-exchange {
+  background: rgba(124, 58, 237, 0.15);
+  color: #a78bfa;
 }
 
 .vz-auth-card__status {

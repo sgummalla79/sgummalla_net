@@ -63,6 +63,23 @@ export async function refreshExchangeToken(
   return data;
 }
 
+export interface FrontdoorLog {
+  step: string;
+  status: "ok" | "cached" | "info";
+}
+
+export interface FrontdoorResult {
+  url: string;
+  logs: FrontdoorLog[];
+}
+
+export async function getSfFrontdoorUrl(id: string): Promise<FrontdoorResult> {
+  const { data } = await client.get<FrontdoorResult>(
+    `/salesforce-exchange/clients/${id}/frontdoor`,
+  );
+  return data;
+}
+
 export async function runExchangeSoqlQuery(
   id: string,
   sf_username: string,
