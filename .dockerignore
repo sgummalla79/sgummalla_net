@@ -1,6 +1,7 @@
 salesforce
 .sfdx
 **/.sfdx
+secrets/
 keystore.jks
 keystore.p12
 private.pem
