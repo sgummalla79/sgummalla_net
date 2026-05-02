@@ -62,6 +62,7 @@ async function fetchMeta(type: "saml" | "oidc") {
     @logout="handleLogout"
     :debug-mode="auth.debugMode"
     @toggle-debug="auth.toggleDebugMode"
+    @usage="router.push({ name: 'dashboard' })"
   >
     <div class="vz-config">
       <div class="vz-config__section-header">

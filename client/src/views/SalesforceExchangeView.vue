@@ -6,8 +6,10 @@ import { useAuthStore } from "../stores/auth";
 import type { SfClient, SfUserToken, SoqlResult } from "../api/salesforce";
 import DiagramModal from "../components/DiagramModal.vue";
 import TokenExchangeDiagram from "../components/TokenExchangeDiagram.vue";
+import SfSetupModal from "../components/SfSetupModal.vue";
 
 const diagramOpen = ref(false);
+const setupOpen = ref(false);
 import {
   getExchangeClients,
   createExchangeClient,
@@ -306,6 +308,7 @@ onMounted(loadClients);
     @logout="handleLogout"
     :debug-mode="auth.debugMode"
     @toggle-debug="auth.toggleDebugMode"
+    @usage="router.push({ name: 'dashboard' })"
   >
     <div class="sf-page">
       <div class="sf-page__header">
@@ -335,6 +338,24 @@ onMounted(loadClients);
                 <path d="M21 21v.01" />
                 <path d="M12 7v3a2 2 0 0 1-2 2H7" />
                 <path d="M3 12h.01" />
+              </svg>
+            </button>
+            <button
+              class="sf-diagram-btn"
+              title="Salesforce setup guide"
+              @click="setupOpen = true"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+                style="color: #00a1e0"
+              >
+                <path
+                  d="M10.12 3.27a5.1 5.1 0 0 1 3.61 1.5 6.12 6.12 0 0 1 3.74-1.27 6.18 6.18 0 0 1 6.18 6.18 6.18 6.18 0 0 1-6.18 6.18H5.25A4.25 4.25 0 0 1 1 11.62a4.25 4.25 0 0 1 4.25-4.25c.17 0 .34.01.5.03A5.09 5.09 0 0 1 10.12 3.27z"
+                />
               </svg>
             </button>
           </div>
@@ -777,6 +798,14 @@ onMounted(loadClients);
   >
     <TokenExchangeDiagram />
   </DiagramModal>
+
+  <!-- Salesforce setup guide modal -->
+  <SfSetupModal
+    :open="setupOpen"
+    flow="token-exchange"
+    @close="setupOpen = false"
+    @register="openRegisterFlyout"
+  />
 </template>
 
 <style scoped>

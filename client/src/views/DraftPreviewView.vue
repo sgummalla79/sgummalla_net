@@ -77,6 +77,7 @@ async function handleLogout() {
     @logout="handleLogout"
     :debug-mode="auth.debugMode"
     @toggle-debug="auth.toggleDebugMode"
+    @usage="router.push({ name: 'dashboard' })"
   >
     <div class="vz-draft-page">
       <!-- Draft banner — top of page, non-sticky -->

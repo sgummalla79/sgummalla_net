@@ -1,6 +1,5 @@
 import { Router, type Request, type Response } from "express";
 import { requireAuth } from "../middleware/requireAuth.js";
-import { requireOwner } from "../middleware/requireOwner.js";
 import sql from "../lib/db.js";
 import {
   mintAndExchangeJWT,
@@ -14,12 +13,13 @@ router.use(requireAuth);
 
 // ── GET /api/salesforce/clients ───────────────────────────────────────────────
 
-router.get("/clients", async (_req: Request, res: Response) => {
+router.get("/clients", async (req: Request, res: Response) => {
+  const userId = req.user!.id;
   try {
     const rows = await sql`
       SELECT id, label, client_id, login_url, created_at
       FROM sf_clients
-      WHERE flow_type = 'jwt_bearer'
+      WHERE flow_type = 'jwt_bearer' AND user_id = ${userId}
       ORDER BY created_at DESC
     `;
     res.json({ clients: rows });
@@ -31,7 +31,8 @@ router.get("/clients", async (_req: Request, res: Response) => {
 
 // ── POST /api/salesforce/clients ──────────────────────────────────────────────
 
-router.post("/clients", requireOwner, async (req: Request, res: Response) => {
+router.post("/clients", async (req: Request, res: Response) => {
+  const userId = req.user!.id;
   const {
     label,
     client_id,
@@ -58,8 +59,8 @@ router.post("/clients", requireOwner, async (req: Request, res: Response) => {
 
   try {
     const [row] = await sql`
-      INSERT INTO sf_clients (label, client_id, login_url, private_key, flow_type)
-      VALUES (${label}, ${client_id}, ${login_url}, ${private_key}, 'jwt_bearer')
+      INSERT INTO sf_clients (label, client_id, login_url, private_key, flow_type, user_id)
+      VALUES (${label}, ${client_id}, ${login_url}, ${private_key}, 'jwt_bearer', ${userId})
       RETURNING id, label, client_id, login_url, created_at
     `;
     res.status(201).json(row);
@@ -72,7 +73,8 @@ router.post("/clients", requireOwner, async (req: Request, res: Response) => {
 
 // ── PATCH /api/salesforce/clients/:id ────────────────────────────────────────
 
-router.patch("/clients/:id", requireOwner, async (req: Request, res: Response) => {
+router.patch("/clients/:id", async (req: Request, res: Response) => {
+  const userId = req.user!.id;
   const { id } = req.params;
   const { label, client_id, login_url, private_key } = req.body as Record<
     string,
@@ -98,7 +100,7 @@ router.patch("/clients/:id", requireOwner, async (req: Request, res: Response) =
 
   try {
     const [existing] =
-      await sql`SELECT client_id FROM sf_clients WHERE id = ${id}`;
+      await sql`SELECT client_id FROM sf_clients WHERE id = ${id} AND user_id = ${userId}`;
 
     if (!existing) {
       res.status(404).json({ error: "Client not found" });
@@ -114,7 +116,7 @@ router.patch("/clients/:id", requireOwner, async (req: Request, res: Response) =
           WHEN ${private_key ?? ""} = '' THEN private_key
           ELSE ${private_key ?? ""}
         END
-      WHERE id = ${id}
+      WHERE id = ${id} AND user_id = ${userId}
       RETURNING id, label, client_id, login_url, created_at
     `;
 
@@ -130,12 +132,13 @@ router.patch("/clients/:id", requireOwner, async (req: Request, res: Response) =
 
 // ── DELETE /api/salesforce/clients/:id ───────────────────────────────────────
 
-router.delete("/clients/:id", requireOwner, async (req: Request, res: Response) => {
+router.delete("/clients/:id", async (req: Request, res: Response) => {
+  const userId = req.user!.id;
   const { id } = req.params;
 
   try {
     const [row] = await sql`
-      DELETE FROM sf_clients WHERE id = ${id} RETURNING client_id
+      DELETE FROM sf_clients WHERE id = ${id} AND user_id = ${userId} RETURNING client_id
     `;
 
     if (!row) {
@@ -183,7 +186,6 @@ router.get("/clients/:id/tokens", async (req: Request, res: Response) => {
 
 router.delete(
   "/clients/:id/tokens/:sf_username",
-  requireOwner,
   async (req: Request, res: Response) => {
     const { id, sf_username } = req.params;
     try {

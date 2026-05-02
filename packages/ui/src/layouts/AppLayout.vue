@@ -48,6 +48,7 @@ withDefaults(
 const emit = defineEmits<{
   logout: [];
   profile: [];
+  usage: [];
   "toggle-debug": [];
 }>();
 
@@ -236,6 +237,7 @@ function toggleTheme() {
           @article-drafts="handleArticleDrafts"
           @logout="emit('logout')"
           @toggle-theme="toggleTheme"
+          @usage="emit('usage')"
           @toggle-debug="emit('toggle-debug')"
         />
       </template>

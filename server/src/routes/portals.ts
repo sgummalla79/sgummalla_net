@@ -20,8 +20,7 @@ type PortalEntry = {
   allowedUserIds?: string[];
 };
 
-router.get("/", async (_req: Request, res: Response) => {
-
+router.get("/", async (req: Request, res: Response) => {
   const allPortals: PortalEntry[] = [
     {
       id: "support-portal",
@@ -45,10 +44,11 @@ router.get("/", async (_req: Request, res: Response) => {
     },
   ];
 
-  // Token Exchange portal — lists all registered clients for selection
+  // Token Exchange portal — lists only the requesting user's registered clients
+  const userId = req.user?.id ?? "";
   const exchangeClients = await sql<{ id: string; label: string }[]>`
     SELECT id, label FROM sf_clients
-    WHERE flow_type = 'token_exchange'
+    WHERE flow_type = 'token_exchange' AND user_id = ${userId}
     ORDER BY created_at ASC
   `;
 

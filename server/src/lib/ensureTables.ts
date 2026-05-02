@@ -35,6 +35,20 @@ export async function ensureTables(): Promise<void> {
     `;
   }
 
+  if (!(await columnExists("sf_clients", "user_id"))) {
+    await sql`
+      ALTER TABLE sf_clients ADD COLUMN user_id text NOT NULL DEFAULT ''
+    `;
+  }
+
+  // Backfill existing rows that have no user_id with the owner's Auth0 user ID
+  const ownerId = process.env.OWNER_USER_ID;
+  if (ownerId) {
+    await sql`
+      UPDATE sf_clients SET user_id = ${ownerId} WHERE user_id = ''
+    `;
+  }
+
   if (!(await tableExists("user_id_tokens"))) {
     await sql`
       CREATE TABLE user_id_tokens (

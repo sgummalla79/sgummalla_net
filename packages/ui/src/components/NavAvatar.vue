@@ -14,6 +14,7 @@ defineEmits<{
   profile: [];
   configuration: [];
   "article-drafts": [];
+  usage: [];
   logout: [];
   "toggle-theme": [];
   "toggle-debug": [];
@@ -204,6 +205,34 @@ onUnmounted(() =>
           <span class="vz-avatar-item__badge">
             {{ themeMode === "dark" ? "Dark" : "Light" }}
           </span>
+        </button>
+
+        <!-- Usage dashboard — owner only -->
+        <button
+          v-if="props.isOwner"
+          class="vz-avatar-item"
+          @click="
+            () => {
+              open = false;
+              $emit('usage');
+            }
+          "
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <path d="M8 21h8M12 17v4" />
+            <path d="M7 8h2v5H7zM11 10h2v3h-2zM15 7h2v6h-2z" />
+          </svg>
+          Usage Dashboard
         </button>
 
         <!-- Debug mode toggle — owner only, temporary -->

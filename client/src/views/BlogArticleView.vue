@@ -63,6 +63,7 @@ async function handleLogout() {
     @logout="handleLogout"
     :debug-mode="auth.debugMode"
     @toggle-debug="auth.toggleDebugMode"
+    @usage="router.push({ name: 'dashboard' })"
   >
     <div v-if="article" class="vz-article-wrapper">
       <div class="vz-article-nav">

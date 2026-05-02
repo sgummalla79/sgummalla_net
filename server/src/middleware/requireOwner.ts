@@ -7,7 +7,9 @@ export function requireOwner(
 ): void {
   const ownerId = process.env.OWNER_USER_ID;
   if (!ownerId || req.user?.id !== ownerId) {
-    res.status(403).json({ error: "Forbidden", message: "Owner access required" });
+    res
+      .status(403)
+      .json({ error: "Forbidden", message: "Owner access required" });
     return;
   }
   next();

@@ -17,6 +17,7 @@ import salesforceExchangeRouter from "./routes/salesforceExchange.js";
 import { ensureTables } from "./lib/ensureTables.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import debugRouter from "./routes/debug.js";
+import usageRouter from "./routes/usage.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -43,6 +44,7 @@ app.use(requestLogger);
 // ── API routes ────────────────────────────────────────────────────────────────
 app.use("/api", healthRouter);
 app.use("/api/debug", debugRouter);
+app.use("/api/usage", usageRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/auth0", auth0Router);
 app.use("/api/saml", samlRouter);
