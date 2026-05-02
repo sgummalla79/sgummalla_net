@@ -41,13 +41,15 @@ router.get("/neon", async (_req: Request, res: Response) => {
       `;
 
       // Storage + live row counts from PostgreSQL stats (no full table scan)
-      const tables = await sql<{
-        table_name: string;
-        total_bytes: string;
-        table_bytes: string;
-        index_bytes: string;
-        row_count: string;
-      }[]>`
+      const tables = await sql<
+        {
+          table_name: string;
+          total_bytes: string;
+          table_bytes: string;
+          index_bytes: string;
+          row_count: string;
+        }[]
+      >`
         SELECT
           c.relname                            AS table_name,
           pg_total_relation_size(c.oid)::text  AS total_bytes,
@@ -62,23 +64,24 @@ router.get("/neon", async (_req: Request, res: Response) => {
       `;
 
       // 7-day daily insert activity for tables that have a timestamp column
-      const [articlesAct, sfClientsAct, sfTokensAct, userTokensAct] = await Promise.all([
-        sql<{ day: string; count: string }[]>`
+      const [articlesAct, sfClientsAct, sfTokensAct, userTokensAct] =
+        await Promise.all([
+          sql<{ day: string; count: string }[]>`
           SELECT DATE_TRUNC('day', created_at)::date::text AS day, COUNT(*)::text AS count
           FROM articles WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY 1 ORDER BY 1`,
-        sql<{ day: string; count: string }[]>`
+          sql<{ day: string; count: string }[]>`
           SELECT DATE_TRUNC('day', created_at)::date::text AS day, COUNT(*)::text AS count
           FROM sf_clients WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY 1 ORDER BY 1`,
-        sql<{ day: string; count: string }[]>`
+          sql<{ day: string; count: string }[]>`
           SELECT DATE_TRUNC('day', issued_at)::date::text AS day, COUNT(*)::text AS count
           FROM sf_tokens WHERE issued_at > NOW() - INTERVAL '7 days' GROUP BY 1 ORDER BY 1`,
-        sql<{ day: string; count: string }[]>`
+          sql<{ day: string; count: string }[]>`
           SELECT DATE_TRUNC('day', updated_at)::date::text AS day, COUNT(*)::text AS count
           FROM user_id_tokens WHERE updated_at > NOW() - INTERVAL '7 days' GROUP BY 1 ORDER BY 1`,
-      ]);
+        ]);
 
       const toActivity = (rows: { day: string; count: string }[]) =>
-        rows.map(r => ({ day: r.day, count: Number(r.count) }));
+        rows.map((r) => ({ day: r.day, count: Number(r.count) }));
 
       const usedBytes = Number(sizeRow.bytes);
 
@@ -94,17 +97,38 @@ router.get("/neon", async (_req: Request, res: Response) => {
           rowCount: Number(t.row_count),
         })),
         activity: [
-          { table: "articles",       label: "Articles",        color: "#60a5fa", days: toActivity(articlesAct) },
-          { table: "sf_clients",     label: "SF Clients",      color: "#34d399", days: toActivity(sfClientsAct) },
-          { table: "sf_tokens",      label: "SF Tokens",       color: "#f59e0b", days: toActivity(sfTokensAct) },
-          { table: "user_id_tokens", label: "User ID Tokens",  color: "#a78bfa", days: toActivity(userTokensAct) },
+          {
+            table: "articles",
+            label: "Articles",
+            color: "#60a5fa",
+            days: toActivity(articlesAct),
+          },
+          {
+            table: "sf_clients",
+            label: "SF Clients",
+            color: "#34d399",
+            days: toActivity(sfClientsAct),
+          },
+          {
+            table: "sf_tokens",
+            label: "SF Tokens",
+            color: "#f59e0b",
+            days: toActivity(sfTokensAct),
+          },
+          {
+            table: "user_id_tokens",
+            label: "User ID Tokens",
+            color: "#a78bfa",
+            days: toActivity(userTokensAct),
+          },
         ],
       };
     });
 
     res.json(data);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Failed to fetch Neon usage";
+    const msg =
+      err instanceof Error ? err.message : "Failed to fetch Neon usage";
     res.status(500).json({ error: msg });
   }
 });
@@ -207,10 +231,8 @@ const COLLECTIONS = [
   { name: "sf_ops", label: "SF Ops", ttl: "90 days" },
 ];
 
-// Firestore free tier limits
-const FREE_READS_PER_DAY = 50_000;
 const FREE_WRITES_PER_DAY = 20_000;
-const FREE_STORAGE_BYTES = 1 * 1024 * 1024 * 1024; // 1 GB
+const FS_PROJECT_ID       = "sgummallaworks";
 
 router.get("/firestore", async (_req: Request, res: Response) => {
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -221,20 +243,20 @@ router.get("/firestore", async (_req: Request, res: Response) => {
   try {
     const data = await cached("firestore", 5 * 60 * 1000, async () => {
       const db = getDb();
-
       const { Timestamp } = await import("firebase-admin/firestore");
+
       const now = new Date();
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - (6 - i)));
-        return { label: d.toISOString().slice(0, 10), start: d, end: new Date(d.getTime() + 86400000) };
+        return { label: d.toISOString().slice(0, 10), start: d, end: new Date(d.getTime() + 86_400_000) };
       });
 
+      // Collection document counts + 7-day creation activity
       const counts = await Promise.all(
         COLLECTIONS.map(async (col) => {
           let count: number | null = null;
           try {
-            const snap = await db.collection(col.name).count().get();
-            count = snap.data().count;
+            count = (await db.collection(col.name).count().get()).data().count;
           } catch { /* empty */ }
 
           const activity = await Promise.all(
@@ -242,7 +264,7 @@ router.get("/firestore", async (_req: Request, res: Response) => {
               try {
                 const snap = await db.collection(col.name)
                   .where("createdAt", ">=", Timestamp.fromDate(start))
-                  .where("createdAt", "<", Timestamp.fromDate(end))
+                  .where("createdAt", "<",  Timestamp.fromDate(end))
                   .count().get();
                 return { day: label, count: snap.data().count };
               } catch {
@@ -257,15 +279,24 @@ router.get("/firestore", async (_req: Request, res: Response) => {
 
       const totalDocuments = counts.reduce((sum, c) => sum + (c.count ?? 0), 0);
 
+      // Daily writes = sum of document creates across all collections per day
+      // (creates are the dominant write type for this app's logging pattern)
+      const dailyWrites = last7Days.map(({ label: day }) => ({
+        day,
+        count: counts.reduce((sum, col) => {
+          const a = col.activity.find(d => d.day === day);
+          return sum + (a?.count ?? 0);
+        }, 0),
+      }));
+
       return {
-        projectId: "sgummallaworks",
-        consoleUrl: "https://console.firebase.google.com/project/sgummallaworks/firestore",
+        projectId: FS_PROJECT_ID,
+        consoleUrl: `https://console.firebase.google.com/project/${FS_PROJECT_ID}/firestore`,
         collections: counts,
         totalDocuments,
+        dailyWrites,
         freeTier: {
-          readsPerDay: FREE_READS_PER_DAY,
           writesPerDay: FREE_WRITES_PER_DAY,
-          storageLimitBytes: FREE_STORAGE_BYTES,
         },
       };
     });

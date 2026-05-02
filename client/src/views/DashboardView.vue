@@ -4,23 +4,27 @@ import { useRouter } from "vue-router";
 import { AppLayout } from "@sgw/ui";
 import { useAuthStore } from "../stores/auth";
 import {
-  fetchNeonUsage, fetchFlyUsage, fetchFirestoreUsage,
-  type NeonUsage, type FlyUsage, type FirestoreUsage, type DailyCount,
+  fetchNeonUsage,
+  fetchFlyUsage,
+  fetchFirestoreUsage,
+  type NeonUsage,
+  type FlyUsage,
+  type FirestoreUsage,
 } from "../api/usage";
 
 const router = useRouter();
-const auth  = useAuthStore();
+const auth = useAuthStore();
 
 type Section = "neon" | "fly" | "firestore";
 const active = ref<Section>("neon");
 
-const neon      = ref<NeonUsage | null>(null);
-const fly       = ref<FlyUsage | null>(null);
+const neon = ref<NeonUsage | null>(null);
+const fly = ref<FlyUsage | null>(null);
 const firestore = ref<FirestoreUsage | null>(null);
-const neonErr   = ref<string | null>(null);
-const flyErr    = ref<string | null>(null);
-const fsErr     = ref<string | null>(null);
-const loading   = ref(true);
+const neonErr = ref<string | null>(null);
+const flyErr = ref<string | null>(null);
+const fsErr = ref<string | null>(null);
+const loading = ref(true);
 const lastUpdated = ref<Date | null>(null);
 
 async function handleLogout() {
@@ -32,88 +36,128 @@ async function handleLogout() {
 
 function fmt(bytes: number): string {
   if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(2)} GB`;
-  if (bytes >= 1048576)    return `${(bytes / 1048576).toFixed(1)} MB`;
-  if (bytes >= 1024)       return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${bytes} B`;
 }
 
 function fmtNum(n: number | null): string {
   if (n === null) return "—";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
 }
 
 function shortDay(iso: string): string {
-  return new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" });
+  return new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", {
+    weekday: "short",
+    timeZone: "UTC",
+  });
 }
 
-// ── Bar chart ─────────────────────────────────────────────────────────────────
-// One series per table/collection, grouped by day.
+// ── Sparkline table ───────────────────────────────────────────────────────────
 
-interface ChartSeries { label: string; color: string; days: DailyCount[] }
-
-function buildChart(series: ChartSeries[], days: string[]) {
-  const H = 120, PAD_BOTTOM = 20, PAD_TOP = 8;
-  const maxVal = Math.max(1, ...series.flatMap(s => s.days.map(d => d.count)));
-  const W_PER_GROUP = 52;
-  const BAR_W = series.length > 1 ? Math.floor((W_PER_GROUP - 4) / series.length) : W_PER_GROUP - 4;
-  const totalW = days.length * W_PER_GROUP;
-
-  const bars = series.flatMap((s, si) =>
-    days.map((day, di) => {
-      const val = s.days.find(d => d.day === day)?.count ?? 0;
-      const barH = Math.max(2, ((val / maxVal) * (H - PAD_BOTTOM - PAD_TOP)));
-      const x = di * W_PER_GROUP + 2 + si * (BAR_W + 1);
-      const y = H - PAD_BOTTOM - barH;
-      return { x, y, w: BAR_W, h: barH, color: s.color, label: `${s.label}: ${val}`, day, val };
-    })
-  );
-
-  const labels = days.map((day, di) => ({
-    x: di * W_PER_GROUP + W_PER_GROUP / 2,
-    y: H - 4,
-    text: shortDay(day),
-  }));
-
-  return { bars, labels, totalW, H };
+interface SparkRow {
+  key: string;
+  label: string;
+  color: string;
+  total7d: number;
+  counts: Record<string, number>;
 }
 
-const neonChartDays = computed(() => {
-  if (!neon.value?.activity?.[0]) return [];
-  return neon.value.activity[0].days.map(d => d.day);
+function last7Days(): string[] {
+  const days: string[] = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i),
+    );
+    days.push(d.toISOString().slice(0, 10));
+  }
+  return days;
+}
+
+const SPARK_DAYS = last7Days();
+
+function barPx(count: number, max: number, maxH = 24): number {
+  if (count === 0) return 0;
+  return Math.max(2, Math.round((count / max) * maxH));
+}
+
+const neonSparkRows = computed((): SparkRow[] => {
+  if (!neon.value?.activity) return [];
+  return neon.value.activity.map((s) => {
+    const counts: Record<string, number> = {};
+    for (const d of s.days) counts[d.day] = d.count;
+    const total7d = SPARK_DAYS.reduce(
+      (sum, day) => sum + (counts[day] ?? 0),
+      0,
+    );
+    return { key: s.table, label: s.label, color: s.color, total7d, counts };
+  });
 });
 
-const neonChart = computed(() => {
-  if (!neon.value?.activity) return null;
-  return buildChart(neon.value.activity, neonChartDays.value);
-});
-
-const fsChartDays = computed(() => {
-  if (!firestore.value?.collections?.[0]?.activity) return [];
-  return firestore.value.collections[0].activity.map(d => d.day);
-});
+const neonSparkMax = computed(() =>
+  Math.max(
+    1,
+    ...neonSparkRows.value.flatMap((r) =>
+      SPARK_DAYS.map((d) => r.counts[d] ?? 0),
+    ),
+  ),
+);
 
 const FS_COLORS: Record<string, string> = {
-  api_logs: "#60a5fa", page_views: "#34d399", auth_events: "#f59e0b", sf_ops: "#a78bfa",
+  api_logs: "#60a5fa",
+  page_views: "#34d399",
+  auth_events: "#f59e0b",
+  sf_ops: "#a78bfa",
 };
 
-const fsChart = computed(() => {
-  if (!firestore.value?.collections) return null;
-  const series = firestore.value.collections.map(c => ({
-    label: c.label,
-    color: FS_COLORS[c.name] ?? "#94a3b8",
-    days: c.activity,
-  }));
-  return buildChart(series, fsChartDays.value);
+const fsSparkRows = computed((): SparkRow[] => {
+  if (!firestore.value?.collections) return [];
+  return firestore.value.collections.map((c) => {
+    const counts: Record<string, number> = {};
+    for (const d of c.activity) counts[d.day] = d.count;
+    const total7d = SPARK_DAYS.reduce(
+      (sum, day) => sum + (counts[day] ?? 0),
+      0,
+    );
+    return {
+      key: c.name,
+      label: c.label,
+      color: FS_COLORS[c.name] ?? "#94a3b8",
+      total7d,
+      counts,
+    };
+  });
 });
 
-// ── Legend ────────────────────────────────────────────────────────────────────
-
-const neonLegend = computed(() => neon.value?.activity ?? []);
-const fsLegend = computed(() =>
-  (firestore.value?.collections ?? []).map(c => ({ label: c.label, color: FS_COLORS[c.name] ?? "#94a3b8" }))
+const fsSparkMax = computed(() =>
+  Math.max(
+    1,
+    ...fsSparkRows.value.flatMap((r) =>
+      SPARK_DAYS.map((d) => r.counts[d] ?? 0),
+    ),
+  ),
 );
+
+const fsWritesRow = computed((): SparkRow | null => {
+  if (!firestore.value?.dailyWrites.length) return null;
+  const counts: Record<string, number> = {};
+  for (const d of firestore.value.dailyWrites) counts[d.day] = d.count;
+  return {
+    key:     "total-writes",
+    label:   "Total writes",
+    color:   "#34d399",
+    total7d: SPARK_DAYS.reduce((s, d) => s + (counts[d] ?? 0), 0),
+    counts,
+  };
+});
+
+const fsWritesMax = computed(() => {
+  if (!fsWritesRow.value) return 1;
+  return Math.max(1, ...SPARK_DAYS.map(d => fsWritesRow.value!.counts[d] ?? 0));
+});
 
 // ── Load ─────────────────────────────────────────────────────────────────────
 
@@ -121,14 +165,21 @@ async function load() {
   loading.value = true;
   neonErr.value = flyErr.value = fsErr.value = null;
 
-  const [nr, fr, fsr] = await Promise.allSettled([fetchNeonUsage(), fetchFlyUsage(), fetchFirestoreUsage()]);
+  const [nr, fr, fsr] = await Promise.allSettled([
+    fetchNeonUsage(),
+    fetchFlyUsage(),
+    fetchFirestoreUsage(),
+  ]);
 
-  neon.value      = nr.status  === "fulfilled" ? nr.value  : null;
-  fly.value       = fr.status  === "fulfilled" ? fr.value  : null;
+  neon.value = nr.status === "fulfilled" ? nr.value : null;
+  fly.value = fr.status === "fulfilled" ? fr.value : null;
   firestore.value = fsr.status === "fulfilled" ? fsr.value : null;
-  if (nr.status  === "rejected") neonErr.value = nr.reason  instanceof Error ? nr.reason.message  : "Failed";
-  if (fr.status  === "rejected") flyErr.value  = fr.reason  instanceof Error ? fr.reason.message  : "Failed";
-  if (fsr.status === "rejected") fsErr.value   = fsr.reason instanceof Error ? fsr.reason.message : "Failed";
+  if (nr.status === "rejected")
+    neonErr.value = nr.reason instanceof Error ? nr.reason.message : "Failed";
+  if (fr.status === "rejected")
+    flyErr.value = fr.reason instanceof Error ? fr.reason.message : "Failed";
+  if (fsr.status === "rejected")
+    fsErr.value = fsr.reason instanceof Error ? fsr.reason.message : "Failed";
 
   loading.value = false;
   lastUpdated.value = new Date();
@@ -152,7 +203,6 @@ onMounted(load);
     @usage="router.push({ name: 'dashboard' })"
   >
     <div class="vz-dash">
-
       <!-- Page header -->
       <div class="vz-dash__top">
         <div>
@@ -160,11 +210,24 @@ onMounted(load);
           <p class="vz-dash__sub">Infrastructure usage for sgummalla.net</p>
         </div>
         <div class="vz-dash__actions">
-          <p v-if="lastUpdated" class="vz-dash__updated">Updated {{ lastUpdated.toLocaleTimeString() }}</p>
+          <p v-if="lastUpdated" class="vz-dash__updated">
+            Updated {{ lastUpdated.toLocaleTimeString() }}
+          </p>
           <button class="vz-dash__refresh" @click="load">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
-              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M8 16H3v5" />
             </svg>
             Refresh
           </button>
@@ -172,14 +235,13 @@ onMounted(load);
       </div>
 
       <div class="vz-dash__layout">
-
         <!-- Side nav -->
         <nav class="vz-dash__sidenav">
           <button
             v-for="item in [
-              { key: 'neon',      label: 'NeonDB',    color: '#00e5a0' },
+              { key: 'neon', label: 'NeonDB', color: '#00e5a0' },
               { key: 'firestore', label: 'Firestore', color: '#ffca28' },
-              { key: 'fly',       label: 'Fly.io',    color: '#8b5cf6' },
+              { key: 'fly', label: 'Fly.io', color: '#8b5cf6' },
             ]"
             :key="item.key"
             class="vz-dash__navitem"
@@ -193,33 +255,49 @@ onMounted(load);
 
         <!-- Main content -->
         <div class="vz-dash__content">
-
           <!-- ── NeonDB ──────────────────────────────────── -->
           <div v-if="active === 'neon'" class="vz-dash__panel">
             <div class="vz-dash__panel-header">
               <div class="vz-dash__panel-title-row">
-                <svg class="vz-dash__panel-icon" viewBox="0 0 24 24" fill="currentColor" style="color:#00e5a0">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                  <path d="M11 7h2v6h-2zm0 8h2v2h-2z"/>
+                <svg
+                  class="vz-dash__panel-icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="color: #00e5a0"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
+                  />
+                  <path d="M11 7h2v6h-2zm0 8h2v2h-2z" />
                 </svg>
                 <span class="vz-dash__panel-title">NeonDB</span>
-                <span class="vz-dash__panel-badge">PostgreSQL · Free Tier · 512 MB limit</span>
+                <span class="vz-dash__panel-badge"
+                  >PostgreSQL · Free Tier · 512 MB limit</span
+                >
               </div>
             </div>
 
             <div v-if="loading" class="vz-dash__loading">Loading…</div>
             <div v-else-if="neonErr" class="vz-dash__error">{{ neonErr }}</div>
             <template v-else-if="neon">
-
               <!-- Storage bar -->
               <div class="vz-dash__section">
                 <p class="vz-dash__section-title">Storage</p>
                 <div class="vz-dash__bar-header">
                   <span class="vz-dash__bar-label">Used</span>
-                  <span class="vz-dash__bar-value">{{ fmt(neon.usedBytes) }} / {{ fmt(neon.limitBytes) }}</span>
+                  <span class="vz-dash__bar-value"
+                    >{{ fmt(neon.usedBytes) }} /
+                    {{ fmt(neon.limitBytes) }}</span
+                  >
                 </div>
                 <div class="vz-dash__bar-track">
-                  <div class="vz-dash__bar-fill" :class="neon.usedPercent > 80 ? 'vz-dash__bar-fill--warn' : ''" :style="{ width: `${Math.min(neon.usedPercent, 100)}%` }" />
+                  <div
+                    class="vz-dash__bar-fill"
+                    :class="
+                      neon.usedPercent > 80 ? 'vz-dash__bar-fill--warn' : ''
+                    "
+                    :style="{ width: `${Math.min(neon.usedPercent, 100)}%` }"
+                  />
                 </div>
                 <p class="vz-dash__bar-pct">{{ neon.usedPercent }}% used</p>
               </div>
@@ -242,36 +320,68 @@ onMounted(load);
                       <td class="vz-dash__tname">{{ t.name }}</td>
                       <td class="vz-dash__tc">{{ fmtNum(t.rowCount) }}</td>
                       <td class="vz-dash__tc">{{ fmt(t.totalBytes) }}</td>
-                      <td class="vz-dash__tc vz-dash__tdim">{{ fmt(t.tableBytes) }}</td>
-                      <td class="vz-dash__tc vz-dash__tdim">{{ fmt(t.indexBytes) }}</td>
+                      <td class="vz-dash__tc vz-dash__tdim">
+                        {{ fmt(t.tableBytes) }}
+                      </td>
+                      <td class="vz-dash__tc vz-dash__tdim">
+                        {{ fmt(t.indexBytes) }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              <!-- 7-day activity chart -->
-              <div v-if="neonChart" class="vz-dash__section">
-                <p class="vz-dash__section-title">Records created — last 7 days</p>
-                <div class="vz-dash__chart-wrap">
-                  <svg :viewBox="`0 0 ${neonChart.totalW} ${neonChart.H}`" preserveAspectRatio="none" class="vz-dash__chart-svg">
-                    <rect
-                      v-for="(b, i) in neonChart.bars" :key="i"
-                      :x="b.x" :y="b.y" :width="b.w" :height="b.h"
-                      :fill="b.color" rx="2" opacity="0.85"
-                    >
-                      <title>{{ b.label }}</title>
-                    </rect>
-                    <text v-for="(l, i) in neonChart.labels" :key="i" :x="l.x" :y="l.y" text-anchor="middle" class="vz-dash__chart-label">{{ l.text }}</text>
-                  </svg>
-                  <div class="vz-dash__legend">
-                    <span v-for="s in neonLegend" :key="s.table" class="vz-dash__legend-item">
-                      <span class="vz-dash__legend-dot" :style="{ background: s.color }" />
-                      {{ s.label }}
-                    </span>
-                  </div>
-                </div>
+              <!-- 7-day sparkline activity -->
+              <div v-if="neonSparkRows.length" class="vz-dash__section">
+                <p class="vz-dash__section-title">
+                  Records created — last 7 days
+                </p>
+                <table class="vz-spark">
+                  <thead>
+                    <tr>
+                      <th class="vz-spark__th-name">Table</th>
+                      <th class="vz-spark__th-total">7d total</th>
+                      <th
+                        v-for="day in SPARK_DAYS"
+                        :key="day"
+                        class="vz-spark__th-day"
+                      >
+                        {{ shortDay(day) }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in neonSparkRows" :key="row.key">
+                      <td class="vz-spark__td-name">
+                        <div class="vz-spark__name-inner">
+                          <span
+                            class="vz-spark__dot"
+                            :style="{ background: row.color }"
+                          />
+                          {{ row.label }}
+                        </div>
+                      </td>
+                      <td class="vz-spark__td-total">{{ row.total7d }}</td>
+                      <td
+                        v-for="day in SPARK_DAYS"
+                        :key="day"
+                        class="vz-spark__td-day"
+                        :data-tip="`${shortDay(day)}: ${row.counts[day] ?? 0}`"
+                      >
+                        <div class="vz-spark__bar-wrap">
+                          <div
+                            class="vz-spark__bar"
+                            :style="{
+                              height: `${barPx(row.counts[day] ?? 0, neonSparkMax)}px`,
+                              background: row.color,
+                            }"
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-
             </template>
           </div>
 
@@ -279,11 +389,21 @@ onMounted(load);
           <div v-else-if="active === 'firestore'" class="vz-dash__panel">
             <div class="vz-dash__panel-header">
               <div class="vz-dash__panel-title-row">
-                <svg class="vz-dash__panel-icon" viewBox="0 0 24 24" fill="currentColor" style="color:#ffca28">
-                  <path d="M6.5 2h11L21 8.5 12 22 3 8.5 6.5 2zm1.25 2L5.2 8h13.6l-2.55-4H7.75zM12 18.5l7-9H5l7 9z"/>
+                <svg
+                  class="vz-dash__panel-icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="color: #ffca28"
+                >
+                  <path
+                    d="M6.5 2h11L21 8.5 12 22 3 8.5 6.5 2zm1.25 2L5.2 8h13.6l-2.55-4H7.75zM12 18.5l7-9H5l7 9z"
+                  />
                 </svg>
                 <span class="vz-dash__panel-title">Firestore</span>
-                <span class="vz-dash__panel-badge">sgummallaworks · Free Tier · 1 GB / 50K reads / 20K writes per day</span>
+                <span class="vz-dash__panel-badge"
+                  >sgummallaworks · Free Tier · 1 GB / 50K reads / 20K writes
+                  per day</span
+                >
               </div>
             </div>
 
@@ -291,6 +411,7 @@ onMounted(load);
             <div v-else-if="fsErr" class="vz-dash__error">{{ fsErr }}</div>
             <template v-else-if="firestore">
 
+              <!-- Cloud Monitoring error banner -->
               <!-- Collection breakdown -->
               <div class="vz-dash__section">
                 <p class="vz-dash__section-title">Collections — {{ fmtNum(firestore.totalDocuments) }} total documents</p>
@@ -315,39 +436,88 @@ onMounted(load);
                 </table>
               </div>
 
-              <!-- 7-day activity chart -->
-              <div v-if="fsChart" class="vz-dash__section">
-                <p class="vz-dash__section-title">Documents created — last 7 days</p>
-                <div class="vz-dash__chart-wrap">
-                  <svg :viewBox="`0 0 ${fsChart.totalW} ${fsChart.H}`" preserveAspectRatio="none" class="vz-dash__chart-svg">
-                    <rect
-                      v-for="(b, i) in fsChart.bars" :key="i"
-                      :x="b.x" :y="b.y" :width="b.w" :height="b.h"
-                      :fill="b.color" rx="2" opacity="0.85"
-                    >
-                      <title>{{ b.label }}</title>
-                    </rect>
-                    <text v-for="(l, i) in fsChart.labels" :key="i" :x="l.x" :y="l.y" text-anchor="middle" class="vz-dash__chart-label">{{ l.text }}</text>
-                  </svg>
-                  <div class="vz-dash__legend">
-                    <span v-for="s in fsLegend" :key="s.label" class="vz-dash__legend-item">
-                      <span class="vz-dash__legend-dot" :style="{ background: s.color }" />
-                      {{ s.label }}
-                    </span>
-                  </div>
-                </div>
+              <!-- Writes per day — per collection + total row -->
+              <div v-if="fsSparkRows.length" class="vz-dash__section">
+                <p class="vz-dash__section-title">Writes — last 7 days</p>
+                <table class="vz-spark">
+                  <thead>
+                    <tr>
+                      <th class="vz-spark__th-name">Collection</th>
+                      <th class="vz-spark__th-total">7d total</th>
+                      <th v-for="day in SPARK_DAYS" :key="day" class="vz-spark__th-day">{{ shortDay(day) }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in fsSparkRows" :key="row.key">
+                      <td class="vz-spark__td-name">
+                        <div class="vz-spark__name-inner">
+                          <span class="vz-spark__dot" :style="{ background: row.color }" />
+                          {{ row.label }}
+                        </div>
+                      </td>
+                      <td class="vz-spark__td-total">{{ row.total7d }}</td>
+                      <td
+                        v-for="day in SPARK_DAYS" :key="day"
+                        class="vz-spark__td-day"
+                        :data-tip="`${shortDay(day)}: ${row.counts[day] ?? 0}`"
+                      >
+                        <div class="vz-spark__bar-wrap">
+                          <div class="vz-spark__bar" :style="{ height: `${barPx(row.counts[day] ?? 0, fsSparkMax)}px`, background: row.color }" />
+                        </div>
+                      </td>
+                    </tr>
+                    <!-- Total writes row -->
+                    <tr v-if="fsWritesRow" class="vz-spark__total-row">
+                      <td class="vz-spark__td-name">
+                        <div class="vz-spark__name-inner">
+                          <span class="vz-spark__dot" :style="{ background: fsWritesRow.color }" />
+                          <strong>{{ fsWritesRow.label }}</strong>
+                        </div>
+                      </td>
+                      <td class="vz-spark__td-total"><strong>{{ fmtNum(fsWritesRow.total7d) }}</strong></td>
+                      <td
+                        v-for="day in SPARK_DAYS" :key="day"
+                        class="vz-spark__td-day"
+                        :data-tip="`${shortDay(day)}: ${fmtNum(fsWritesRow.counts[day] ?? 0)}`"
+                      >
+                        <div class="vz-spark__bar-wrap">
+                          <div class="vz-spark__bar" :style="{ height: `${barPx(fsWritesRow.counts[day] ?? 0, fsWritesMax)}px`, background: fsWritesRow.color }" />
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="vz-dash__rw-limit">
+                  Free tier: {{ fmtNum(firestore.freeTier.writesPerDay) }} writes per day
+                  &nbsp;·&nbsp; Reads &amp; storage metrics require GCP billing
+                </p>
               </div>
 
               <div class="vz-dash__section">
-                <a :href="firestore.consoleUrl" target="_blank" rel="noopener noreferrer" class="vz-dash__ext-link">
+                <a
+                  :href="firestore.consoleUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="vz-dash__ext-link"
+                >
                   Open Firebase Console
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <path
+                      d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                    />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
                   </svg>
                 </a>
               </div>
-
             </template>
           </div>
 
@@ -355,47 +525,97 @@ onMounted(load);
           <div v-else class="vz-dash__panel">
             <div class="vz-dash__panel-header">
               <div class="vz-dash__panel-title-row">
-                <svg class="vz-dash__panel-icon" viewBox="0 0 24 24" fill="currentColor" style="color:#8b5cf6">
-                  <path d="M21 16.5c0 2.485-4.03 4.5-9 4.5s-9-2.015-9-4.5V12c0 2.485 4.03 4.5 9 4.5s9-2.015 9-4.5v4.5z"/>
-                  <path d="M21 12c0 2.485-4.03 4.5-9 4.5S3 14.485 3 12V7.5C3 5.015 7.03 3 12 3s9 2.015 9 4.5V12z"/>
+                <svg
+                  class="vz-dash__panel-icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="color: #8b5cf6"
+                >
+                  <path
+                    d="M21 16.5c0 2.485-4.03 4.5-9 4.5s-9-2.015-9-4.5V12c0 2.485 4.03 4.5 9 4.5s9-2.015 9-4.5v4.5z"
+                  />
+                  <path
+                    d="M21 12c0 2.485-4.03 4.5-9 4.5S3 14.485 3 12V7.5C3 5.015 7.03 3 12 3s9 2.015 9 4.5V12z"
+                  />
                 </svg>
                 <span class="vz-dash__panel-title">Fly.io</span>
-                <span class="vz-dash__panel-badge">{{ fly?.app ?? 'sgummalla-net' }} · metrics last 5 min / 24 h</span>
+                <span class="vz-dash__panel-badge"
+                  >{{ fly?.app ?? "sgummalla-net" }} · metrics last 5 min / 24
+                  h</span
+                >
               </div>
             </div>
 
             <div v-if="loading" class="vz-dash__loading">Loading…</div>
             <div v-else-if="flyErr" class="vz-dash__error">{{ flyErr }}</div>
             <template v-else-if="fly">
-
               <div class="vz-dash__section">
                 <p class="vz-dash__section-title">Machine metrics</p>
                 <table class="vz-dash__table">
-                  <thead><tr><th>Metric</th><th class="vz-dash__tc">Value</th><th class="vz-dash__tc vz-dash__tdim">Window</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Metric</th>
+                      <th class="vz-dash__tc">Value</th>
+                      <th class="vz-dash__tc vz-dash__tdim">Window</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     <tr>
                       <td class="vz-dash__tname">CPU (user)</td>
-                      <td class="vz-dash__tc">{{ fly.cpu.userPercent !== null ? `${fly.cpu.userPercent}%` : '—' }}</td>
+                      <td class="vz-dash__tc">
+                        {{
+                          fly.cpu.userPercent !== null
+                            ? `${fly.cpu.userPercent}%`
+                            : "—"
+                        }}
+                      </td>
                       <td class="vz-dash__tc vz-dash__tdim">5 min avg</td>
                     </tr>
                     <tr>
                       <td class="vz-dash__tname">Memory used</td>
-                      <td class="vz-dash__tc">{{ fly.memory.usedBytes !== null ? fmt(fly.memory.usedBytes) : '—' }}</td>
-                      <td class="vz-dash__tc vz-dash__tdim">of {{ fly.memory.totalBytes !== null ? fmt(fly.memory.totalBytes) : '—' }}</td>
+                      <td class="vz-dash__tc">
+                        {{
+                          fly.memory.usedBytes !== null
+                            ? fmt(fly.memory.usedBytes)
+                            : "—"
+                        }}
+                      </td>
+                      <td class="vz-dash__tc vz-dash__tdim">
+                        of
+                        {{
+                          fly.memory.totalBytes !== null
+                            ? fmt(fly.memory.totalBytes)
+                            : "—"
+                        }}
+                      </td>
                     </tr>
                     <tr>
                       <td class="vz-dash__tname">Network sent</td>
-                      <td class="vz-dash__tc">{{ fly.network.sentBytes24h !== null ? fmt(fly.network.sentBytes24h) : '—' }}</td>
+                      <td class="vz-dash__tc">
+                        {{
+                          fly.network.sentBytes24h !== null
+                            ? fmt(fly.network.sentBytes24h)
+                            : "—"
+                        }}
+                      </td>
                       <td class="vz-dash__tc vz-dash__tdim">24 h</td>
                     </tr>
                     <tr>
                       <td class="vz-dash__tname">Network received</td>
-                      <td class="vz-dash__tc">{{ fly.network.recvBytes24h !== null ? fmt(fly.network.recvBytes24h) : '—' }}</td>
+                      <td class="vz-dash__tc">
+                        {{
+                          fly.network.recvBytes24h !== null
+                            ? fmt(fly.network.recvBytes24h)
+                            : "—"
+                        }}
+                      </td>
                       <td class="vz-dash__tc vz-dash__tdim">24 h</td>
                     </tr>
                     <tr>
                       <td class="vz-dash__tname">HTTP requests</td>
-                      <td class="vz-dash__tc">{{ fmtNum(fly.http.requests24h) }}</td>
+                      <td class="vz-dash__tc">
+                        {{ fmtNum(fly.http.requests24h) }}
+                      </td>
                       <td class="vz-dash__tc vz-dash__tdim">24 h</td>
                     </tr>
                   </tbody>
@@ -403,19 +623,35 @@ onMounted(load);
               </div>
 
               <div class="vz-dash__section">
-                <p class="vz-dash__billing-note">Dollar costs are not available via the Fly.io API.</p>
-                <a :href="fly.billingUrl" target="_blank" rel="noopener noreferrer" class="vz-dash__ext-link">
+                <p class="vz-dash__billing-note">
+                  Dollar costs are not available via the Fly.io API.
+                </p>
+                <a
+                  :href="fly.billingUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="vz-dash__ext-link"
+                >
                   View billing on Fly.io
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <path
+                      d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                    />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
                   </svg>
                 </a>
               </div>
-
             </template>
           </div>
-
         </div>
       </div>
     </div>
@@ -431,8 +667,14 @@ onMounted(load);
 }
 
 @keyframes vz-rise {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .vz-dash__top {
@@ -485,9 +727,14 @@ onMounted(load);
   border-radius: var(--vz-radius-md);
   padding: 0.35rem 0.75rem;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
-.vz-dash__refresh:hover { color: var(--vz-text); border-color: var(--vz-border2); }
+.vz-dash__refresh:hover {
+  color: var(--vz-text);
+  border-color: var(--vz-border2);
+}
 
 /* ── Two-column layout ── */
 .vz-dash__layout {
@@ -498,7 +745,9 @@ onMounted(load);
 }
 
 @media (max-width: 700px) {
-  .vz-dash__layout { grid-template-columns: 1fr; }
+  .vz-dash__layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Side nav ── */
@@ -524,9 +773,14 @@ onMounted(load);
   border: none;
   border-radius: var(--vz-radius-md);
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
-.vz-dash__navitem:hover { background: var(--vz-surface); color: var(--vz-text); }
+.vz-dash__navitem:hover {
+  background: var(--vz-surface);
+  color: var(--vz-text);
+}
 .vz-dash__navitem--active {
   background: var(--vz-surface2);
   color: var(--vz-text);
@@ -560,7 +814,11 @@ onMounted(load);
   flex-wrap: wrap;
 }
 
-.vz-dash__panel-icon { width: 18px; height: 18px; flex-shrink: 0; }
+.vz-dash__panel-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
 
 .vz-dash__panel-title {
   font-size: 0.95rem;
@@ -580,15 +838,27 @@ onMounted(load);
   color: var(--vz-text3);
 }
 
-.vz-dash__loading { padding: 1.5rem 1.4rem; font-family: var(--vz-font-mono); font-size: 0.78rem; color: var(--vz-text3); }
-.vz-dash__error   { padding: 1.5rem 1.4rem; font-family: var(--vz-font-mono); font-size: 0.78rem; color: var(--vz-red); }
+.vz-dash__loading {
+  padding: 1.5rem 1.4rem;
+  font-family: var(--vz-font-mono);
+  font-size: 0.78rem;
+  color: var(--vz-text3);
+}
+.vz-dash__error {
+  padding: 1.5rem 1.4rem;
+  font-family: var(--vz-font-mono);
+  font-size: 0.78rem;
+  color: var(--vz-red);
+}
 
 /* ── Section ── */
 .vz-dash__section {
   padding: 1rem 1.4rem;
   border-bottom: 1px solid var(--vz-border);
 }
-.vz-dash__section:last-child { border-bottom: none; }
+.vz-dash__section:last-child {
+  border-bottom: none;
+}
 
 .vz-dash__section-title {
   font-family: var(--vz-font-mono);
@@ -600,27 +870,70 @@ onMounted(load);
 }
 
 /* ── Storage bar ── */
-.vz-dash__bar-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.45rem; }
-.vz-dash__bar-label  { font-size: 0.82rem; color: var(--vz-text2); }
-.vz-dash__bar-value  { font-family: var(--vz-font-mono); font-size: 0.78rem; color: var(--vz-text); }
-.vz-dash__bar-track  { height: 6px; background: var(--vz-surface2); border-radius: 99px; overflow: hidden; }
-.vz-dash__bar-fill   { height: 100%; background: #00e5a0; border-radius: 99px; transition: width 0.4s; }
-.vz-dash__bar-fill--warn { background: var(--vz-amber); }
-.vz-dash__bar-pct    { font-family: var(--vz-font-mono); font-size: 0.67rem; color: var(--vz-text3); margin-top: 0.25rem; }
+.vz-dash__bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.45rem;
+}
+.vz-dash__bar-label {
+  font-size: 0.82rem;
+  color: var(--vz-text2);
+}
+.vz-dash__bar-value {
+  font-family: var(--vz-font-mono);
+  font-size: 0.78rem;
+  color: var(--vz-text);
+}
+.vz-dash__bar-track {
+  height: 6px;
+  background: var(--vz-surface2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.vz-dash__bar-fill {
+  height: 100%;
+  background: #00e5a0;
+  border-radius: 99px;
+  transition: width 0.4s;
+}
+.vz-dash__bar-fill--warn {
+  background: var(--vz-amber);
+}
+.vz-dash__bar-pct {
+  font-family: var(--vz-font-mono);
+  font-size: 0.67rem;
+  color: var(--vz-text3);
+  margin-top: 0.25rem;
+}
 
-/* ── Table ── */
-.vz-dash__table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+/* ── Info table ── */
+.vz-dash__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
 
 .vz-dash__table th,
-.vz-dash__table td { padding: 0.5rem 0.75rem; text-align: left; vertical-align: middle; }
+.vz-dash__table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+}
 
 .vz-dash__table th:first-child,
-.vz-dash__table td:first-child { padding-left: 0; }
+.vz-dash__table td:first-child {
+  padding-left: 0;
+}
 
 .vz-dash__table th:last-child,
-.vz-dash__table td:last-child { padding-right: 0; }
+.vz-dash__table td:last-child {
+  padding-right: 0;
+}
 
-.vz-dash__table thead tr { border-bottom: 1px solid var(--vz-border2); }
+.vz-dash__table thead tr {
+  border-bottom: 1px solid var(--vz-border2);
+}
 
 .vz-dash__table th {
   font-family: var(--vz-font-mono);
@@ -632,9 +945,16 @@ onMounted(load);
   white-space: nowrap;
 }
 
-.vz-dash__table td { border-bottom: 1px solid var(--vz-border); color: var(--vz-text); }
-.vz-dash__table tbody tr:last-child td { border-bottom: none; }
-.vz-dash__table tbody tr:hover td { background: var(--vz-surface); }
+.vz-dash__table td {
+  border-bottom: 1px solid var(--vz-border);
+  color: var(--vz-text);
+}
+.vz-dash__table tbody tr:last-child td {
+  border-bottom: none;
+}
+.vz-dash__table tbody tr:hover td {
+  background: var(--vz-surface);
+}
 
 .vz-dash__tname {
   font-family: var(--vz-font-mono);
@@ -651,47 +971,164 @@ onMounted(load);
   flex-shrink: 0;
 }
 
-.vz-dash__tc   { text-align: right; font-family: var(--vz-font-mono); font-size: 0.76rem; white-space: nowrap; }
-.vz-dash__tdim { color: var(--vz-text3); }
-
-/* ── Bar chart ── */
-.vz-dash__chart-wrap { display: flex; flex-direction: column; gap: 0.75rem; }
-
-.vz-dash__chart-svg {
-  width: 100%;
-  height: 120px;
-  display: block;
-}
-
-.vz-dash__chart-label {
-  font-size: 9px;
-  fill: var(--vz-text3);
-  font-family: var(--vz-font-mono, monospace);
-}
-
-.vz-dash__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.vz-dash__legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
+.vz-dash__tc {
+  text-align: right;
   font-family: var(--vz-font-mono);
-  font-size: 0.7rem;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+.vz-dash__tdim {
   color: var(--vz-text3);
 }
 
-.vz-dash__legend-dot {
-  width: 8px;
-  height: 8px;
+/* ── Sparkline table ── */
+.vz-spark {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vz-spark th,
+.vz-spark td {
+  vertical-align: middle;
+  padding: 0.45rem 0.4rem;
+}
+
+.vz-spark th:first-child,
+.vz-spark td:first-child {
+  padding-left: 0;
+}
+
+.vz-spark thead tr {
+  border-bottom: 1px solid var(--vz-border2);
+}
+
+.vz-spark th {
+  font-family: var(--vz-font-mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text3);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vz-spark__th-name {
+  text-align: left;
+}
+.vz-spark__th-total {
+  text-align: right;
+  padding-right: 1rem;
+}
+.vz-spark__th-day {
+  text-align: center;
+  width: 36px;
+}
+
+.vz-spark td {
+  border-bottom: 1px solid var(--vz-border);
+}
+.vz-spark tbody tr:last-child td {
+  border-bottom: none;
+}
+.vz-spark tbody tr:hover td {
+  background: var(--vz-surface);
+}
+
+.vz-spark__td-name {
+  font-family: var(--vz-font-mono);
+  font-size: 0.76rem;
+  color: var(--vz-text);
+  white-space: nowrap;
+}
+
+.vz-spark__name-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.vz-spark__dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
+.vz-spark__td-total {
+  text-align: right;
+  padding-right: 1rem;
+  font-family: var(--vz-font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--vz-text);
+  white-space: nowrap;
+}
+
+/* Day cell: fixed width, tooltip on hover */
+.vz-spark__td-day {
+  text-align: center;
+  width: 36px;
+  position: relative;
+  cursor: default;
+}
+
+.vz-spark__td-day::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--vz-text);
+  color: var(--vz-bg);
+  font-family: var(--vz-font-mono);
+  font-size: 0.6rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 20;
+}
+
+.vz-spark__td-day:hover::after {
+  opacity: 1;
+}
+
+/* Bar inside the day cell */
+.vz-spark__bar-wrap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 24px;
+}
+
+.vz-spark__bar {
+  width: 14px;
+  border-radius: 2px 2px 0 0;
+  opacity: 0.75;
+  transition:
+    opacity 0.12s,
+    height 0.2s;
+}
+
+.vz-spark__td-day:hover .vz-spark__bar {
+  opacity: 1;
+}
+
 /* ── Misc ── */
+.vz-spark__total-row td {
+  border-top: 1px solid var(--vz-border2);
+  background: var(--vz-surface);
+}
+
+.vz-dash__rw-limit {
+  font-family: var(--vz-font-mono);
+  font-size: 0.67rem;
+  color: var(--vz-text3);
+  margin-top: 0.75rem;
+}
+
 .vz-dash__billing-note {
   font-size: 0.78rem;
   color: var(--vz-text3);
@@ -709,5 +1146,7 @@ onMounted(load);
   text-decoration: none;
   transition: color 0.15s;
 }
-.vz-dash__ext-link:hover { color: var(--vz-text); }
+.vz-dash__ext-link:hover {
+  color: var(--vz-text);
+}
 </style>
