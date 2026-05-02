@@ -11,6 +11,7 @@ const client: AxiosInstance = axios.create({
   withCredentials: true, // send httpOnly cookie on every request
   headers: {
     "Content-Type": "application/json",
+    "Intl-Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
   },
   timeout: 10_000,
 });

@@ -1,47 +1,84 @@
-// ── Structured logging framework ─────────────────────────────────────────────
-// Debug mode is toggled at runtime via the owner debug toggle.
-// Console sink is active when debug mode is ON.
-// Designed to swap in a MongoDB sink later without changing call sites.
+import { AsyncLocalStorage } from "node:async_hooks";
+import { randomUUID } from "node:crypto";
+import type { LogRecord, LogSink } from "./logTypes.js";
+import { LogRecordType } from "./logTypes.js";
 
-export type LogLevel = "info" | "warn" | "error";
-export type LogType = "incoming" | "outgoing";
+export type { LogSink };
 
-export interface LogEntry {
-  timestamp: string;
-  level: LogLevel;
-  type: LogType;
-  method: string;
-  url: string;
-  status?: number | undefined;
-  durationMs?: number | undefined;
-  userId?: string | undefined;
-  context?: string | undefined;
-  error?: string | undefined;
-}
+// ── Debug mode (gates ConsoleSink output) ─────────────────────────────────────
 
 let debugMode = false;
-
 export function setDebugMode(enabled: boolean): void {
   debugMode = enabled;
 }
-
 export function isDebugMode(): boolean {
   return debugMode;
 }
 
-export function log(entry: LogEntry): void {
-  if (!debugMode) return;
-  const status = entry.status != null ? ` ${entry.status}` : "";
-  const duration = entry.durationMs != null ? ` ${entry.durationMs}ms` : "";
-  const user = entry.userId ? ` [${entry.userId}]` : "";
-  const ctx = entry.context ? ` — ${entry.context}` : "";
-  const err = entry.error ? ` ERROR: ${entry.error}` : "";
-  const arrow = entry.type === "incoming" ? "→" : "↗";
-  const line = `[${entry.timestamp}] [${entry.level.toUpperCase()}] [${entry.type}]${user} ${arrow} ${entry.method} ${entry.url}${status}${duration}${ctx}${err}`;
-  if (entry.level === "error") console.error(line);
-  else if (entry.level === "warn") console.warn(line);
-  else console.log(line);
+// ── Request context — correlationId + sessionId via AsyncLocalStorage ─────────
+
+interface RequestCtx {
+  correlationId: string;
+  sessionId: string;
+  timezone: string;
 }
+export const requestContext = new AsyncLocalStorage<RequestCtx>();
+
+export function getRequestContext(): RequestCtx {
+  return (
+    requestContext.getStore() ?? {
+      correlationId: randomUUID(),
+      sessionId: "unknown",
+      timezone: "UTC",
+    }
+  );
+}
+
+// ── Injectable Logger ─────────────────────────────────────────────────────────
+
+class Logger {
+  private sinks = new Map<string, LogSink>();
+
+  register(sink: LogSink): void {
+    this.sinks.set(sink.name, sink);
+  }
+  unregister(name: string): void {
+    this.sinks.delete(name);
+  }
+
+  emit(record: LogRecord): void {
+    for (const sink of this.sinks.values()) {
+      Promise.resolve(sink.write(record)).catch((err) =>
+        console.error(`[Logger] sink "${sink.name}" failed:`, err),
+      );
+    }
+  }
+}
+
+export const appLogger = new Logger();
+
+// ── Base record builder ───────────────────────────────────────────────────────
+
+export function buildBase(
+  logType: LogRecordType,
+  level: "info" | "warn" | "error" = "info",
+): Omit<LogRecord, "data"> {
+  const ctx = getRequestContext();
+  const now = new Date();
+  return {
+    logType,
+    level,
+    timestamp: now,
+    createdAt: now,
+    expireAt: now, // FirestoreSink overrides with correct TTL
+    timezone: ctx.timezone,
+    env: process.env.NODE_ENV === "production" ? "production" : "development",
+    sessionId: ctx.sessionId,
+    correlationId: ctx.correlationId,
+  } as Omit<LogRecord, "data">;
+}
+
+// ── loggedFetch — emits APIOUT on every outgoing HTTP call ────────────────────
 
 export async function loggedFetch(
   url: string,
@@ -52,49 +89,53 @@ export async function loggedFetch(
   const start = Date.now();
   try {
     const res = await fetch(url, options);
-    log({
-      timestamp: new Date().toISOString(),
-      level: res.ok ? "info" : "warn",
-      type: "outgoing",
-      method,
-      url,
-      status: res.status,
-      durationMs: Date.now() - start,
-      context,
-    });
+    appLogger.emit({
+      ...buildBase(LogRecordType.APIOUT, res.ok ? "info" : "warn"),
+      logType: LogRecordType.APIOUT,
+      data: {
+        method,
+        url,
+        status: res.status,
+        durationMs: Date.now() - start,
+        context: context ?? "",
+      },
+    } as LogRecord);
     return res;
   } catch (err) {
-    log({
-      timestamp: new Date().toISOString(),
-      level: "error",
-      type: "outgoing",
-      method,
-      url,
-      durationMs: Date.now() - start,
-      context,
-      error: err instanceof Error ? err.message : String(err),
-    });
+    appLogger.emit({
+      ...buildBase(LogRecordType.APIOUT, "error"),
+      logType: LogRecordType.APIOUT,
+      data: {
+        method,
+        url,
+        durationMs: Date.now() - start,
+        context: context ?? "",
+        error: err instanceof Error ? err.message : String(err),
+      },
+    } as LogRecord);
     throw err;
   }
 }
 
 // ── Legacy verbose logger (SAML / OIDC flow traces) ──────────────────────────
+// DEV only — gated by LOG_LEVEL=debug or NODE_ENV=development AND debug toggle
 
-const isDebug =
+const isDevEnv =
   process.env.LOG_LEVEL === "debug" || process.env.NODE_ENV === "development";
 
 function fmt(label: string, data: Record<string, unknown>): void {
-  console.log(`\n${"─".repeat(60)}`);
-  console.log(`[Sgummalla Works] ${label}`);
-  console.log("─".repeat(60));
+  if (!isDevEnv || !debugMode) return;
+  process.stdout.write(`\n${"─".repeat(60)}\n`);
+  process.stdout.write(`[DEV] ${label}\n`);
+  process.stdout.write("─".repeat(60) + "\n");
   for (const [key, val] of Object.entries(data)) {
     const display =
       typeof val === "object"
         ? JSON.stringify(val, null, 2)
         : String(val ?? "—");
-    console.log(`  ${key.padEnd(28)} ${display}`);
+    process.stdout.write(`  ${key.padEnd(28)} ${display}\n`);
   }
-  console.log("─".repeat(60) + "\n");
+  process.stdout.write("─".repeat(60) + "\n\n");
 }
 
 export const logger = {
@@ -180,13 +221,12 @@ export const logger = {
   },
 
   error(source: string, err: unknown) {
-    console.error(`\n[Sgummalla Works ERROR] ${source}`);
-    console.error(err);
-    console.error("");
+    if (!isDevEnv || !debugMode) return;
+    process.stderr.write(`\n[DEV ERROR] ${source}\n`);
+    process.stderr.write(String(err) + "\n\n");
   },
 
   debug(source: string, data: Record<string, unknown>) {
-    if (!isDebug) return;
     fmt(`DEBUG — ${source}`, data);
   },
 };

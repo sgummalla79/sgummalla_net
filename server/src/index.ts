@@ -18,6 +18,9 @@ import { ensureTables } from "./lib/ensureTables.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import debugRouter from "./routes/debug.js";
 import usageRouter from "./routes/usage.js";
+import { appLogger } from "./lib/logger.js";
+import { ConsoleSink } from "./lib/sinks/console.js";
+import { FirestoreSink } from "./lib/sinks/firestore.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -100,6 +103,22 @@ if (!isProd) {
 }
 
 await ensureTables();
+
+// ── Register log sinks ────────────────────────────────────────────────────────
+// DEV:  ConsoleSink (gated further by the debug toggle) + FirestoreSink
+// PROD: FirestoreSink only — no console output from the application
+if (!isProd) {
+  appLogger.register(new ConsoleSink());
+  console.log("[Logger] ConsoleSink registered (dev only)");
+}
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  appLogger.register(new FirestoreSink());
+  console.log("[Logger] FirestoreSink registered");
+} else {
+  console.warn(
+    "[Logger] FIREBASE_SERVICE_ACCOUNT not set — FirestoreSink disabled",
+  );
+}
 
 httpServer.listen(PORT, () => {
   console.log(`[Sgummalla Works] Server running on http://localhost:${PORT}`);

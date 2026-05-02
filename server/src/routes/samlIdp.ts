@@ -168,9 +168,7 @@ router.get("/sso", async (req: Request, res: Response) => {
       const match = xml.match(/\sID=["']([^"']+)["']/);
       if (match?.[1]) requestId = match[1];
     } catch {
-      console.warn(
-        "[Sgummalla Works SAML IDP] Could not parse SAMLRequest ID, using random",
-      );
+      // requestId stays as random UUID
     }
 
     const { cert, key } = getCertAndKey();

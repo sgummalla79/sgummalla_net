@@ -25,7 +25,6 @@ router.post(
   (req: Request, res: Response) => {
     const { enabled } = req.body as { enabled: boolean };
     setDebugMode(!!enabled);
-    console.log(`[Debug mode] ${isDebugMode() ? "ON" : "OFF"}`);
     res.json({ enabled: isDebugMode() });
   },
 );

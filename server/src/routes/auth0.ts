@@ -10,7 +10,32 @@ import {
   type AuthUser,
   type SfAccount,
 } from "../lib/jwt.js";
-import { loggedFetch } from "../lib/logger.js";
+import { loggedFetch, appLogger, buildBase } from "../lib/logger.js";
+import { LogRecordType } from "../lib/logTypes.js";
+import type { LogRecord, AuthEventName } from "../lib/logTypes.js";
+
+function emitAuth(
+  event: AuthEventName,
+  req: import("express").Request,
+  extra?: Partial<import("../lib/logTypes.js").AuthEventData>,
+): void {
+  appLogger.emit({
+    ...buildBase(
+      LogRecordType.AUTHEVENT,
+      event.endsWith("failed") ? "warn" : "info",
+    ),
+    logType: LogRecordType.AUTHEVENT,
+    data: {
+      event,
+      ip:
+        (req.headers["x-forwarded-for"] as string | undefined)
+          ?.split(",")[0]
+          ?.trim() ?? req.ip,
+      userAgent: req.headers["user-agent"],
+      ...extra,
+    },
+  } as LogRecord);
+}
 import sql from "../lib/db.js";
 
 const router: import("express").Router = Router();
@@ -158,7 +183,6 @@ router.get("/connections", async (_req: Request, res: Response) => {
     const connections = await fetchConnections();
     res.json(connections);
   } catch (err) {
-    console.error("[Auth0 connections]", err);
     res.json([]);
   }
 });
@@ -176,7 +200,6 @@ router.get("/initiate", async (req: Request, res: Response) => {
     });
     res.redirect(url);
   } catch (err) {
-    console.error("[Sgummalla Works Auth0]", err);
     res.redirect("/login?error=auth0_unavailable");
   }
 });
@@ -209,19 +232,6 @@ router.get("/callback", async (req: Request, res: Response) => {
       provider: "auth0",
       sfAccounts,
     };
-
-    // Debug: log the Auth0 id_token claims
-    if (tokenSet.id_token) {
-      try {
-        const [, payloadB64] = tokenSet.id_token.split(".");
-        const claims = JSON.parse(
-          Buffer.from(payloadB64, "base64url").toString("utf-8"),
-        );
-        console.log("[Auth0 id_token claims]", JSON.stringify(claims, null, 2));
-      } catch {
-        console.log("[Auth0 id_token] could not decode payload");
-      }
-    }
 
     // Check for email conflict across providers
     if (userinfo.email) {
@@ -266,7 +276,6 @@ router.get("/callback", async (req: Request, res: Response) => {
           }
         }
       } catch (err) {
-        console.error("[Auth0 conflict check]", err);
         // Non-fatal — fall through to normal login
       }
     }
@@ -284,9 +293,17 @@ router.get("/callback", async (req: Request, res: Response) => {
 
     const token = signToken(user);
     res.cookie(getCookieName(), token, cookieOptions());
+    emitAuth("login_success", req, {
+      provider: user.id.split("|")[0],
+      userId: user.id,
+      email: user.email,
+    });
     res.redirect("/auths");
   } catch (err) {
-    console.error("[Sgummalla Works Auth0]", err);
+    emitAuth("login_failed", req, {
+      provider: "auth0",
+      error: err instanceof Error ? err.message : "auth0_failed",
+    });
     res.redirect("/login?error=auth0_failed");
   }
 });
@@ -352,6 +369,10 @@ router.get("/link", async (req: Request, res: Response) => {
         sfAccounts: [],
       };
       const sessionToken = signToken(user);
+      emitAuth("account_link_skipped", req, {
+        userId: profile.user_id,
+        email: data.email,
+      });
       res.cookie(getCookieName(), sessionToken, cookieOptions());
       res.redirect("/auths");
       return;
@@ -372,7 +393,6 @@ router.get("/link", async (req: Request, res: Response) => {
       "Auth0 Management API — link identities",
     );
     if (!linkRes.ok) {
-      console.error("[Auth0 link]", await linkRes.text());
       res.redirect("/login?error=link_failed");
       return;
     }
@@ -397,11 +417,14 @@ router.get("/link", async (req: Request, res: Response) => {
       provider: "auth0",
       sfAccounts: profile.app_metadata?.sf_accounts ?? [],
     };
+    emitAuth("account_linked", req, { userId: user.id, email: user.email });
     const sessionToken = signToken(user);
     res.cookie(getCookieName(), sessionToken, cookieOptions());
     res.redirect("/auths");
   } catch (err) {
-    console.error("[Auth0 link]", err);
+    emitAuth("login_failed", req, {
+      error: err instanceof Error ? err.message : "link_failed",
+    });
     res.clearCookie(getPendingLinkCookieName(), { path: "/" });
     res.redirect("/login?error=link_failed");
   }

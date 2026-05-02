@@ -1,5 +1,31 @@
 import { Router, type Request, type Response } from "express";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { appLogger, buildBase } from "../lib/logger.js";
+import { LogRecordType } from "../lib/logTypes.js";
+import type { LogRecord, SfOpName } from "../lib/logTypes.js";
+
+function emitSfOp(
+  operation: SfOpName,
+  clientId: string,
+  sfUsername: string,
+  userId: string,
+  durationMs: number,
+  extra?: Record<string, unknown>,
+): void {
+  appLogger.emit({
+    ...buildBase(LogRecordType.SFOP, extra?.["error"] ? "error" : "info"),
+    logType: LogRecordType.SFOP,
+    data: {
+      operation,
+      flowType: "jwt_bearer",
+      clientId,
+      sfUsername,
+      userId,
+      durationMs,
+      ...extra,
+    },
+  } as LogRecord);
+}
 import sql from "../lib/db.js";
 import {
   mintAndExchangeJWT,
@@ -228,9 +254,18 @@ router.post("/clients/:id/token", async (req: Request, res: Response) => {
       return;
     }
 
+    const start = Date.now();
     // Return saved token if issued within the last 90 minutes
     const saved = await getValidSfToken(id, sf_username);
     if (saved) {
+      emitSfOp(
+        "token_cached",
+        id,
+        sf_username,
+        req.user!.id,
+        Date.now() - start,
+        { fromCache: true },
+      );
       res.json({ sf_username, ...saved, from_cache: true });
       return;
     }
@@ -243,6 +278,14 @@ router.post("/clients/:id/token", async (req: Request, res: Response) => {
       client.private_key as string,
     );
 
+    emitSfOp(
+      "token_acquire",
+      id,
+      sf_username,
+      req.user!.id,
+      Date.now() - start,
+      { fromCache: false },
+    );
     const row = await upsertToken(id, sf_username, token);
     res.json({ sf_username, ...row, from_cache: false });
   } catch (err) {
@@ -352,6 +395,7 @@ router.post("/clients/:id/query", async (req: Request, res: Response) => {
       tokenRow = await upsertToken(id, sf_username, token);
     }
 
+    const queryStart = Date.now();
     const queryUrl = `${tokenRow.instance_url}/services/data/v62.0/query?q=${encodeURIComponent(soql)}`;
     const sfRes = await fetch(queryUrl, {
       redirect: "error",
@@ -371,6 +415,14 @@ router.post("/clients/:id/query", async (req: Request, res: Response) => {
       } catch {
         /* ignore */
       }
+      emitSfOp(
+        "soql_query",
+        id,
+        sf_username,
+        req.user!.id,
+        Date.now() - queryStart,
+        { query: soql, error: msg },
+      );
       res.status(400).json({ error: msg });
       return;
     }
@@ -381,6 +433,14 @@ router.post("/clients/:id/query", async (req: Request, res: Response) => {
       done: boolean;
     };
 
+    emitSfOp(
+      "soql_query",
+      id,
+      sf_username,
+      req.user!.id,
+      Date.now() - queryStart,
+      { query: soql, rowCount: data.totalSize },
+    );
     res.json({
       records: data.records,
       totalSize: data.totalSize,

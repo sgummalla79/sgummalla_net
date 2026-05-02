@@ -8,7 +8,14 @@
 
 ## 1. Overview
 
-This document defines the requirements for a structured, injectable logging framework for sgummalla.net. The framework must capture every significant event across the application — API traffic, page views, blog reads, authentication flows, Salesforce operations, and errors — store them in MongoDB with appropriate retention, and present them through a future admin logs analyzer page.
+This document defines the requirements for a structured, injectable logging framework for sgummalla.net. The framework must capture every significant event across the application — API traffic, page views, blog reads, authentication flows, Salesforce operations, and errors — store them in Firestore with appropriate retention, and present them through a future admin logs analyzer page.
+
+**Storage decision:** Firestore (Google Firebase) was chosen over MongoDB Atlas for the following reasons:
+
+- **99.999% SLA** (multi-region) — MongoDB Atlas M0 free tier has no SLA and can be taken down without notice
+- **No inactivity pause** — Firestore is always available; Atlas M0 shares infrastructure with no uptime guarantee
+- **Native TTL policies** — Firestore supports field-level TTL (released 2023), no Cloud Function required
+- **Generous free tier** — 1 GB storage, 50K reads/day, 20K writes/day vs Atlas M0's 512 MB with no operation guarantees
 
 The logging system must be observable in real time (via the debug toggle) and persistent for historical analysis.
 
@@ -19,7 +26,7 @@ The logging system must be observable in real time (via the debug toggle) and pe
 - Capture all meaningful events across the full request lifecycle
 - Provide session-level traceability — reconstruct everything that happened in a single user session
 - Provide request-level correlation — link an incoming API call to every outgoing call it triggered
-- Store all logs in MongoDB; write to console only when debug mode is active
+- Store all logs in Firestore; write to console only when debug mode is active
 - Be fully injectable — any sink (MongoDB, console, future sinks) must be swappable without changing call sites
 - Never block a request — all log writes are fire-and-forget
 - Never log sensitive data — no raw passwords, tokens, private keys, or client secrets
@@ -268,10 +275,10 @@ interface LogSink {
 
 ### 8.2 Built-in Sinks
 
-| Sink    | Class         | Behaviour                                                                 |
-| ------- | ------------- | ------------------------------------------------------------------------- |
-| Console | `ConsoleSink` | Writes a formatted single-line string. Active only when debug mode is ON. |
-| MongoDB | `MongoSink`   | Writes the full record to the correct collection. Always active.          |
+| Sink      | Class           | Behaviour                                                                  |
+| --------- | --------------- | -------------------------------------------------------------------------- |
+| Console   | `ConsoleSink`   | Writes a formatted single-line string. Active only when debug mode is ON.  |
+| Firestore | `FirestoreSink` | Writes the full record to the correct Firestore collection. Always active. |
 
 ### 8.3 Logger Class
 
@@ -292,14 +299,14 @@ export const logger = new Logger();
 ```ts
 // server/src/index.ts
 logger.register(new ConsoleSink());
-logger.register(new MongoSink());
+logger.register(new FirestoreSink());
 ```
 
-To swap MongoDB for a different store: implement `LogSink`, call `logger.unregister("mongodb")`, call `logger.register(new NewSink())`. Zero changes at call sites.
+To swap Firestore for a different store: implement `LogSink`, call `logger.unregister("firestore")`, call `logger.register(new NewSink())`. Zero changes at call sites.
 
 ---
 
-## 9. MongoDB Collections and TTL
+## 9. Firestore Collections and TTL
 
 | Collection    | Log types stored                  | TTL     |
 | ------------- | --------------------------------- | ------- |
@@ -308,14 +315,41 @@ To swap MongoDB for a different store: implement `LogSink`, call `logger.unregis
 | `auth_events` | `AUTHEVENT`                       | 90 days |
 | `sf_ops`      | `SFOP`                            | 90 days |
 
-TTL index on `createdAt` field in each collection, created automatically on first connect.
+### TTL — Firestore native TTL policy
 
-Indexes required per collection:
+Each document includes an `expireAt` field (Firestore `Timestamp`) set at write time:
 
-**`api_logs`:** `sessionId`, `correlationId`, `data.userId`, `timestamp`
-**`page_views`:** `sessionId`, `data.userId`, `data.articleSlug`, `timestamp`
-**`auth_events`:** `sessionId`, `data.userId`, `data.event`, `timestamp`
-**`sf_ops`:** `sessionId`, `data.userId`, `data.clientId`, `data.operation`, `timestamp`
+```ts
+expireAt = Timestamp.fromDate(new Date(Date.now() + ttlMs));
+```
+
+TTL policies are configured once in the Firebase Console (or via `gcloud`):
+
+```sh
+# Example for api_logs collection group
+gcloud firestore fields ttls update expireAt \
+  --collection-group=api_logs \
+  --project=<firebase-project-id>
+```
+
+Firestore deletes expired documents automatically within 72 hours of expiry. No Cloud Function or scheduled job required.
+
+### Composite indexes required
+
+Firestore requires explicit composite indexes for multi-field queries. Configure in Firebase Console → Firestore → Indexes:
+
+| Collection    | Fields indexed                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| `api_logs`    | `sessionId` + `timestamp`, `data.userId` + `timestamp`, `correlationId`                  |
+| `page_views`  | `sessionId` + `timestamp`, `data.userId` + `timestamp`, `data.articleSlug` + `timestamp` |
+| `auth_events` | `sessionId` + `timestamp`, `data.userId` + `timestamp`, `data.event` + `timestamp`       |
+| `sf_ops`      | `sessionId` + `timestamp`, `data.userId` + `timestamp`, `data.operation` + `timestamp`   |
+
+### SDK and authentication
+
+- Package: `firebase-admin` (Node.js server SDK)
+- Auth: Firebase service account JSON key (`FIREBASE_SERVICE_ACCOUNT` env var as JSON string, or `GOOGLE_APPLICATION_CREDENTIALS` pointing to a file)
+- Firestore instance: initialized once as a singleton in `server/src/lib/firebase.ts`
 
 ---
 
@@ -350,20 +384,42 @@ If a token value must be referenced for tracing, log the first 8 characters foll
 
 ## 12. Implementation Checklist
 
+### Firebase / Firestore setup
+
+- [ ] Create Firebase project (or use existing Google account)
+- [ ] Enable Firestore in Native mode
+- [ ] Create service account with Firestore write permissions → download JSON key
+- [ ] Add `FIREBASE_SERVICE_ACCOUNT` (JSON string) to `.env.example` and Fly secrets
+- [ ] Configure TTL policies on `expireAt` field for all four collections via `gcloud` or Firebase Console
+- [ ] Create composite indexes for all collections in Firebase Console → Firestore → Indexes
+
+### Server — logger infrastructure
+
 - [ ] Define `LogRecordType` enum and all data model interfaces in `server/src/lib/logTypes.ts`
-- [ ] Implement `LogSink` interface, `ConsoleSink`, `MongoSink` in `server/src/lib/sinks/`
+- [ ] Implement `LogSink` interface, `ConsoleSink`, `FirestoreSink` in `server/src/lib/sinks/`
 - [ ] Implement `Logger` class with `register`, `unregister`, `log` in `server/src/lib/logger.ts`
-- [ ] Set up MongoDB connection singleton in `server/src/lib/mongo.ts`
-- [ ] Create collections and TTL + query indexes on first connect
+- [ ] Set up Firebase Admin SDK singleton in `server/src/lib/firebase.ts`
+- [ ] `FirestoreSink.write()` routes to correct collection by `logType`, adds `expireAt` timestamp
+
+### Server — context propagation
+
 - [ ] Implement `AsyncLocalStorage` context for `correlationId` and `sessionId` propagation
 - [ ] Update `requestLogger` middleware to generate `correlationId`, derive `sessionId`, store both in `AsyncLocalStorage`, emit `APIIN`
 - [ ] Update `loggedFetch()` to read `correlationId` and `sessionId` from `AsyncLocalStorage`, emit `APIOUT`
+
+### Server — emission points
+
 - [ ] Add `AUTHEVENT` emissions to all auth flow handlers (login, logout, callback, link)
 - [ ] Add `SFOP` emissions to all Salesforce token and query handlers
 - [ ] Add `BLOGVIEW` / `ARTVIEW` emissions to blog and article routes
 - [ ] Add `PAGEVIEW` emissions from client `onMounted` hooks via a new `POST /api/logs/pageview` endpoint
 - [ ] Add `APPERROR` emission to Express global error handler
-- [ ] Add `Intl-Timezone` header to axios client
-- [ ] Add `MONGODB_URI` to `.env.example`
-- [ ] Register `ConsoleSink` and `MongoSink` at startup in `index.ts`
-- [ ] Update `docs/FEATURE_DESIGN_GUIDELINES.md` with final `LogRecordType` table
+
+### Client
+
+- [ ] Add `Intl-Timezone` header to axios client interceptor
+
+### Startup
+
+- [ ] Register `ConsoleSink` and `FirestoreSink` at startup in `index.ts`
+- [ ] Update `docs/FEATURE_DESIGN_GUIDELINES.md` with final `LogRecordType` table and Firestore reference

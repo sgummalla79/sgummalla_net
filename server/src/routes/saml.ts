@@ -17,14 +17,6 @@ const router: import("express").Router = Router();
 let samlStrategy: SamlStrategy | null = null;
 
 function isSamlConfigured(): boolean {
-  console.log(
-    "[Sgummalla Works SAML] SAML_ENTRY_POINT:",
-    JSON.stringify(process.env.SAML_ENTRY_POINT),
-  );
-  console.log(
-    "[Sgummalla Works SAML] SAML_ISSUER:",
-    JSON.stringify(process.env.SAML_ISSUER),
-  );
   return !!(process.env.SAML_ENTRY_POINT && process.env.SAML_ISSUER);
 }
 
@@ -105,10 +97,6 @@ router.post("/callback", (req, res, next) => {
     { session: false },
     (err: Error | null, user?: Record<string, unknown>) => {
       if (err || !user) {
-        console.error(
-          "[Sgummalla Works SAML]",
-          err?.message ?? "No user returned",
-        );
         res.redirect("/login?error=saml_failed");
         return;
       }
@@ -137,7 +125,6 @@ router.get("/metadata", (_req, res) => {
       ),
     );
   } catch (err) {
-    console.error("[Sgummalla Works SAML metadata]", err);
     res.status(500).json({ error: "Failed to generate SAML metadata" });
   }
 });

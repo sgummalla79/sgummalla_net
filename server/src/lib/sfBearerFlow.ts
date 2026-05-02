@@ -23,15 +23,6 @@ function mintJWT(
     exp: now + 300,
   };
 
-  console.log("[SF Bearer] minting JWT", {
-    iss: clientId,
-    sub: sfUsername,
-    aud: loginUrl,
-    exp: new Date(claims.exp * 1000).toISOString(),
-    privateKeyFirstLine: privateKey.split("\n")[0],
-    privateKeyLength: privateKey.length,
-  });
-
   const header = Buffer.from(JSON.stringify({ alg: "RS256" })).toString(
     "base64url",
   );
@@ -44,8 +35,6 @@ function mintJWT(
 // ── Parse token endpoint response ────────────────────────────────────────────
 
 function parseTokenResponse(status: number, text: string): SfTokenResponse {
-  console.log("[SF Bearer] response", { status, body: text });
-
   if (status < 200 || status >= 300) {
     let parsed: { error?: string; error_description?: string } = {};
     try {
@@ -83,7 +72,6 @@ export async function mintAndExchangeJWT(
   privateKey: string,
 ): Promise<SfTokenResponse> {
   const tokenUrl = `${loginUrl.replace(/\/$/, "")}/services/oauth2/token`;
-  console.log("[SF Bearer] POST (JWT Bearer)", tokenUrl);
 
   const jwt = mintJWT(clientId, sfUsername, loginUrl, privateKey);
 
@@ -108,7 +96,6 @@ export async function refreshAccessToken(
   loginUrl: string,
 ): Promise<SfTokenResponse> {
   const tokenUrl = `${loginUrl.replace(/\/$/, "")}/services/oauth2/token`;
-  console.log("[SF Bearer] POST (refresh_token)", tokenUrl);
 
   const res = await fetch(tokenUrl, {
     method: "POST",

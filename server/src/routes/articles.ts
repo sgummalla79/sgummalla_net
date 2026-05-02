@@ -1,13 +1,56 @@
 import { Router, type Request, type Response } from "express";
 import neon from "../lib/db.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { appLogger, buildBase } from "../lib/logger.js";
+import { LogRecordType } from "../lib/logTypes.js";
+import type { LogRecord, BlogViewData } from "../lib/logTypes.js";
 
 const router: import("express").Router = Router();
+
+function buildVisitorData(
+  req: Request,
+): Omit<BlogViewData, "articleSlug" | "articleTitle"> {
+  const ua = req.headers["user-agent"] ?? "";
+  const ip =
+    (req.headers["x-forwarded-for"] as string | undefined)
+      ?.split(",")[0]
+      ?.trim() ??
+    req.ip ??
+    "";
+  const referer = req.headers["referer"] ?? "";
+  const language =
+    (req.headers["accept-language"] ?? "").split(",")[0]?.trim() ?? "unknown";
+
+  const isBot = /bot|crawl|spider|slurp|mediapartners/i.test(ua);
+
+  let refererSource: BlogViewData["refererSource"] = "direct";
+  if (referer) {
+    if (referer.includes(req.hostname)) refererSource = "internal";
+    else if (/google|bing|yahoo|duckduckgo|baidu/i.test(referer))
+      refererSource = "search";
+    else if (/twitter|facebook|linkedin|instagram|reddit/i.test(referer))
+      refererSource = "social";
+    else refererSource = "unknown";
+  }
+
+  return {
+    ip,
+    userAgent: ua,
+    browser: { name: "unknown", version: "unknown" },
+    os: { name: "unknown", version: "unknown" },
+    device: { type: isBot ? "bot" : "desktop" },
+    referer,
+    refererSource,
+    language,
+    isBot,
+    userId: req.user?.id,
+  };
+}
 
 // ── GET /api/articles ─────────────────────────────────────────────────────────
 // Returns list without content (for blog index)
 
-router.get("/", async (_req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   const articles = await neon<
     {
       slug: string;
@@ -23,6 +66,11 @@ router.get("/", async (_req: Request, res: Response) => {
     WHERE published = true
     ORDER BY created_at DESC
   `;
+  appLogger.emit({
+    ...buildBase(LogRecordType.BLOGVIEW),
+    logType: LogRecordType.BLOGVIEW,
+    data: buildVisitorData(req),
+  } as LogRecord);
   res.json(articles);
 });
 
@@ -127,6 +175,15 @@ router.get("/:slug", async (req: Request, res: Response) => {
     res.status(404).json({ error: "Article not found" });
     return;
   }
+  appLogger.emit({
+    ...buildBase(LogRecordType.ARTVIEW),
+    logType: LogRecordType.ARTVIEW,
+    data: {
+      ...buildVisitorData(req),
+      articleSlug: article.slug,
+      articleTitle: article.title,
+    },
+  } as LogRecord);
   res.json(article);
 });
 

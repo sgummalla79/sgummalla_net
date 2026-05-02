@@ -63,7 +63,7 @@ When a new feature introduces a new category of event that does not fit any exis
 2. Define its specific data interface (extending `BaseLogRecord`).
 3. Add it to the `LogRecord` discriminated union.
 4. Document it in this table above.
-5. Assign a collection in `server/src/lib/mongo.ts` and set an appropriate TTL.
+5. Assign a collection in `server/src/lib/firebase.ts` and configure a TTL policy for `expireAt` in Firebase Console.
 
 **Naming rules for new types:** uppercase, no underscores, short but readable (4–10 characters). Examples: `APIIN`, `SFOP`, `AUTHEVENT`.
 
@@ -88,14 +88,14 @@ When a new feature introduces a new category of event that does not fit any exis
 
 ### 4.5 Console vs MongoDB
 
-- **MongoDB** — always written, regardless of debug mode. This is the permanent record.
+- **Firestore** — always written, regardless of debug mode. This is the permanent record.
 - **Console** — written only when debug mode is `ON` (toggled by owner in the avatar menu). Use this for local development and live troubleshooting.
 
 The `log()` function handles both sinks automatically. Call sites never decide where to write.
 
 ### 4.6 Fire-and-forget
 
-Log writes must never block a request. Always write to MongoDB without `await` in the hot path. If the MongoDB write fails, catch silently and fall back to console — logging failures must never surface as errors to the client.
+Log writes must never block a request. Always write to Firestore without `await` in the hot path. If the Firestore write fails, catch silently and fall back to console — logging failures must never surface as errors to the client.
 
 ```ts
 // correct

@@ -1,0 +1,9 @@
+{
+  "ignoredBuilds": [],
+  "onlyBuiltDependencies": [
+    "@firebase/util",
+    "esbuild",
+    "protobufjs",
+    "vue-demi"
+  ]
+}

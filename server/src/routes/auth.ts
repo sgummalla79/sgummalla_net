@@ -9,7 +9,32 @@ import {
 import { requireAuth } from "../middleware/requireAuth.js";
 import { validate } from "../middleware/validate.js";
 import sql from "../lib/db.js";
-import { loggedFetch } from "../lib/logger.js";
+import { loggedFetch, appLogger, buildBase } from "../lib/logger.js";
+import { LogRecordType } from "../lib/logTypes.js";
+import type { LogRecord, AuthEventName } from "../lib/logTypes.js";
+
+function emitAuth(
+  event: AuthEventName,
+  req: import("express").Request,
+  extra?: Partial<import("../lib/logTypes.js").AuthEventData>,
+): void {
+  appLogger.emit({
+    ...buildBase(
+      LogRecordType.AUTHEVENT,
+      event.endsWith("failed") ? "warn" : "info",
+    ),
+    logType: LogRecordType.AUTHEVENT,
+    data: {
+      event,
+      ip:
+        (req.headers["x-forwarded-for"] as string | undefined)
+          ?.split(",")[0]
+          ?.trim() ?? req.ip,
+      userAgent: req.headers["user-agent"],
+      ...extra,
+    },
+  } as LogRecord);
+}
 
 const router: import("express").Router = Router();
 
@@ -117,6 +142,11 @@ router.post(
 
       const token = signToken(user);
       res.cookie(getCookieName(), token, cookieOptions());
+      emitAuth("login_success", req, {
+        provider: "auth0",
+        userId: user.id,
+        email: user.email,
+      });
       res.json({
         user: {
           id: user.id,
@@ -128,6 +158,11 @@ router.post(
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Invalid email or password";
+      emitAuth("login_failed", req, {
+        provider: "auth0",
+        email,
+        error: message,
+      });
       res.status(401).json({ error: "Unauthorized", message });
     }
   },
@@ -135,7 +170,8 @@ router.post(
 
 // ── POST /api/auth/logout ─────────────────────────────────────────────────────
 
-router.post("/logout", (_req, res) => {
+router.post("/logout", (req, res) => {
+  emitAuth("logout", req, { userId: req.user?.id });
   res.clearCookie(getCookieName(), { path: "/" });
   res.json({ message: "Logged out successfully" });
 });

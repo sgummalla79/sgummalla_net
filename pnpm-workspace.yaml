@@ -5,3 +5,5 @@ packages:
 allowBuilds:
   esbuild: true
   vue-demi: true
+  "@firebase/util": true
+  protobufjs: true

@@ -34,8 +34,6 @@ export async function exchangeWebAppToken(
 }> {
   const tokenUrl = `${loginUrl.replace(/\/$/, "")}/services/oauth2/token`;
 
-  console.log("[SF Token Exchange] POST", tokenUrl, { client_id: clientId });
-
   const res = await fetch(tokenUrl, {
     method: "POST",
     redirect: "error",
@@ -49,10 +47,6 @@ export async function exchangeWebAppToken(
   });
 
   const text = await res.text();
-  console.log("[SF Token Exchange] response", {
-    status: res.status,
-    body: text,
-  });
 
   if (!res.ok) {
     let parsed: { error?: string; error_description?: string } = {};
