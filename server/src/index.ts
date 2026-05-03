@@ -103,14 +103,19 @@ if (!isProd) {
 await ensureTables();
 
 // ── Register log sinks ────────────────────────────────────────────────────────
-// DEV:  ConsoleSink only — dev logs never reach Firestore
-// PROD: FirestoreSink only — no console output from the application
+// DEV:  ConsoleSink + FirestoreSink (1h TTL — auto-purged, queryable in console)
+// PROD: FirestoreSink only (30d TTL)
+const TTL_PROD = 30 * 24 * 60 * 60 * 1000;
+const TTL_DEV  =       60 * 60 * 1000; // 1 hour
+
 if (!isProd) {
   appLogger.register(new ConsoleSink());
   console.log("[Logger] ConsoleSink registered (dev)");
-} else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  appLogger.register(new FirestoreSink());
-  console.log("[Logger] FirestoreSink registered (prod)");
+}
+
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  appLogger.register(new FirestoreSink(isProd ? TTL_PROD : TTL_DEV));
+  console.log(`[Logger] FirestoreSink registered (${isProd ? "prod 30d" : "dev 1h"})`);
 } else {
   console.warn("[Logger] FIREBASE_SERVICE_ACCOUNT not set — FirestoreSink disabled");
 }
