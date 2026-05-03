@@ -9,9 +9,9 @@ import {
 
 export const useAuthStore = defineStore("auth", () => {
   // ── State ───────────────────────────────────────────────────────────────────
-  const user        = ref<ApiUser | null>(null);
-  const loading     = ref(false);
-  const error       = ref<string | null>(null);
+  const user = ref<ApiUser | null>(null);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
   const bootstrapped = ref(false);
 
   // ── Getters ─────────────────────────────────────────────────────────────────
@@ -20,7 +20,7 @@ export const useAuthStore = defineStore("auth", () => {
     () => user.value?.id === "auth0|68d40e8f46b12057807fce21",
   );
   const fullName = computed(() => user.value?.name ?? "");
-  const email    = computed(() => user.value?.email ?? "");
+  const email = computed(() => user.value?.email ?? "");
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   async function login(email: string, password: string): Promise<void> {
     loading.value = true;
-    error.value   = null;
+    error.value = null;
     try {
       user.value = await apiLogin({ email, password });
     } catch (err) {
@@ -53,9 +53,9 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       await apiLogout();
     } finally {
-      user.value     = null;
+      user.value = null;
       bootstrapped.value = false;
-      loading.value  = false;
+      loading.value = false;
     }
   }
 

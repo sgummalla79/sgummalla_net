@@ -233,7 +233,6 @@ onUnmounted(() =>
           Usage Dashboard
         </button>
 
-
         <!-- Authenticated: logout -->
         <template v-if="!isGuest">
           <div class="vz-avatar-divider" />
