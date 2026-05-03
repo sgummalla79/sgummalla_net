@@ -45,26 +45,27 @@ export interface FlyUsage {
 
 // ── Firestore ─────────────────────────────────────────────────────────────────
 
-export interface FirestoreCollection {
-  name: string;
-  label: string;
-  ttl: string;
-  count: number | null;
+export interface FirestoreLogType {
+  logType:  string;
+  label:    string;
+  color:    string;
+  count:    number | null;
   activity: DailyCount[];
 }
 
 export interface FirestoreUsage {
-  projectId: string;
-  consoleUrl: string;
-  collections: FirestoreCollection[];
-  totalDocuments: number;
+  projectId:        string;
+  consoleUrl:       string;
+  logTypes:         FirestoreLogType[];
+  totalDocuments:   number;
+  ttlDays:          number;
   usedStorageBytes: number | null;
-  dailyReads: DailyCount[];
-  dailyWrites: DailyCount[];
-  monitoringError: string | null;
+  dailyReads:       DailyCount[];
+  dailyWrites:      DailyCount[];
+  monitoringError:  string | null;
   freeTier: {
-    readsPerDay: number;
-    writesPerDay: number;
+    readsPerDay:       number;
+    writesPerDay:      number;
     storageLimitBytes: number;
   };
 }

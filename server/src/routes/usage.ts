@@ -225,11 +225,15 @@ router.get("/fly", async (_req: Request, res: Response) => {
 
 // ── GET /api/usage/firestore ──────────────────────────────────────────────────
 
-const COLLECTIONS = [
-  { name: "api_logs", label: "API Logs", ttl: "30 days" },
-  { name: "page_views", label: "Page Views", ttl: "1 year" },
-  { name: "auth_events", label: "Auth Events", ttl: "90 days" },
-  { name: "sf_ops", label: "SF Ops", ttl: "90 days" },
+const LOG_TYPES = [
+  { logType: "apiin",     label: "API Incoming",   color: "#60a5fa" },
+  { logType: "apiout",    label: "API Outgoing",   color: "#818cf8" },
+  { logType: "pageview",  label: "Page Views",     color: "#34d399" },
+  { logType: "blogview",  label: "Blog Views",     color: "#a78bfa" },
+  { logType: "artview",   label: "Article Views",  color: "#f472b6" },
+  { logType: "authevent", label: "Auth Events",    color: "#f59e0b" },
+  { logType: "sfop",      label: "SF Ops",         color: "#fb923c" },
+  { logType: "apperror",  label: "App Errors",     color: "#f87171" },
 ];
 
 const FREE_READS_PER_DAY = 50_000;
@@ -303,60 +307,52 @@ router.get("/firestore", async (_req: Request, res: Response) => {
 
       const now = new Date();
       const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(
-          Date.UTC(
-            now.getUTCFullYear(),
-            now.getUTCMonth(),
-            now.getUTCDate() - (6 - i),
-          ),
-        );
-        return {
-          label: d.toISOString().slice(0, 10),
-          start: d,
-          end: new Date(d.getTime() + 86_400_000),
-        };
+        const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - (6 - i)));
+        return d.toISOString().slice(0, 10);
       });
+      const sevenDaysAgo = new Date(last7Days[0] + "T00:00:00Z");
 
-      // Collection document counts + 7-day creation activity
-      const counts = await Promise.all(
-        COLLECTIONS.map(async (col) => {
-          let count: number | null = null;
-          try {
-            count = (await db.collection(col.name).count().get()).data().count;
-          } catch {
-            /* empty */
-          }
+      // Per-logType total counts (parallel, each uses single-field equality index)
+      const countMap = new Map<string, number | null>();
+      await Promise.all(LOG_TYPES.map(async ({ logType }) => {
+        try {
+          const snap = await db.collection("logs").where("logType", "==", logType).count().get();
+          countMap.set(logType, snap.data().count);
+        } catch {
+          countMap.set(logType, null);
+        }
+      }));
 
-          const activity = await Promise.all(
-            last7Days.map(async ({ label, start, end }) => {
-              try {
-                const snap = await db
-                  .collection(col.name)
-                  .where("createdAt", ">=", Timestamp.fromDate(start))
-                  .where("createdAt", "<", Timestamp.fromDate(end))
-                  .count()
-                  .get();
-                return { day: label, count: snap.data().count };
-              } catch {
-                return { day: label, count: 0 };
-              }
-            }),
-          );
+      // 7-day activity: single date-range query, group by logType + day in memory
+      const actByType = new Map<string, Map<string, number>>();
+      try {
+        const snap = await db.collection("logs")
+          .where("createdAt", ">=", Timestamp.fromDate(sevenDaysAgo))
+          .get();
+        for (const doc of snap.docs) {
+          const d = doc.data() as { logType?: string; createdAt?: { toDate: () => Date } };
+          const lt  = d.logType;
+          const day = d.createdAt?.toDate()?.toISOString().slice(0, 10) ?? "";
+          if (!lt || !day) continue;
+          if (!actByType.has(lt)) actByType.set(lt, new Map());
+          const m = actByType.get(lt)!;
+          m.set(day, (m.get(day) ?? 0) + 1);
+        }
+      } catch { /* empty */ }
 
-          return { ...col, count, activity };
-        }),
-      );
+      const logTypes = LOG_TYPES.map(({ logType, label, color }) => ({
+        logType,
+        label,
+        color,
+        count:    countMap.get(logType) ?? null,
+        activity: last7Days.map(day => ({ day, count: actByType.get(logType)?.get(day) ?? 0 })),
+      }));
 
-      const totalDocuments = counts.reduce((sum, c) => sum + (c.count ?? 0), 0);
+      const totalDocuments = logTypes.reduce((sum, t) => sum + (t.count ?? 0), 0);
 
-      // Daily writes derived from collection activity (always available)
-      const dailyWrites = last7Days.map(({ label: day }) => ({
+      const dailyWrites = last7Days.map(day => ({
         day,
-        count: counts.reduce(
-          (sum, col) =>
-            sum + (col.activity.find((d) => d.day === day)?.count ?? 0),
-          0,
-        ),
+        count: logTypes.reduce((sum, t) => sum + (t.activity.find(a => a.day === day)?.count ?? 0), 0),
       }));
 
       // Cloud Monitoring — reads and storage (requires GCP billing)
@@ -391,8 +387,9 @@ router.get("/firestore", async (_req: Request, res: Response) => {
       return {
         projectId: FS_PROJECT_ID,
         consoleUrl: `https://console.firebase.google.com/project/${FS_PROJECT_ID}/firestore`,
-        collections: counts,
+        logTypes,
         totalDocuments,
+        ttlDays: 30,
         usedStorageBytes,
         dailyReads,
         dailyWrites,
@@ -446,8 +443,8 @@ router.get("/blog", async (_req: Request, res: Response) => {
 
       const sevenDaysAgo = new Date(last7Days[0] + "T00:00:00Z");
 
-      // Single range filter — avoids composite index requirement
-      const snap = await db.collection("page_views")
+      // Single range filter on unified logs collection — avoids composite index
+      const snap = await db.collection("logs")
         .where("createdAt", ">=", Timestamp.fromDate(sevenDaysAgo))
         .get();
 

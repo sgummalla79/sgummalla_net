@@ -115,39 +115,23 @@ const neonSparkMax = computed(() =>
   ),
 );
 
-const FS_COLORS: Record<string, string> = {
-  api_logs: "#60a5fa",
-  page_views: "#34d399",
-  auth_events: "#f59e0b",
-  sf_ops: "#a78bfa",
-};
-
 const fsSparkRows = computed((): SparkRow[] => {
-  if (!firestore.value?.collections) return [];
-  return firestore.value.collections.map((c) => {
+  if (!firestore.value?.logTypes) return [];
+  return firestore.value.logTypes.map((t) => {
     const counts: Record<string, number> = {};
-    for (const d of c.activity) counts[d.day] = d.count;
-    const total7d = SPARK_DAYS.reduce(
-      (sum, day) => sum + (counts[day] ?? 0),
-      0,
-    );
+    for (const d of t.activity) counts[d.day] = d.count;
     return {
-      key: c.name,
-      label: c.label,
-      color: FS_COLORS[c.name] ?? "#94a3b8",
-      total7d,
+      key:     t.logType,
+      label:   t.label,
+      color:   t.color,
+      total7d: SPARK_DAYS.reduce((sum, day) => sum + (counts[day] ?? 0), 0),
       counts,
     };
   });
 });
 
 const fsSparkMax = computed(() =>
-  Math.max(
-    1,
-    ...fsSparkRows.value.flatMap((r) =>
-      SPARK_DAYS.map((d) => r.counts[d] ?? 0),
-    ),
-  ),
+  Math.max(1, ...fsSparkRows.value.flatMap((r) => SPARK_DAYS.map((d) => r.counts[d] ?? 0)))
 );
 
 const fsWritesRow = computed((): SparkRow | null => {
@@ -485,10 +469,7 @@ onMounted(load);
                   />
                 </svg>
                 <span class="vz-dash__panel-title">Firestore</span>
-                <span class="vz-dash__panel-badge"
-                  >sgummallaworks · Free Tier · 1 GB / 50K reads / 20K writes
-                  per day</span
-                >
+                <span class="vz-dash__panel-badge">sgummallaworks · logs · {{ firestore?.ttlDays ?? 30 }}-day retention</span>
               </div>
             </div>
 
@@ -523,47 +504,35 @@ onMounted(load);
                 <p class="vz-dash__bar-pct">{{ fsStoragePct }}% used</p>
               </div>
 
-              <!-- Collection breakdown -->
+              <!-- Log type breakdown -->
               <div class="vz-dash__section">
-                <p class="vz-dash__section-title">
-                  Collections — {{ fmtNum(firestore.totalDocuments) }} total
-                  documents
-                </p>
+                <p class="vz-dash__section-title">Log types — {{ fmtNum(firestore.totalDocuments) }} total documents</p>
                 <table class="vz-dash__table">
                   <thead>
                     <tr>
-                      <th>Collection</th>
+                      <th>Type</th>
                       <th class="vz-dash__tc">Documents</th>
-                      <th class="vz-dash__tc">TTL</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="col in firestore.collections" :key="col.name">
+                    <tr v-for="t in firestore.logTypes" :key="t.logType">
                       <td class="vz-dash__tname">
-                        <span
-                          class="vz-dash__tname-dot"
-                          :style="{
-                            background: FS_COLORS[col.name] ?? '#94a3b8',
-                          }"
-                        />
-                        {{ col.label }}
+                        <span class="vz-dash__tname-dot" :style="{ background: t.color }" />
+                        {{ t.label }}
                       </td>
-                      <td class="vz-dash__tc">
-                        {{ col.count !== null ? fmtNum(col.count) : "—" }}
-                      </td>
-                      <td class="vz-dash__tc vz-dash__tdim">{{ col.ttl }}</td>
+                      <td class="vz-dash__tc">{{ t.count !== null ? fmtNum(t.count) : "—" }}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              <!-- Writes per day — per collection + total row -->
+              <!-- Writes per day — per log type + total row -->
               <div v-if="fsSparkRows.length" class="vz-dash__section">
                 <p class="vz-dash__section-title">Writes — last 7 days</p>
                 <table class="vz-spark">
                   <thead>
                     <tr>
-                      <th class="vz-spark__th-name">Collection</th>
+                      <th class="vz-spark__th-name">Log type</th>
                       <th class="vz-spark__th-total">7d total</th>
                       <th
                         v-for="day in SPARK_DAYS"
