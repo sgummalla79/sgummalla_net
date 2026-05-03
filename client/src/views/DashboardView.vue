@@ -7,23 +7,27 @@ import {
   fetchNeonUsage,
   fetchFlyUsage,
   fetchFirestoreUsage,
+  fetchBlogUsage,
   type NeonUsage,
   type FlyUsage,
   type FirestoreUsage,
+  type BlogUsage,
 } from "../api/usage";
 
 const router = useRouter();
 const auth = useAuthStore();
 
-type Section = "neon" | "fly" | "firestore";
+type Section = "neon" | "firestore" | "blog" | "fly";
 const active = ref<Section>("neon");
 
-const neon = ref<NeonUsage | null>(null);
-const fly = ref<FlyUsage | null>(null);
+const neon      = ref<NeonUsage | null>(null);
+const fly       = ref<FlyUsage | null>(null);
 const firestore = ref<FirestoreUsage | null>(null);
-const neonErr = ref<string | null>(null);
-const flyErr = ref<string | null>(null);
-const fsErr = ref<string | null>(null);
+const blog      = ref<BlogUsage | null>(null);
+const neonErr   = ref<string | null>(null);
+const flyErr    = ref<string | null>(null);
+const fsErr     = ref<string | null>(null);
+const blogErr   = ref<string | null>(null);
 const loading = ref(true);
 const lastUpdated = ref<Date | null>(null);
 
@@ -146,9 +150,9 @@ const fsWritesRow = computed((): SparkRow | null => {
   const counts: Record<string, number> = {};
   for (const d of firestore.value.dailyWrites) counts[d.day] = d.count;
   return {
-    key:     "total-writes",
-    label:   "Total writes",
-    color:   "#34d399",
+    key: "total-writes",
+    label: "Total writes",
+    color: "#34d399",
     total7d: SPARK_DAYS.reduce((s, d) => s + (counts[d] ?? 0), 0),
     counts,
   };
@@ -156,7 +160,10 @@ const fsWritesRow = computed((): SparkRow | null => {
 
 const fsWritesMax = computed(() => {
   if (!fsWritesRow.value) return 1;
-  return Math.max(1, ...SPARK_DAYS.map(d => fsWritesRow.value!.counts[d] ?? 0));
+  return Math.max(
+    1,
+    ...SPARK_DAYS.map((d) => fsWritesRow.value!.counts[d] ?? 0),
+  );
 });
 
 const fsReadsRow = computed((): SparkRow | null => {
@@ -164,9 +171,9 @@ const fsReadsRow = computed((): SparkRow | null => {
   const counts: Record<string, number> = {};
   for (const d of firestore.value.dailyReads) counts[d.day] = d.count;
   return {
-    key:     "reads",
-    label:   "Reads",
-    color:   "#60a5fa",
+    key: "reads",
+    label: "Reads",
+    color: "#60a5fa",
     total7d: SPARK_DAYS.reduce((s, d) => s + (counts[d] ?? 0), 0),
     counts,
   };
@@ -174,35 +181,83 @@ const fsReadsRow = computed((): SparkRow | null => {
 
 const fsReadsMax = computed(() => {
   if (!fsReadsRow.value) return 1;
-  return Math.max(1, ...SPARK_DAYS.map(d => fsReadsRow.value!.counts[d] ?? 0));
+  return Math.max(
+    1,
+    ...SPARK_DAYS.map((d) => fsReadsRow.value!.counts[d] ?? 0),
+  );
 });
 
 const fsStoragePct = computed(() => {
   if (!firestore.value?.usedStorageBytes) return null;
-  return Math.round((firestore.value.usedStorageBytes / firestore.value.freeTier.storageLimitBytes) * 100);
+  return Math.round(
+    (firestore.value.usedStorageBytes /
+      firestore.value.freeTier.storageLimitBytes) *
+      100,
+  );
 });
+
+// ── Blog stacked bar chart ────────────────────────────────────────────────────
+
+interface BarSegment { slug: string; title: string; color: string; h: number; count: number }
+interface StackedBar  { day: string; segments: BarSegment[]; total: number }
+
+const BLOG_BAR_H = 80;
+
+const blogChart = computed((): StackedBar[] => {
+  if (!blog.value?.series.length) return [];
+  const { series } = blog.value;
+  const maxTotal = Math.max(1, ...SPARK_DAYS.map(day =>
+    series.reduce((sum, s) => sum + (s.days.find(d => d.day === day)?.count ?? 0), 0)
+  ));
+  return SPARK_DAYS.map(day => {
+    const total = series.reduce((sum, s) => sum + (s.days.find(d => d.day === day)?.count ?? 0), 0);
+    const segments: BarSegment[] = series
+      .filter(s => (s.days.find(d => d.day === day)?.count ?? 0) > 0)
+      .map(s => ({
+        slug:  s.slug,
+        title: s.title,
+        color: s.color,
+        count: s.days.find(d => d.day === day)?.count ?? 0,
+        h:     Math.max(2, Math.round(((s.days.find(d => d.day === day)?.count ?? 0) / maxTotal) * BLOG_BAR_H)),
+      }));
+    return { day, segments, total };
+  });
+});
+
+const blogSparkRows = computed((): SparkRow[] => {
+  if (!blog.value?.series) return [];
+  return blog.value.series.map(s => {
+    const counts: Record<string, number> = {};
+    for (const d of s.days) counts[d.day] = d.count;
+    return { key: s.slug, label: s.title, color: s.color, total7d: s.total, counts };
+  });
+});
+
+const blogSparkMax = computed(() =>
+  Math.max(1, ...blogSparkRows.value.flatMap(r => SPARK_DAYS.map(d => r.counts[d] ?? 0)))
+);
 
 // ── Load ─────────────────────────────────────────────────────────────────────
 
 async function load() {
   loading.value = true;
-  neonErr.value = flyErr.value = fsErr.value = null;
+  neonErr.value = flyErr.value = fsErr.value = blogErr.value = null;
 
-  const [nr, fr, fsr] = await Promise.allSettled([
+  const [nr, fr, fsr, br] = await Promise.allSettled([
     fetchNeonUsage(),
     fetchFlyUsage(),
     fetchFirestoreUsage(),
+    fetchBlogUsage(),
   ]);
 
-  neon.value = nr.status === "fulfilled" ? nr.value : null;
-  fly.value = fr.status === "fulfilled" ? fr.value : null;
+  neon.value      = nr.status  === "fulfilled" ? nr.value  : null;
+  fly.value       = fr.status  === "fulfilled" ? fr.value  : null;
   firestore.value = fsr.status === "fulfilled" ? fsr.value : null;
-  if (nr.status === "rejected")
-    neonErr.value = nr.reason instanceof Error ? nr.reason.message : "Failed";
-  if (fr.status === "rejected")
-    flyErr.value = fr.reason instanceof Error ? fr.reason.message : "Failed";
-  if (fsr.status === "rejected")
-    fsErr.value = fsr.reason instanceof Error ? fsr.reason.message : "Failed";
+  blog.value      = br.status  === "fulfilled" ? br.value  : null;
+  if (nr.status  === "rejected") neonErr.value  = nr.reason  instanceof Error ? nr.reason.message  : "Failed";
+  if (fr.status  === "rejected") flyErr.value   = fr.reason  instanceof Error ? fr.reason.message  : "Failed";
+  if (fsr.status === "rejected") fsErr.value    = fsr.reason instanceof Error ? fsr.reason.message : "Failed";
+  if (br.status  === "rejected") blogErr.value  = br.reason  instanceof Error ? br.reason.message  : "Failed";
 
   loading.value = false;
   lastUpdated.value = new Date();
@@ -262,9 +317,10 @@ onMounted(load);
         <nav class="vz-dash__sidenav">
           <button
             v-for="item in [
-              { key: 'neon', label: 'NeonDB', color: '#00e5a0' },
+              { key: 'neon',      label: 'NeonDB',    color: '#00e5a0' },
               { key: 'firestore', label: 'Firestore', color: '#ffca28' },
-              { key: 'fly', label: 'Fly.io', color: '#8b5cf6' },
+              { key: 'blog',      label: 'Blog',      color: '#f472b6' },
+              { key: 'fly',       label: 'Fly.io',    color: '#8b5cf6' },
             ]"
             :key="item.key"
             class="vz-dash__navitem"
@@ -433,23 +489,40 @@ onMounted(load);
             <div v-if="loading" class="vz-dash__loading">Loading…</div>
             <div v-else-if="fsErr" class="vz-dash__error">{{ fsErr }}</div>
             <template v-else-if="firestore">
-
               <!-- Storage bar -->
-              <div v-if="fsStoragePct !== null && firestore.usedStorageBytes !== null" class="vz-dash__section">
+              <div
+                v-if="
+                  fsStoragePct !== null && firestore.usedStorageBytes !== null
+                "
+                class="vz-dash__section"
+              >
                 <p class="vz-dash__section-title">Storage</p>
                 <div class="vz-dash__bar-header">
                   <span class="vz-dash__bar-label">Used</span>
-                  <span class="vz-dash__bar-value">{{ fmt(firestore.usedStorageBytes) }} / {{ fmt(firestore.freeTier.storageLimitBytes) }}</span>
+                  <span class="vz-dash__bar-value"
+                    >{{ fmt(firestore.usedStorageBytes) }} /
+                    {{ fmt(firestore.freeTier.storageLimitBytes) }}</span
+                  >
                 </div>
                 <div class="vz-dash__bar-track">
-                  <div class="vz-dash__bar-fill" :class="fsStoragePct > 80 ? 'vz-dash__bar-fill--warn' : ''" :style="{ width: `${Math.min(fsStoragePct, 100)}%`, background: '#ffca28' }" />
+                  <div
+                    class="vz-dash__bar-fill"
+                    :class="fsStoragePct > 80 ? 'vz-dash__bar-fill--warn' : ''"
+                    :style="{
+                      width: `${Math.min(fsStoragePct, 100)}%`,
+                      background: '#ffca28',
+                    }"
+                  />
                 </div>
                 <p class="vz-dash__bar-pct">{{ fsStoragePct }}% used</p>
               </div>
 
               <!-- Collection breakdown -->
               <div class="vz-dash__section">
-                <p class="vz-dash__section-title">Collections — {{ fmtNum(firestore.totalDocuments) }} total documents</p>
+                <p class="vz-dash__section-title">
+                  Collections — {{ fmtNum(firestore.totalDocuments) }} total
+                  documents
+                </p>
                 <table class="vz-dash__table">
                   <thead>
                     <tr>
@@ -461,10 +534,17 @@ onMounted(load);
                   <tbody>
                     <tr v-for="col in firestore.collections" :key="col.name">
                       <td class="vz-dash__tname">
-                        <span class="vz-dash__tname-dot" :style="{ background: FS_COLORS[col.name] ?? '#94a3b8' }" />
+                        <span
+                          class="vz-dash__tname-dot"
+                          :style="{
+                            background: FS_COLORS[col.name] ?? '#94a3b8',
+                          }"
+                        />
                         {{ col.label }}
                       </td>
-                      <td class="vz-dash__tc">{{ col.count !== null ? fmtNum(col.count) : '—' }}</td>
+                      <td class="vz-dash__tc">
+                        {{ col.count !== null ? fmtNum(col.count) : "—" }}
+                      </td>
                       <td class="vz-dash__tc vz-dash__tdim">{{ col.ttl }}</td>
                     </tr>
                   </tbody>
@@ -479,25 +559,41 @@ onMounted(load);
                     <tr>
                       <th class="vz-spark__th-name">Collection</th>
                       <th class="vz-spark__th-total">7d total</th>
-                      <th v-for="day in SPARK_DAYS" :key="day" class="vz-spark__th-day">{{ shortDay(day) }}</th>
+                      <th
+                        v-for="day in SPARK_DAYS"
+                        :key="day"
+                        class="vz-spark__th-day"
+                      >
+                        {{ shortDay(day) }}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="row in fsSparkRows" :key="row.key">
                       <td class="vz-spark__td-name">
                         <div class="vz-spark__name-inner">
-                          <span class="vz-spark__dot" :style="{ background: row.color }" />
+                          <span
+                            class="vz-spark__dot"
+                            :style="{ background: row.color }"
+                          />
                           {{ row.label }}
                         </div>
                       </td>
                       <td class="vz-spark__td-total">{{ row.total7d }}</td>
                       <td
-                        v-for="day in SPARK_DAYS" :key="day"
+                        v-for="day in SPARK_DAYS"
+                        :key="day"
                         class="vz-spark__td-day"
                         :data-tip="`${shortDay(day)}: ${row.counts[day] ?? 0}`"
                       >
                         <div class="vz-spark__bar-wrap">
-                          <div class="vz-spark__bar" :style="{ height: `${barPx(row.counts[day] ?? 0, fsSparkMax)}px`, background: row.color }" />
+                          <div
+                            class="vz-spark__bar"
+                            :style="{
+                              height: `${barPx(row.counts[day] ?? 0, fsSparkMax)}px`,
+                              background: row.color,
+                            }"
+                          />
                         </div>
                       </td>
                     </tr>
@@ -505,14 +601,30 @@ onMounted(load);
                     <tr v-if="fsWritesRow" class="vz-spark__total-row">
                       <td class="vz-spark__td-name">
                         <div class="vz-spark__name-inner">
-                          <span class="vz-spark__dot" :style="{ background: fsWritesRow.color }" />
+                          <span
+                            class="vz-spark__dot"
+                            :style="{ background: fsWritesRow.color }"
+                          />
                           <strong>{{ fsWritesRow.label }}</strong>
                         </div>
                       </td>
-                      <td class="vz-spark__td-total"><strong>{{ fmtNum(fsWritesRow.total7d) }}</strong></td>
-                      <td v-for="day in SPARK_DAYS" :key="day" class="vz-spark__td-day" :data-tip="`${shortDay(day)}: ${fmtNum(fsWritesRow.counts[day] ?? 0)}`">
+                      <td class="vz-spark__td-total">
+                        <strong>{{ fmtNum(fsWritesRow.total7d) }}</strong>
+                      </td>
+                      <td
+                        v-for="day in SPARK_DAYS"
+                        :key="day"
+                        class="vz-spark__td-day"
+                        :data-tip="`${shortDay(day)}: ${fmtNum(fsWritesRow.counts[day] ?? 0)}`"
+                      >
                         <div class="vz-spark__bar-wrap">
-                          <div class="vz-spark__bar" :style="{ height: `${barPx(fsWritesRow.counts[day] ?? 0, fsWritesMax)}px`, background: fsWritesRow.color }" />
+                          <div
+                            class="vz-spark__bar"
+                            :style="{
+                              height: `${barPx(fsWritesRow.counts[day] ?? 0, fsWritesMax)}px`,
+                              background: fsWritesRow.color,
+                            }"
+                          />
                         </div>
                       </td>
                     </tr>
@@ -520,22 +632,42 @@ onMounted(load);
                     <tr v-if="fsReadsRow" class="vz-spark__total-row">
                       <td class="vz-spark__td-name">
                         <div class="vz-spark__name-inner">
-                          <span class="vz-spark__dot" :style="{ background: fsReadsRow.color }" />
+                          <span
+                            class="vz-spark__dot"
+                            :style="{ background: fsReadsRow.color }"
+                          />
                           <strong>{{ fsReadsRow.label }}</strong>
                         </div>
                       </td>
-                      <td class="vz-spark__td-total"><strong>{{ fmtNum(fsReadsRow.total7d) }}</strong></td>
-                      <td v-for="day in SPARK_DAYS" :key="day" class="vz-spark__td-day" :data-tip="`${shortDay(day)}: ${fmtNum(fsReadsRow.counts[day] ?? 0)}`">
+                      <td class="vz-spark__td-total">
+                        <strong>{{ fmtNum(fsReadsRow.total7d) }}</strong>
+                      </td>
+                      <td
+                        v-for="day in SPARK_DAYS"
+                        :key="day"
+                        class="vz-spark__td-day"
+                        :data-tip="`${shortDay(day)}: ${fmtNum(fsReadsRow.counts[day] ?? 0)}`"
+                      >
                         <div class="vz-spark__bar-wrap">
-                          <div class="vz-spark__bar" :style="{ height: `${barPx(fsReadsRow.counts[day] ?? 0, fsReadsMax)}px`, background: fsReadsRow.color }" />
+                          <div
+                            class="vz-spark__bar"
+                            :style="{
+                              height: `${barPx(fsReadsRow.counts[day] ?? 0, fsReadsMax)}px`,
+                              background: fsReadsRow.color,
+                            }"
+                          />
                         </div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
                 <p class="vz-dash__rw-limit">
-                  Free tier: {{ fmtNum(firestore.freeTier.readsPerDay) }} reads / {{ fmtNum(firestore.freeTier.writesPerDay) }} writes per day
-                  <template v-if="firestore.monitoringError">&nbsp;·&nbsp; Reads &amp; storage unavailable: {{ firestore.monitoringError }}</template>
+                  Free tier: {{ fmtNum(firestore.freeTier.readsPerDay) }} reads
+                  / {{ fmtNum(firestore.freeTier.writesPerDay) }} writes per day
+                  <template v-if="firestore.monitoringError"
+                    >&nbsp;·&nbsp; Reads &amp; storage unavailable:
+                    {{ firestore.monitoringError }}</template
+                  >
                 </p>
               </div>
 
@@ -564,6 +696,93 @@ onMounted(load);
                   </svg>
                 </a>
               </div>
+            </template>
+          </div>
+
+          <!-- ── Blog ──────────────────────────────────── -->
+          <div v-else-if="active === 'blog'" class="vz-dash__panel">
+            <div class="vz-dash__panel-header">
+              <div class="vz-dash__panel-title-row">
+                <svg class="vz-dash__panel-icon" viewBox="0 0 24 24" fill="currentColor" style="color:#f472b6">
+                  <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <span class="vz-dash__panel-title">Blog</span>
+                <span class="vz-dash__panel-badge">Article views · last 7 days</span>
+              </div>
+            </div>
+
+            <div v-if="loading" class="vz-dash__loading">Loading…</div>
+            <div v-else-if="blogErr" class="vz-dash__error">{{ blogErr }}</div>
+            <template v-else-if="blog">
+
+              <div v-if="!blog.series.length" class="vz-dash__loading">No article views in the last 7 days.</div>
+              <template v-else>
+
+                <!-- Stacked bar chart -->
+                <div class="vz-dash__section">
+                  <div class="vz-dash__section-header">
+                    <p class="vz-dash__section-title">Daily views</p>
+                    <span class="vz-dash__section-badge">{{ fmtNum(blog.totalViews) }} total</span>
+                  </div>
+                  <div class="vz-blog__chart">
+                    <div v-for="bar in blogChart" :key="bar.day" class="vz-blog__col">
+                      <div class="vz-blog__total">{{ bar.total > 0 ? bar.total : '' }}</div>
+                      <div class="vz-blog__stack">
+                        <div
+                          v-for="seg in bar.segments"
+                          :key="seg.slug"
+                          class="vz-blog__seg"
+                          :style="{ height: `${seg.h}px`, background: seg.color }"
+                          :data-tip="`${seg.title}: ${seg.count}`"
+                        />
+                      </div>
+                      <div class="vz-blog__day">{{ shortDay(bar.day) }}</div>
+                    </div>
+                  </div>
+                  <!-- Legend -->
+                  <div class="vz-dash__legend" style="margin-top:0.75rem">
+                    <span v-for="s in blog.series" :key="s.slug" class="vz-dash__legend-item">
+                      <span class="vz-dash__legend-dot" :style="{ background: s.color }" />
+                      {{ s.title }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Per-article sparkline table -->
+                <div class="vz-dash__section">
+                  <p class="vz-dash__section-title">Per-article breakdown</p>
+                  <table class="vz-spark">
+                    <thead>
+                      <tr>
+                        <th class="vz-spark__th-name">Article</th>
+                        <th class="vz-spark__th-total">7d total</th>
+                        <th v-for="day in SPARK_DAYS" :key="day" class="vz-spark__th-day">{{ shortDay(day) }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in blogSparkRows" :key="row.key">
+                        <td class="vz-spark__td-name">
+                          <div class="vz-spark__name-inner">
+                            <span class="vz-spark__dot" :style="{ background: row.color }" />
+                            {{ row.label }}
+                          </div>
+                        </td>
+                        <td class="vz-spark__td-total">{{ row.total7d }}</td>
+                        <td
+                          v-for="day in SPARK_DAYS" :key="day"
+                          class="vz-spark__td-day"
+                          :data-tip="`${shortDay(day)}: ${row.counts[day] ?? 0}`"
+                        >
+                          <div class="vz-spark__bar-wrap">
+                            <div class="vz-spark__bar" :style="{ height: `${barPx(row.counts[day] ?? 0, blogSparkMax)}px`, background: row.color }" />
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </template>
             </template>
           </div>
 
@@ -1160,6 +1379,93 @@ onMounted(load);
 
 .vz-spark__td-day:hover .vz-spark__bar {
   opacity: 1;
+}
+
+/* ── Section header with badge ── */
+.vz-dash__section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.vz-dash__section-header .vz-dash__section-title { margin-bottom: 0; }
+.vz-dash__section-badge {
+  font-family: var(--vz-font-mono);
+  font-size: 0.67rem;
+  color: var(--vz-text3);
+}
+
+/* ── Blog stacked bar chart ── */
+.vz-blog__chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.vz-blog__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 4px;
+}
+
+.vz-blog__total {
+  font-family: var(--vz-font-mono);
+  font-size: 0.6rem;
+  color: var(--vz-text3);
+  min-height: 14px;
+  line-height: 14px;
+}
+
+.vz-blog__stack {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+  max-width: 48px;
+  gap: 1px;
+}
+
+.vz-blog__seg {
+  width: 100%;
+  border-radius: 2px;
+  opacity: 0.82;
+  position: relative;
+  transition: opacity 0.12s;
+  cursor: default;
+}
+
+.vz-blog__seg:first-child { border-radius: 2px 2px 0 0; }
+.vz-blog__seg:last-child  { border-radius: 0 0 2px 2px; }
+.vz-blog__seg:only-child  { border-radius: 2px; }
+
+.vz-blog__seg:hover { opacity: 1; }
+
+.vz-blog__seg::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--vz-text);
+  color: var(--vz-bg);
+  font-family: var(--vz-font-mono);
+  font-size: 0.6rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 20;
+}
+
+.vz-blog__seg:hover::after { opacity: 1; }
+
+.vz-blog__day {
+  font-family: var(--vz-font-mono);
+  font-size: 0.62rem;
+  color: var(--vz-text3);
 }
 
 /* ── Misc ── */

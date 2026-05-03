@@ -54,19 +54,34 @@ export interface FirestoreCollection {
 }
 
 export interface FirestoreUsage {
-  projectId:        string;
-  consoleUrl:       string;
-  collections:      FirestoreCollection[];
-  totalDocuments:   number;
+  projectId: string;
+  consoleUrl: string;
+  collections: FirestoreCollection[];
+  totalDocuments: number;
   usedStorageBytes: number | null;
-  dailyReads:       DailyCount[];
-  dailyWrites:      DailyCount[];
-  monitoringError:  string | null;
+  dailyReads: DailyCount[];
+  dailyWrites: DailyCount[];
+  monitoringError: string | null;
   freeTier: {
-    readsPerDay:       number;
-    writesPerDay:      number;
+    readsPerDay: number;
+    writesPerDay: number;
     storageLimitBytes: number;
   };
+}
+
+// ── Blog ──────────────────────────────────────────────────────────────────────
+
+export interface BlogArticleSeries {
+  slug:  string;
+  title: string;
+  color: string;
+  total: number;
+  days:  DailyCount[];
+}
+
+export interface BlogUsage {
+  series:     BlogArticleSeries[];
+  totalViews: number;
 }
 
 // ── Fetchers ──────────────────────────────────────────────────────────────────
@@ -83,5 +98,10 @@ export async function fetchFlyUsage(): Promise<FlyUsage> {
 
 export async function fetchFirestoreUsage(): Promise<FirestoreUsage> {
   const { data } = await client.get<FirestoreUsage>("/usage/firestore");
+  return data;
+}
+
+export async function fetchBlogUsage(): Promise<BlogUsage> {
+  const { data } = await client.get<BlogUsage>("/usage/blog");
   return data;
 }

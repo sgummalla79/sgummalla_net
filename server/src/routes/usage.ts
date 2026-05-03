@@ -413,4 +413,86 @@ router.get("/firestore", async (_req: Request, res: Response) => {
   }
 });
 
+// ── GET /api/usage/blog ───────────────────────────────────────────────────────
+
+const BLOG_PALETTE = [
+  "#60a5fa", "#f59e0b", "#34d399", "#a78bfa",
+  "#f87171", "#fb923c", "#e879f9", "#2dd4bf",
+  "#facc15", "#818cf8",
+];
+
+function slugToColor(slug: string): string {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) & 0x7fffffff;
+  return BLOG_PALETTE[h % BLOG_PALETTE.length];
+}
+
+router.get("/blog", async (_req: Request, res: Response) => {
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    res.status(503).json({ error: "FIREBASE_SERVICE_ACCOUNT not configured" });
+    return;
+  }
+
+  try {
+    const data = await cached("blog", 5 * 60 * 1000, async () => {
+      const db = getDb();
+      const { Timestamp } = await import("firebase-admin/firestore");
+
+      const now = new Date();
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - (6 - i)));
+        return d.toISOString().slice(0, 10);
+      });
+
+      const sevenDaysAgo = new Date(last7Days[0] + "T00:00:00Z");
+
+      // Single range filter — avoids composite index requirement
+      const snap = await db.collection("page_views")
+        .where("createdAt", ">=", Timestamp.fromDate(sevenDaysAgo))
+        .get();
+
+      // Aggregate artview events by slug + day
+      const bySlug = new Map<string, { title: string; days: Map<string, number> }>();
+
+      for (const doc of snap.docs) {
+        const d = doc.data() as Record<string, unknown>;
+        if (d["logType"] !== "artview") continue;
+
+        const data = d["data"] as Record<string, unknown> | undefined;
+        const slug  = data?.["slug"]  as string | undefined;
+        const title = (data?.["title"] as string | undefined) ?? slug ?? "Unknown";
+        if (!slug) continue;
+
+        const ts  = d["createdAt"] as { toDate?: () => Date } | undefined;
+        const day = ts?.toDate?.()?.toISOString().slice(0, 10) ?? "";
+        if (!day || !last7Days.includes(day)) continue;
+
+        if (!bySlug.has(slug)) bySlug.set(slug, { title, days: new Map() });
+        const entry = bySlug.get(slug)!;
+        entry.days.set(day, (entry.days.get(day) ?? 0) + 1);
+      }
+
+      const series = Array.from(bySlug.entries())
+        .map(([slug, { title, days }]) => ({
+          slug,
+          title,
+          color: slugToColor(slug),
+          total: last7Days.reduce((sum, d) => sum + (days.get(d) ?? 0), 0),
+          days:  last7Days.map(d => ({ day: d, count: days.get(d) ?? 0 })),
+        }))
+        .sort((a, b) => b.total - a.total);
+
+      return {
+        series,
+        totalViews: series.reduce((sum, s) => sum + s.total, 0),
+      };
+    });
+
+    res.json(data);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Failed to fetch blog usage";
+    res.status(500).json({ error: msg });
+  }
+});
+
 export default router;
