@@ -317,7 +317,7 @@ function download(content: string, filename: string) {
                     <table class="sf-setup-table">
                       <tr>
                         <td>Certificate Label</td>
-                        <td><code class="sf-setup-inline">sgummalla_net_cert</code> — this exact API name is referenced in the Apex handler</td>
+                        <td><code class="sf-setup-inline">&lt;certificate_name&gt;</code> — this exact API name is referenced in the Apex handler</td>
                       </tr>
                       <tr>
                         <td>File</td>
@@ -337,15 +337,15 @@ function download(content: string, filename: string) {
                     <table class="sf-setup-table">
                       <tr>
                         <td>Label</td>
-                        <td><code class="sf-setup-inline">SgummallaWorks</code></td>
+                        <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code></td>
                       </tr>
                       <tr>
                         <td>App Developer Name</td>
-                        <td><code class="sf-setup-inline">SgummallaWorks</code></td>
+                        <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code></td>
                       </tr>
                       <tr>
                         <td>Contact Email</td>
-                        <td><code class="sf-setup-inline">sgummalla.work@gmail.com</code></td>
+                        <td><code class="sf-setup-inline">&lt;your_email&gt;</code></td>
                       </tr>
                       <tr>
                         <td>Distribution State</td>
@@ -361,7 +361,7 @@ function download(content: string, filename: string) {
                       </tr>
                       <tr>
                         <td>Use Digital Signatures</td>
-                        <td>Checked → select <code class="sf-setup-inline">sgummalla_net_cert</code></td>
+                        <td>Checked → select <code class="sf-setup-inline">&lt;certificate_name&gt;</code></td>
                       </tr>
                       <tr>
                         <td>Selected OAuth Scopes</td>
@@ -376,7 +376,7 @@ function download(content: string, filename: string) {
                   <div>
                     <p class="sf-setup-step__title">Configure OAuth Policies</p>
                     <p class="sf-setup-step__desc">
-                      External Client Apps → <strong>SgummallaWorks</strong> → <strong>Edit Policies</strong>
+                      External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → <strong>Edit Policies</strong>
                     </p>
                     <table class="sf-setup-table">
                       <tr>
@@ -403,8 +403,8 @@ function download(content: string, filename: string) {
                   <div>
                     <p class="sf-setup-step__title">Copy the Consumer Key &amp; Register</p>
                     <p class="sf-setup-step__desc">
-                      External Client Apps → <strong>SgummallaWorks</strong> → copy the <strong>Consumer Key</strong>.
-                      Use <code class="sf-setup-inline">https://exp-cloud.my.salesforce.com</code> as the Login URL.
+                      External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → copy the <strong>Consumer Key</strong>.
+                      Use <code class="sf-setup-inline">&lt;your_org_login_url&gt;</code> as the Login URL.
                       Paste the Consumer Key and your <code class="sf-setup-inline">private.pem</code> when registering below.
                     </p>
                   </div>
@@ -427,15 +427,15 @@ function download(content: string, filename: string) {
                     <table class="sf-setup-table">
                       <tr>
                         <td>Label</td>
-                        <td><code class="sf-setup-inline">sgummallaworks_token_exchange</code></td>
+                        <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code></td>
                       </tr>
                       <tr>
                         <td>App Developer Name</td>
-                        <td><code class="sf-setup-inline">sgummallaworks_token_exchange</code> — referenced in the Apex handler</td>
+                        <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code> — referenced in the Apex handler</td>
                       </tr>
                       <tr>
                         <td>Contact Email</td>
-                        <td><code class="sf-setup-inline">sgummalla.work@gmail.com</code></td>
+                        <td><code class="sf-setup-inline">&lt;your_email&gt;</code></td>
                       </tr>
                       <tr>
                         <td>Distribution State</td>
@@ -450,6 +450,10 @@ function download(content: string, filename: string) {
                         <td><strong>Enable</strong></td>
                       </tr>
                     </table>
+                    <div class="sf-setup-note--highlight">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      The certificate API name <code class="sf-setup-inline">&lt;certificate_name&gt;</code> used in the Apex handler must match exactly what was uploaded in Step 1 of the JWT Bearer setup. The Auth0 id_token must be signed with the corresponding private key for <code class="sf-setup-inline">validateJWTWithCert</code> to pass.
+                    </div>
                   </div>
                 </div>
 
@@ -477,7 +481,7 @@ function download(content: string, filename: string) {
                       <code>&nbsp;&nbsp;&nbsp; String sub;</code>
                       <code>&nbsp;&nbsp;&nbsp; try &#123;</code>
                       <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Auth.JWT jwt = Auth.JWTUtil.validateJWTWithCert(</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; incomingToken, 'sgummalla_net_cert');</code>
+                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; incomingToken, '&lt;certificate_name&gt;');</code>
                       <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sub = jwt.getSub();</code>
                       <code>&nbsp;&nbsp;&nbsp; &#125; catch (Exception e) &#123;</code>
                       <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new Auth.TokenValidationResult(</code>
@@ -502,11 +506,6 @@ function download(content: string, filename: string) {
                       <code>&nbsp; &#125;</code>
                       <code>&#125;</code>
                     </div>
-                    <p class="sf-setup-step__note">
-                      The certificate API name <code class="sf-setup-inline">sgummalla_net_cert</code> must match
-                      what was uploaded in Step 1 of the JWT Bearer setup. The Auth0 id_token must be signed with
-                      the corresponding private key for <code class="sf-setup-inline">validateJWTWithCert</code> to pass.
-                    </p>
                   </div>
                 </div>
 
@@ -552,7 +551,7 @@ function download(content: string, filename: string) {
                   <div>
                     <p class="sf-setup-step__title">Configure OAuth Policies</p>
                     <p class="sf-setup-step__desc">
-                      External Client Apps → <strong>sgummallaworks_token_exchange</strong> → <strong>Edit Policies</strong>
+                      External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → <strong>Edit Policies</strong>
                     </p>
                     <table class="sf-setup-table">
                       <tr>
@@ -561,7 +560,7 @@ function download(content: string, filename: string) {
                       </tr>
                       <tr>
                         <td>Execute Handler As</td>
-                        <td><code class="sf-setup-inline">sgummalla@exp-cloud.org</code> (admin user)</td>
+                        <td><code class="sf-setup-inline">&lt;your_process_user&gt;</code> — automated process / integration user</td>
                       </tr>
                       <tr>
                         <td>Permitted Users</td>
@@ -588,8 +587,8 @@ function download(content: string, filename: string) {
                   <div>
                     <p class="sf-setup-step__title">Copy the Consumer Key &amp; Register</p>
                     <p class="sf-setup-step__desc">
-                      External Client Apps → <strong>sgummallaworks_token_exchange</strong> → copy the <strong>Consumer Key</strong>.
-                      Use <code class="sf-setup-inline">https://exp-cloud.my.salesforce.com</code> as the Login URL.
+                      External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → copy the <strong>Consumer Key</strong>.
+                      Use <code class="sf-setup-inline">&lt;your_org_login_url&gt;</code> as the Login URL.
                       No private key is needed — the web app's Auth0 session token is used directly.
                     </p>
                   </div>
@@ -925,6 +924,26 @@ function download(content: string, filename: string) {
   color: var(--vz-text3);
   line-height: 1.5;
   margin-top: 0.5rem;
+}
+
+.sf-setup-note--highlight {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.875rem;
+  border-radius: var(--vz-radius-md);
+  border: 1px solid color-mix(in srgb, var(--vz-amber, #f59e0b) 40%, transparent);
+  background: color-mix(in srgb, var(--vz-amber, #f59e0b) 8%, transparent);
+  font-size: 0.775rem;
+  color: var(--vz-text2);
+  line-height: 1.55;
+}
+
+.sf-setup-note--highlight svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--vz-amber, #f59e0b);
 }
 
 .sf-setup-list {
