@@ -54,13 +54,18 @@ export interface FirestoreCollection {
 }
 
 export interface FirestoreUsage {
-  projectId:      string;
-  consoleUrl:     string;
-  collections:    FirestoreCollection[];
-  totalDocuments: number;
-  dailyWrites:    DailyCount[];
+  projectId:        string;
+  consoleUrl:       string;
+  collections:      FirestoreCollection[];
+  totalDocuments:   number;
+  usedStorageBytes: number | null;
+  dailyReads:       DailyCount[];
+  dailyWrites:      DailyCount[];
+  monitoringError:  string | null;
   freeTier: {
-    writesPerDay: number;
+    readsPerDay:       number;
+    writesPerDay:      number;
+    storageLimitBytes: number;
   };
 }
 

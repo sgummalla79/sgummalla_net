@@ -4,6 +4,7 @@ import { requireOwner } from "../middleware/requireOwner.js";
 import { loggedFetch } from "../lib/logger.js";
 import sql from "../lib/db.js";
 import { getDb } from "../lib/firebase.js";
+import { getGoogleAccessToken } from "../lib/googleAuth.js";
 
 const router: import("express").Router = Router();
 router.use(requireAuth, requireOwner);
@@ -231,8 +232,54 @@ const COLLECTIONS = [
   { name: "sf_ops", label: "SF Ops", ttl: "90 days" },
 ];
 
+const FREE_READS_PER_DAY  = 50_000;
 const FREE_WRITES_PER_DAY = 20_000;
+const FREE_STORAGE_BYTES  = 1 * 1024 * 1024 * 1024;
 const FS_PROJECT_ID       = "sgummallaworks";
+const MONITORING_SCOPE    = "https://www.googleapis.com/auth/monitoring.read";
+
+type DailyPoint = { day: string; count: number };
+
+async function monitoringTimeSeries(
+  projectId: string,
+  token: string,
+  metricType: string,
+  aligner: "ALIGN_SUM" | "ALIGN_MEAN",
+): Promise<DailyPoint[]> {
+  const end   = new Date();
+  const start = new Date(end.getTime() - 8 * 86_400_000);
+
+  const params = new URLSearchParams({
+    filter: `metric.type="${metricType}"`,
+    "interval.startTime": start.toISOString(),
+    "interval.endTime":   end.toISOString(),
+    "aggregation.alignmentPeriod":    "86400s",
+    "aggregation.perSeriesAligner":   aligner,
+    "aggregation.crossSeriesReducer": "REDUCE_SUM",
+    "aggregation.groupByFields":      "resource.labels.project_id",
+  });
+
+  const url = `https://monitoring.googleapis.com/v3/projects/${projectId}/timeSeries?${params}`;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error(`Monitoring ${metricType} → HTTP ${res.status}: ${await res.text()}`);
+
+  const json = await res.json() as {
+    timeSeries?: Array<{
+      points: Array<{
+        interval: { startTime: string };
+        value: { int64Value?: string; doubleValue?: number };
+      }>;
+    }>;
+  };
+
+  const series = json.timeSeries?.[0];
+  if (!series?.points?.length) return [];
+
+  return series.points
+    .map(p => ({ day: p.interval.startTime.slice(0, 10), count: Number(p.value.int64Value ?? p.value.doubleValue ?? 0) }))
+    .sort((a, b) => a.day.localeCompare(b.day))
+    .slice(-7);
+}
 
 router.get("/firestore", async (_req: Request, res: Response) => {
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -279,24 +326,42 @@ router.get("/firestore", async (_req: Request, res: Response) => {
 
       const totalDocuments = counts.reduce((sum, c) => sum + (c.count ?? 0), 0);
 
-      // Daily writes = sum of document creates across all collections per day
-      // (creates are the dominant write type for this app's logging pattern)
+      // Daily writes derived from collection activity (always available)
       const dailyWrites = last7Days.map(({ label: day }) => ({
         day,
-        count: counts.reduce((sum, col) => {
-          const a = col.activity.find(d => d.day === day);
-          return sum + (a?.count ?? 0);
-        }, 0),
+        count: counts.reduce((sum, col) => sum + (col.activity.find(d => d.day === day)?.count ?? 0), 0),
       }));
+
+      // Cloud Monitoring — reads and storage (requires GCP billing)
+      let dailyReads:       DailyPoint[]  = [];
+      let usedStorageBytes: number | null = null;
+      let monitoringError:  string | null = null;
+
+      try {
+        const token = await getGoogleAccessToken(MONITORING_SCOPE);
+        const [reads, storage] = await Promise.all([
+          monitoringTimeSeries(FS_PROJECT_ID, token, "firestore.googleapis.com/document/read_count", "ALIGN_SUM"),
+          monitoringTimeSeries(FS_PROJECT_ID, token, "firestore.googleapis.com/storage/total_bytes", "ALIGN_MEAN"),
+        ]);
+        dailyReads = reads;
+        if (storage.length > 0) usedStorageBytes = storage[storage.length - 1].count;
+      } catch (err) {
+        monitoringError = err instanceof Error ? err.message : "Monitoring unavailable";
+      }
 
       return {
         projectId: FS_PROJECT_ID,
         consoleUrl: `https://console.firebase.google.com/project/${FS_PROJECT_ID}/firestore`,
         collections: counts,
         totalDocuments,
+        usedStorageBytes,
+        dailyReads,
         dailyWrites,
+        monitoringError,
         freeTier: {
-          writesPerDay: FREE_WRITES_PER_DAY,
+          readsPerDay:       FREE_READS_PER_DAY,
+          writesPerDay:      FREE_WRITES_PER_DAY,
+          storageLimitBytes: FREE_STORAGE_BYTES,
         },
       };
     });

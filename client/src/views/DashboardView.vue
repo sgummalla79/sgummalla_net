@@ -159,6 +159,29 @@ const fsWritesMax = computed(() => {
   return Math.max(1, ...SPARK_DAYS.map(d => fsWritesRow.value!.counts[d] ?? 0));
 });
 
+const fsReadsRow = computed((): SparkRow | null => {
+  if (!firestore.value?.dailyReads.length) return null;
+  const counts: Record<string, number> = {};
+  for (const d of firestore.value.dailyReads) counts[d.day] = d.count;
+  return {
+    key:     "reads",
+    label:   "Reads",
+    color:   "#60a5fa",
+    total7d: SPARK_DAYS.reduce((s, d) => s + (counts[d] ?? 0), 0),
+    counts,
+  };
+});
+
+const fsReadsMax = computed(() => {
+  if (!fsReadsRow.value) return 1;
+  return Math.max(1, ...SPARK_DAYS.map(d => fsReadsRow.value!.counts[d] ?? 0));
+});
+
+const fsStoragePct = computed(() => {
+  if (!firestore.value?.usedStorageBytes) return null;
+  return Math.round((firestore.value.usedStorageBytes / firestore.value.freeTier.storageLimitBytes) * 100);
+});
+
 // ── Load ─────────────────────────────────────────────────────────────────────
 
 async function load() {
@@ -411,7 +434,19 @@ onMounted(load);
             <div v-else-if="fsErr" class="vz-dash__error">{{ fsErr }}</div>
             <template v-else-if="firestore">
 
-              <!-- Cloud Monitoring error banner -->
+              <!-- Storage bar -->
+              <div v-if="fsStoragePct !== null && firestore.usedStorageBytes !== null" class="vz-dash__section">
+                <p class="vz-dash__section-title">Storage</p>
+                <div class="vz-dash__bar-header">
+                  <span class="vz-dash__bar-label">Used</span>
+                  <span class="vz-dash__bar-value">{{ fmt(firestore.usedStorageBytes) }} / {{ fmt(firestore.freeTier.storageLimitBytes) }}</span>
+                </div>
+                <div class="vz-dash__bar-track">
+                  <div class="vz-dash__bar-fill" :class="fsStoragePct > 80 ? 'vz-dash__bar-fill--warn' : ''" :style="{ width: `${Math.min(fsStoragePct, 100)}%`, background: '#ffca28' }" />
+                </div>
+                <p class="vz-dash__bar-pct">{{ fsStoragePct }}% used</p>
+              </div>
+
               <!-- Collection breakdown -->
               <div class="vz-dash__section">
                 <p class="vz-dash__section-title">Collections — {{ fmtNum(firestore.totalDocuments) }} total documents</p>
@@ -466,7 +501,7 @@ onMounted(load);
                         </div>
                       </td>
                     </tr>
-                    <!-- Total writes row -->
+                    <!-- Total writes summary row -->
                     <tr v-if="fsWritesRow" class="vz-spark__total-row">
                       <td class="vz-spark__td-name">
                         <div class="vz-spark__name-inner">
@@ -475,21 +510,32 @@ onMounted(load);
                         </div>
                       </td>
                       <td class="vz-spark__td-total"><strong>{{ fmtNum(fsWritesRow.total7d) }}</strong></td>
-                      <td
-                        v-for="day in SPARK_DAYS" :key="day"
-                        class="vz-spark__td-day"
-                        :data-tip="`${shortDay(day)}: ${fmtNum(fsWritesRow.counts[day] ?? 0)}`"
-                      >
+                      <td v-for="day in SPARK_DAYS" :key="day" class="vz-spark__td-day" :data-tip="`${shortDay(day)}: ${fmtNum(fsWritesRow.counts[day] ?? 0)}`">
                         <div class="vz-spark__bar-wrap">
                           <div class="vz-spark__bar" :style="{ height: `${barPx(fsWritesRow.counts[day] ?? 0, fsWritesMax)}px`, background: fsWritesRow.color }" />
+                        </div>
+                      </td>
+                    </tr>
+                    <!-- Reads row (Cloud Monitoring) -->
+                    <tr v-if="fsReadsRow" class="vz-spark__total-row">
+                      <td class="vz-spark__td-name">
+                        <div class="vz-spark__name-inner">
+                          <span class="vz-spark__dot" :style="{ background: fsReadsRow.color }" />
+                          <strong>{{ fsReadsRow.label }}</strong>
+                        </div>
+                      </td>
+                      <td class="vz-spark__td-total"><strong>{{ fmtNum(fsReadsRow.total7d) }}</strong></td>
+                      <td v-for="day in SPARK_DAYS" :key="day" class="vz-spark__td-day" :data-tip="`${shortDay(day)}: ${fmtNum(fsReadsRow.counts[day] ?? 0)}`">
+                        <div class="vz-spark__bar-wrap">
+                          <div class="vz-spark__bar" :style="{ height: `${barPx(fsReadsRow.counts[day] ?? 0, fsReadsMax)}px`, background: fsReadsRow.color }" />
                         </div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
                 <p class="vz-dash__rw-limit">
-                  Free tier: {{ fmtNum(firestore.freeTier.writesPerDay) }} writes per day
-                  &nbsp;·&nbsp; Reads &amp; storage metrics require GCP billing
+                  Free tier: {{ fmtNum(firestore.freeTier.readsPerDay) }} reads / {{ fmtNum(firestore.freeTier.writesPerDay) }} writes per day
+                  <template v-if="firestore.monitoringError">&nbsp;·&nbsp; Reads &amp; storage unavailable: {{ firestore.monitoringError }}</template>
                 </p>
               </div>
 
