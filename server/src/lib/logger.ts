@@ -5,16 +5,6 @@ import { LogRecordType } from "./logTypes.js";
 
 export type { LogSink };
 
-// ── Debug mode (gates ConsoleSink output) ─────────────────────────────────────
-
-let debugMode = false;
-export function setDebugMode(enabled: boolean): void {
-  debugMode = enabled;
-}
-export function isDebugMode(): boolean {
-  return debugMode;
-}
-
 // ── Request context — correlationId + sessionId via AsyncLocalStorage ─────────
 
 interface RequestCtx {
@@ -117,14 +107,13 @@ export async function loggedFetch(
   }
 }
 
-// ── Legacy verbose logger (SAML / OIDC flow traces) ──────────────────────────
-// DEV only — gated by LOG_LEVEL=debug or NODE_ENV=development AND debug toggle
+// ── Legacy verbose logger (SAML / OIDC flow traces) — dev only ───────────────
 
 const isDevEnv =
   process.env.LOG_LEVEL === "debug" || process.env.NODE_ENV === "development";
 
 function fmt(label: string, data: Record<string, unknown>): void {
-  if (!isDevEnv || !debugMode) return;
+  if (!isDevEnv) return;
   process.stdout.write(`\n${"─".repeat(60)}\n`);
   process.stdout.write(`[DEV] ${label}\n`);
   process.stdout.write("─".repeat(60) + "\n");
@@ -221,7 +210,7 @@ export const logger = {
   },
 
   error(source: string, err: unknown) {
-    if (!isDevEnv || !debugMode) return;
+    if (!isDevEnv) return;
     process.stderr.write(`\n[DEV ERROR] ${source}\n`);
     process.stderr.write(String(err) + "\n\n");
   },

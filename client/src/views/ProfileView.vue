@@ -148,8 +148,6 @@ async function handleLogout() {
     :user-email="auth.email"
     :scrollable="true"
     @logout="handleLogout"
-    :debug-mode="auth.debugMode"
-    @toggle-debug="auth.toggleDebugMode"
     @usage="router.push({ name: 'dashboard' })"
   >
     <div class="vz-profile">

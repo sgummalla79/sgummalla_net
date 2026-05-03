@@ -33,7 +33,6 @@ withDefaults(
     activePage?: string;
     isOwner?: boolean;
     isAuthenticated?: boolean;
-    debugMode?: boolean;
     navLinks?: Array<{ name: string; label: string; href: string }>;
   }>(),
   {
@@ -49,7 +48,6 @@ const emit = defineEmits<{
   logout: [];
   profile: [];
   usage: [];
-  "toggle-debug": [];
 }>();
 
 const router = useRouter();
@@ -231,14 +229,12 @@ function toggleTheme() {
           :guest="!userName"
           :theme-mode="themeMode"
           :is-owner="!!isOwner"
-          :debug-mode="debugMode ?? false"
           @profile="handleProfile"
           @configuration="handleConfiguration"
           @article-drafts="handleArticleDrafts"
           @logout="emit('logout')"
           @toggle-theme="toggleTheme"
           @usage="emit('usage')"
-          @toggle-debug="emit('toggle-debug')"
         />
       </template>
     </NavBar>

@@ -6,15 +6,13 @@ import {
   me,
   type ApiUser,
 } from "../api/auth";
-import { fetchDebugMode, setDebugMode as apiSetDebugMode } from "../api/debug";
 
 export const useAuthStore = defineStore("auth", () => {
   // ── State ───────────────────────────────────────────────────────────────────
-  const user = ref<ApiUser | null>(null);
-  const loading = ref(false);
-  const error = ref<string | null>(null);
+  const user        = ref<ApiUser | null>(null);
+  const loading     = ref(false);
+  const error       = ref<string | null>(null);
   const bootstrapped = ref(false);
-  const debugMode = ref(false);
 
   // ── Getters ─────────────────────────────────────────────────────────────────
   const isAuthenticated = computed(() => user.value !== null);
@@ -22,21 +20,14 @@ export const useAuthStore = defineStore("auth", () => {
     () => user.value?.id === "auth0|68d40e8f46b12057807fce21",
   );
   const fullName = computed(() => user.value?.name ?? "");
-  const email = computed(() => user.value?.email ?? "");
+  const email    = computed(() => user.value?.email ?? "");
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
-  /**
-   * Called once on app startup — checks if a valid session cookie exists.
-   * Silently sets user if authenticated, silently clears if not.
-   */
   async function bootstrap(): Promise<void> {
     if (bootstrapped.value) return;
     try {
       user.value = await me();
-      if (isOwner.value) {
-        debugMode.value = await fetchDebugMode();
-      }
     } catch {
       user.value = null;
     } finally {
@@ -44,13 +35,9 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  async function toggleDebugMode(): Promise<void> {
-    debugMode.value = await apiSetDebugMode(!debugMode.value);
-  }
-
   async function login(email: string, password: string): Promise<void> {
     loading.value = true;
-    error.value = null;
+    error.value   = null;
     try {
       user.value = await apiLogin({ email, password });
     } catch (err) {
@@ -66,9 +53,9 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       await apiLogout();
     } finally {
-      user.value = null;
+      user.value     = null;
       bootstrapped.value = false;
-      loading.value = false;
+      loading.value  = false;
     }
   }
 
@@ -77,22 +64,17 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   return {
-    // state
     user,
     loading,
     error,
     bootstrapped,
-    debugMode,
-    // getters
     isAuthenticated,
     isOwner,
     fullName,
     email,
-    // actions
     bootstrap,
     login,
     logout,
     clearError,
-    toggleDebugMode,
   };
 });

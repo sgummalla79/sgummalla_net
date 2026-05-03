@@ -310,11 +310,9 @@ onMounted(load);
     :is-authenticated="auth.isAuthenticated"
     :user-name="auth.fullName"
     :user-email="auth.email"
-    :debug-mode="auth.debugMode"
     :scrollable="true"
     @logout="handleLogout"
     @profile="router.push({ name: 'profile' })"
-    @toggle-debug="auth.toggleDebugMode"
     @usage="router.push({ name: 'dashboard' })"
   >
     <div class="vz-dash">
