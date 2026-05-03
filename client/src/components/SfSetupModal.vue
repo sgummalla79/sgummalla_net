@@ -314,7 +314,7 @@ function download(content: string, filename: string) {
                       Generate the key pair above, then in Salesforce:<br/>
                       Setup → <strong>Certificate and Key Management</strong> → <strong>Import from Keystore</strong> or <strong>Upload Certificate</strong>
                     </p>
-                    <table class="sf-setup-table">
+                    <table class="sf-setup-table"><tbody>
                       <tr>
                         <td>Certificate Label</td>
                         <td><code class="sf-setup-inline">&lt;certificate_name&gt;</code> — this exact API name is referenced in the Apex handler</td>
@@ -323,7 +323,7 @@ function download(content: string, filename: string) {
                         <td>File</td>
                         <td>Upload the <code class="sf-setup-inline">certificate.crt</code> downloaded above</td>
                       </tr>
-                    </table>
+                    </tbody></table>
                   </div>
                 </div>
 
@@ -334,7 +334,7 @@ function download(content: string, filename: string) {
                     <p class="sf-setup-step__desc">
                       Setup → <strong>External Client Apps</strong> → <strong>New External Client App</strong>
                     </p>
-                    <table class="sf-setup-table">
+                    <table class="sf-setup-table"><tbody>
                       <tr>
                         <td>Label</td>
                         <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code></td>
@@ -367,7 +367,7 @@ function download(content: string, filename: string) {
                         <td>Selected OAuth Scopes</td>
                         <td><code class="sf-setup-inline">api</code>, <code class="sf-setup-inline">refresh_token</code>, <code class="sf-setup-inline">web</code></td>
                       </tr>
-                    </table>
+                    </tbody></table>
                   </div>
                 </div>
 
@@ -378,7 +378,7 @@ function download(content: string, filename: string) {
                     <p class="sf-setup-step__desc">
                       External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → <strong>Edit Policies</strong>
                     </p>
-                    <table class="sf-setup-table">
+                    <table class="sf-setup-table"><tbody>
                       <tr>
                         <td>Permitted Users</td>
                         <td><strong>Admin approved users are pre-authorized</strong></td>
@@ -391,7 +391,7 @@ function download(content: string, filename: string) {
                         <td>Pre-authorize</td>
                         <td>Add target user via Profile or Permission Set</td>
                       </tr>
-                    </table>
+                    </tbody></table>
                     <p class="sf-setup-step__note">
                       Every Salesforce user who needs a JWT Bearer token must be pre-authorized. Requests for non-authorized users fail immediately.
                     </p>
@@ -424,7 +424,7 @@ function download(content: string, filename: string) {
                     <p class="sf-setup-step__desc">
                       Setup → <strong>External Client Apps</strong> → <strong>New External Client App</strong>
                     </p>
-                    <table class="sf-setup-table">
+                    <table class="sf-setup-table"><tbody>
                       <tr>
                         <td>Label</td>
                         <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code></td>
@@ -449,7 +449,7 @@ function download(content: string, filename: string) {
                         <td>Token Exchange Grant</td>
                         <td><strong>Enable</strong></td>
                       </tr>
-                    </table>
+                    </tbody></table>
                     <div class="sf-setup-note--highlight">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                       The certificate API name <code class="sf-setup-inline">&lt;certificate_name&gt;</code> used in the Apex handler must match exactly what was uploaded in Step 1 of the JWT Bearer setup. The Auth0 id_token must be signed with the corresponding private key for <code class="sf-setup-inline">validateJWTWithCert</code> to pass.
@@ -517,7 +517,7 @@ function download(content: string, filename: string) {
                       In Setup → <strong>Token Exchange Handlers</strong> (or via Metadata API),
                       create an <code class="sf-setup-inline">OauthTokenExchangeHandler</code> record pointing to the Apex class.
                     </p>
-                    <table class="sf-setup-table">
+                    <table class="sf-setup-table"><tbody>
                       <tr>
                         <td>Developer Name</td>
                         <td><code class="sf-setup-inline">WebAppExtClntAppHandler</code></td>
@@ -542,7 +542,7 @@ function download(content: string, filename: string) {
                         <td>Access Token Supported</td>
                         <td>Checked</td>
                       </tr>
-                    </table>
+                    </tbody></table>
                   </div>
                 </div>
 
@@ -553,7 +553,7 @@ function download(content: string, filename: string) {
                     <p class="sf-setup-step__desc">
                       External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → <strong>Edit Policies</strong>
                     </p>
-                    <table class="sf-setup-table">
+                    <table class="sf-setup-table"><tbody>
                       <tr>
                         <td>Apex Handler</td>
                         <td><code class="sf-setup-inline">WebAppExtClntAppHandler</code></td>
@@ -578,7 +578,7 @@ function download(content: string, filename: string) {
                         <td>Authorized Users</td>
                         <td>Add via Profile: <code class="sf-setup-inline">System Administrator</code></td>
                       </tr>
-                    </table>
+                    </tbody></table>
                   </div>
                 </div>
 
