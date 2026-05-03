@@ -459,8 +459,8 @@ router.get("/blog", async (_req: Request, res: Response) => {
         if (d["logType"] !== "artview") continue;
 
         const data = d["data"] as Record<string, unknown> | undefined;
-        const slug  = data?.["slug"]  as string | undefined;
-        const title = (data?.["title"] as string | undefined) ?? slug ?? "Unknown";
+        const slug  = data?.["articleSlug"]  as string | undefined;
+        const title = (data?.["articleTitle"] as string | undefined) ?? slug ?? "Unknown";
         if (!slug) continue;
 
         const ts  = d["createdAt"] as { toDate?: () => Date } | undefined;
