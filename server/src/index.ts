@@ -19,6 +19,7 @@ import { requestLogger } from "./middleware/requestLogger.js";
 import usageRouter from "./routes/usage.js";
 import { appLogger } from "./lib/logger.js";
 import { ConsoleSink } from "./lib/sinks/console.js";
+import { FileSink } from "./lib/sinks/file.js";
 import { FirestoreSink } from "./lib/sinks/firestore.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -103,19 +104,15 @@ if (!isProd) {
 await ensureTables();
 
 // ── Register log sinks ────────────────────────────────────────────────────────
-// DEV:  ConsoleSink + FirestoreSink (1h TTL — auto-purged, queryable in console)
-// PROD: FirestoreSink only (30d TTL)
-const TTL_PROD = 30 * 24 * 60 * 60 * 1000;
-const TTL_DEV  =       60 * 60 * 1000; // 1 hour
-
+// DEV:  ConsoleSink + FileSink → server/logs/YYYY-MM-DD.log (git/docker ignored)
+// PROD: FirestoreSink (30d TTL)
 if (!isProd) {
   appLogger.register(new ConsoleSink());
-  console.log("[Logger] ConsoleSink registered (dev)");
-}
-
-if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-  appLogger.register(new FirestoreSink(isProd ? TTL_PROD : TTL_DEV));
-  console.log(`[Logger] FirestoreSink registered (${isProd ? "prod 30d" : "dev 1h"})`);
+  appLogger.register(new FileSink(join(process.cwd(), "logs")));
+  console.log("[Logger] ConsoleSink + FileSink registered (dev → logs/)");
+} else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  appLogger.register(new FirestoreSink(30 * 24 * 60 * 60 * 1000));
+  console.log("[Logger] FirestoreSink registered (prod 30d)");
 } else {
   console.warn("[Logger] FIREBASE_SERVICE_ACCOUNT not set — FirestoreSink disabled");
 }
