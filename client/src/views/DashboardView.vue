@@ -62,11 +62,16 @@ function shortDay(iso: string): string {
 // ── Sparkline table ───────────────────────────────────────────────────────────
 
 interface SparkRow {
-  key: string;
-  label: string;
-  color: string;
+  key:     string;
+  label:   string;
+  id?:     string;
+  color:   string;
   total7d: number;
-  counts: Record<string, number>;
+  counts:  Record<string, number>;
+}
+
+function truncate(s: string, max: number): string {
+  return s.length > max ? s.slice(0, max - 1) + "…" : s;
 }
 
 function last7Days(): string[] {
@@ -198,7 +203,7 @@ const fsStoragePct = computed(() => {
 
 // ── Blog stacked bar chart ────────────────────────────────────────────────────
 
-interface BarSegment { slug: string; title: string; color: string; h: number; count: number }
+interface BarSegment { slug: string; id: string; title: string; color: string; h: number; count: number }
 interface StackedBar  { day: string; segments: BarSegment[]; total: number }
 
 const BLOG_BAR_H = 80;
@@ -215,6 +220,7 @@ const blogChart = computed((): StackedBar[] => {
       .filter(s => (s.days.find(d => d.day === day)?.count ?? 0) > 0)
       .map(s => ({
         slug:  s.slug,
+        id:    s.id,
         title: s.title,
         color: s.color,
         count: s.days.find(d => d.day === day)?.count ?? 0,
@@ -229,7 +235,7 @@ const blogSparkRows = computed((): SparkRow[] => {
   return blog.value.series.map(s => {
     const counts: Record<string, number> = {};
     for (const d of s.days) counts[d.day] = d.count;
-    return { key: s.slug, label: s.title, color: s.color, total7d: s.total, counts };
+    return { key: s.slug, label: s.title, id: s.id, color: s.color, total7d: s.total, counts };
   });
 });
 
@@ -733,17 +739,18 @@ onMounted(load);
                           :key="seg.slug"
                           class="vz-blog__seg"
                           :style="{ height: `${seg.h}px`, background: seg.color }"
-                          :data-tip="`${seg.title}: ${seg.count}`"
+                          :data-tip="`${seg.id} — ${seg.title}: ${seg.count}`"
                         />
                       </div>
                       <div class="vz-blog__day">{{ shortDay(bar.day) }}</div>
                     </div>
                   </div>
-                  <!-- Legend -->
-                  <div class="vz-dash__legend" style="margin-top:0.75rem">
-                    <span v-for="s in blog.series" :key="s.slug" class="vz-dash__legend-item">
-                      <span class="vz-dash__legend-dot" :style="{ background: s.color }" />
-                      {{ s.title }}
+                  <!-- Legend: ID + full title -->
+                  <div class="vz-blog__legend">
+                    <span v-for="s in blog.series" :key="s.slug" class="vz-blog__legend-item">
+                      <span class="vz-blog__legend-dot" :style="{ background: s.color }" />
+                      <span class="vz-blog__legend-id">{{ s.id }}</span>
+                      <span class="vz-blog__legend-title">{{ s.title }}</span>
                     </span>
                   </div>
                 </div>
@@ -761,10 +768,12 @@ onMounted(load);
                     </thead>
                     <tbody>
                       <tr v-for="row in blogSparkRows" :key="row.key">
-                        <td class="vz-spark__td-name">
+                        <!-- ID + truncated title; full title on native hover -->
+                        <td class="vz-spark__td-name" :title="row.label">
                           <div class="vz-spark__name-inner">
                             <span class="vz-spark__dot" :style="{ background: row.color }" />
-                            {{ row.label }}
+                            <span class="vz-blog__art-id">{{ row.id }}</span>
+                            <span class="vz-blog__art-label">{{ truncate(row.label, 24) }}</span>
                           </div>
                         </td>
                         <td class="vz-spark__td-total">{{ row.total7d }}</td>
@@ -1424,6 +1433,61 @@ onMounted(load);
   width: 100%;
   max-width: 48px;
   gap: 1px;
+}
+
+/* ── Blog legend ── */
+.vz-blog__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.75rem;
+}
+
+.vz-blog__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+}
+
+.vz-blog__legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.vz-blog__legend-id {
+  font-family: var(--vz-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--vz-text);
+  flex-shrink: 0;
+  min-width: 2rem;
+}
+
+.vz-blog__legend-title {
+  font-family: var(--vz-font-sans);
+  color: var(--vz-text2);
+}
+
+/* ── Blog sparkline name column ── */
+.vz-blog__art-id {
+  font-family: var(--vz-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--vz-text);
+  flex-shrink: 0;
+  min-width: 2rem;
+}
+
+.vz-blog__art-label {
+  font-family: var(--vz-font-mono);
+  font-size: 0.68rem;
+  color: var(--vz-text3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vz-blog__seg {

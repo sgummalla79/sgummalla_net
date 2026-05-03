@@ -72,6 +72,7 @@ export interface FirestoreUsage {
 // ── Blog ──────────────────────────────────────────────────────────────────────
 
 export interface BlogArticleSeries {
+  id:    string;
   slug:  string;
   title: string;
   color: string;

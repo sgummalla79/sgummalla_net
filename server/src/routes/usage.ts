@@ -480,7 +480,8 @@ router.get("/blog", async (_req: Request, res: Response) => {
           total: last7Days.reduce((sum, d) => sum + (days.get(d) ?? 0), 0),
           days:  last7Days.map(d => ({ day: d, count: days.get(d) ?? 0 })),
         }))
-        .sort((a, b) => b.total - a.total);
+        .sort((a, b) => b.total - a.total)
+        .map((s, i) => ({ ...s, id: `A${i + 1}` }));
 
       return {
         series,
