@@ -305,69 +305,114 @@ function download(content: string, filename: string) {
             <!-- ── JWT Bearer ────────────────────────────────────────── -->
             <template v-if="flow === 'jwt-bearer'">
               <div class="sf-setup-steps">
-
                 <div class="sf-setup-step">
                   <span class="sf-setup-step__num">1</span>
                   <div>
-                    <p class="sf-setup-step__title">Upload the Certificate to Salesforce</p>
-                    <p class="sf-setup-step__desc">
-                      Generate the key pair above, then in Salesforce:<br/>
-                      Setup → <strong>Certificate and Key Management</strong> → <strong>Import from Keystore</strong> or <strong>Upload Certificate</strong>
+                    <p class="sf-setup-step__title">
+                      Upload the Certificate to Salesforce
                     </p>
-                    <table class="sf-setup-table"><tbody>
-                      <tr>
-                        <td>Certificate Label</td>
-                        <td><code class="sf-setup-inline">&lt;certificate_name&gt;</code> — this exact API name is referenced in the Apex handler</td>
-                      </tr>
-                      <tr>
-                        <td>File</td>
-                        <td>Upload the <code class="sf-setup-inline">certificate.crt</code> downloaded above</td>
-                      </tr>
-                    </tbody></table>
+                    <p class="sf-setup-step__desc">
+                      Generate the key pair above, then in Salesforce:<br />
+                      Setup → <strong>Certificate and Key Management</strong> →
+                      <strong>Import from Keystore</strong> or
+                      <strong>Upload Certificate</strong>
+                    </p>
+                    <table class="sf-setup-table">
+                      <tbody>
+                        <tr>
+                          <td>Certificate Label</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;certificate_name&gt;</code
+                            >
+                            — this exact API name is referenced in the Apex
+                            handler
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>File</td>
+                          <td>
+                            Upload the
+                            <code class="sf-setup-inline">certificate.crt</code>
+                            downloaded above
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
                 <div class="sf-setup-step">
                   <span class="sf-setup-step__num">2</span>
                   <div>
-                    <p class="sf-setup-step__title">Create an External Client App</p>
-                    <p class="sf-setup-step__desc">
-                      Setup → <strong>External Client Apps</strong> → <strong>New External Client App</strong>
+                    <p class="sf-setup-step__title">
+                      Create an External Client App
                     </p>
-                    <table class="sf-setup-table"><tbody>
-                      <tr>
-                        <td>Label</td>
-                        <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code></td>
-                      </tr>
-                      <tr>
-                        <td>App Developer Name</td>
-                        <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code></td>
-                      </tr>
-                      <tr>
-                        <td>Contact Email</td>
-                        <td><code class="sf-setup-inline">&lt;your_email&gt;</code></td>
-                      </tr>
-                      <tr>
-                        <td>Distribution State</td>
-                        <td>Local</td>
-                      </tr>
-                      <tr>
-                        <td>Enable OAuth Settings</td>
-                        <td>Checked</td>
-                      </tr>
-                      <tr>
-                        <td>Callback URL</td>
-                        <td><code class="sf-setup-inline">https://localhost</code></td>
-                      </tr>
-                      <tr>
-                        <td>Use Digital Signatures</td>
-                        <td>Checked → select <code class="sf-setup-inline">&lt;certificate_name&gt;</code></td>
-                      </tr>
-                      <tr>
-                        <td>Selected OAuth Scopes</td>
-                        <td><code class="sf-setup-inline">api</code>, <code class="sf-setup-inline">refresh_token</code>, <code class="sf-setup-inline">web</code></td>
-                      </tr>
-                    </tbody></table>
+                    <p class="sf-setup-step__desc">
+                      Setup → <strong>External Client Apps</strong> →
+                      <strong>New External Client App</strong>
+                    </p>
+                    <table class="sf-setup-table">
+                      <tbody>
+                        <tr>
+                          <td>Label</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;external_client_app_name&gt;</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>App Developer Name</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;external_client_app_name&gt;</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Contact Email</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;your_email&gt;</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Distribution State</td>
+                          <td>Local</td>
+                        </tr>
+                        <tr>
+                          <td>Enable OAuth Settings</td>
+                          <td>Checked</td>
+                        </tr>
+                        <tr>
+                          <td>Callback URL</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >https://localhost</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Use Digital Signatures</td>
+                          <td>
+                            Checked → select
+                            <code class="sf-setup-inline"
+                              >&lt;certificate_name&gt;</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Selected OAuth Scopes</td>
+                          <td>
+                            <code class="sf-setup-inline">api</code>,
+                            <code class="sf-setup-inline">refresh_token</code>,
+                            <code class="sf-setup-inline">web</code>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
@@ -376,24 +421,34 @@ function download(content: string, filename: string) {
                   <div>
                     <p class="sf-setup-step__title">Configure OAuth Policies</p>
                     <p class="sf-setup-step__desc">
-                      External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → <strong>Edit Policies</strong>
+                      External Client Apps →
+                      <strong>&lt;external_client_app_name&gt;</strong> →
+                      <strong>Edit Policies</strong>
                     </p>
-                    <table class="sf-setup-table"><tbody>
-                      <tr>
-                        <td>Permitted Users</td>
-                        <td><strong>Admin approved users are pre-authorized</strong></td>
-                      </tr>
-                      <tr>
-                        <td>IP Relaxation</td>
-                        <td>Relax IP restrictions (Bypass)</td>
-                      </tr>
-                      <tr>
-                        <td>Pre-authorize</td>
-                        <td>Add target user via Profile or Permission Set</td>
-                      </tr>
-                    </tbody></table>
+                    <table class="sf-setup-table">
+                      <tbody>
+                        <tr>
+                          <td>Permitted Users</td>
+                          <td>
+                            <strong
+                              >Admin approved users are pre-authorized</strong
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>IP Relaxation</td>
+                          <td>Relax IP restrictions (Bypass)</td>
+                        </tr>
+                        <tr>
+                          <td>Pre-authorize</td>
+                          <td>Add target user via Profile or Permission Set</td>
+                        </tr>
+                      </tbody>
+                    </table>
                     <p class="sf-setup-step__note">
-                      Every Salesforce user who needs a JWT Bearer token must be pre-authorized. Requests for non-authorized users fail immediately.
+                      Every Salesforce user who needs a JWT Bearer token must be
+                      pre-authorized. Requests for non-authorized users fail
+                      immediately.
                     </p>
                   </div>
                 </div>
@@ -401,108 +456,253 @@ function download(content: string, filename: string) {
                 <div class="sf-setup-step">
                   <span class="sf-setup-step__num">4</span>
                   <div>
-                    <p class="sf-setup-step__title">Copy the Consumer Key &amp; Register</p>
+                    <p class="sf-setup-step__title">
+                      Copy the Consumer Key &amp; Register
+                    </p>
                     <p class="sf-setup-step__desc">
-                      External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → copy the <strong>Consumer Key</strong>.
-                      Use <code class="sf-setup-inline">&lt;your_org_login_url&gt;</code> as the Login URL.
-                      Paste the Consumer Key and your <code class="sf-setup-inline">private.pem</code> when registering below.
+                      External Client Apps →
+                      <strong>&lt;external_client_app_name&gt;</strong> → copy
+                      the <strong>Consumer Key</strong>. Use
+                      <code class="sf-setup-inline"
+                        >&lt;your_org_login_url&gt;</code
+                      >
+                      as the Login URL. Paste the Consumer Key and your
+                      <code class="sf-setup-inline">private.pem</code> when
+                      registering below.
                     </p>
                   </div>
                 </div>
-
               </div>
             </template>
 
             <!-- ── Token Exchange ────────────────────────────────────── -->
             <template v-else>
               <div class="sf-setup-steps">
-
                 <div class="sf-setup-step">
                   <span class="sf-setup-step__num">1</span>
                   <div>
-                    <p class="sf-setup-step__title">Create an External Client App</p>
-                    <p class="sf-setup-step__desc">
-                      Setup → <strong>External Client Apps</strong> → <strong>New External Client App</strong>
+                    <p class="sf-setup-step__title">
+                      Upload the Certificate to Salesforce
                     </p>
-                    <table class="sf-setup-table"><tbody>
-                      <tr>
-                        <td>Label</td>
-                        <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code></td>
-                      </tr>
-                      <tr>
-                        <td>App Developer Name</td>
-                        <td><code class="sf-setup-inline">&lt;external_client_app_name&gt;</code> — referenced in the Apex handler</td>
-                      </tr>
-                      <tr>
-                        <td>Contact Email</td>
-                        <td><code class="sf-setup-inline">&lt;your_email&gt;</code></td>
-                      </tr>
-                      <tr>
-                        <td>Distribution State</td>
-                        <td>Local</td>
-                      </tr>
-                      <tr>
-                        <td>Selected OAuth Scopes</td>
-                        <td><code class="sf-setup-inline">api</code>, <code class="sf-setup-inline">refresh_token</code>, <code class="sf-setup-inline">openid</code>, <code class="sf-setup-inline">web</code></td>
-                      </tr>
-                      <tr>
-                        <td>Token Exchange Grant</td>
-                        <td><strong>Enable</strong></td>
-                      </tr>
-                    </tbody></table>
-                    <div class="sf-setup-note--highlight">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                      The certificate API name <code class="sf-setup-inline">&lt;certificate_name&gt;</code> used in the Apex handler must match exactly what was uploaded in Step 1 of the JWT Bearer setup. The Auth0 id_token must be signed with the corresponding private key for <code class="sf-setup-inline">validateJWTWithCert</code> to pass.
-                    </div>
+                    <p class="sf-setup-step__desc">
+                      Generate the key pair using the tool above, then upload
+                      the certificate to Salesforce so the Apex handler can
+                      validate incoming tokens:<br />
+                      Setup → <strong>Certificate and Key Management</strong> →
+                      <strong>Upload Certificate</strong>
+                    </p>
+                    <table class="sf-setup-table">
+                      <tbody>
+                        <tr>
+                          <td>Certificate Label / API Name</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;certificate_name&gt;</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>File</td>
+                          <td>
+                            Upload
+                            <code class="sf-setup-inline">certificate.crt</code>
+                            downloaded above
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p class="sf-setup-step__note">
+                      The API name you choose here must be used verbatim in the
+                      <code class="sf-setup-inline"
+                        >Auth.JWTUtil.validateJWTWithCert</code
+                      >
+                      call in the Apex handler (Step 3). The Auth0 id_token must
+                      also be signed with the matching private key for
+                      validation to succeed.
+                    </p>
                   </div>
                 </div>
 
                 <div class="sf-setup-step">
                   <span class="sf-setup-step__num">2</span>
                   <div>
+                    <p class="sf-setup-step__title">
+                      Create an External Client App
+                    </p>
+                    <p class="sf-setup-step__desc">
+                      Setup → <strong>External Client Apps</strong> →
+                      <strong>New External Client App</strong>
+                    </p>
+                    <table class="sf-setup-table">
+                      <tbody>
+                        <tr>
+                          <td>Label</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;external_client_app_name&gt;</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>App Developer Name</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;external_client_app_name&gt;</code
+                            >
+                            — referenced in the Apex handler
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Contact Email</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;your_email&gt;</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Distribution State</td>
+                          <td>Local</td>
+                        </tr>
+                        <tr>
+                          <td>Selected OAuth Scopes</td>
+                          <td>
+                            <code class="sf-setup-inline">api</code>,
+                            <code class="sf-setup-inline">refresh_token</code>,
+                            <code class="sf-setup-inline">openid</code>,
+                            <code class="sf-setup-inline">web</code>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Token Exchange Grant</td>
+                          <td><strong>Enable</strong></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="sf-setup-step">
+                  <span class="sf-setup-step__num">3</span>
+                  <div>
                     <p class="sf-setup-step__title">Deploy the Apex Handler</p>
                     <p class="sf-setup-step__desc">
-                      Create this Apex class in Setup → <strong>Apex Classes</strong>.
-                      It extends <code class="sf-setup-inline">Auth.ExternalClientAppOauthHandler</code>,
-                      validates the incoming Auth0 id_token using the uploaded certificate,
-                      and looks up the Salesforce user by email.
+                      Create this Apex class in Setup →
+                      <strong>Apex Classes</strong>. It extends
+                      <code class="sf-setup-inline"
+                        >Auth.ExternalClientAppOauthHandler</code
+                      >, validates the incoming Auth0 id_token using the
+                      uploaded certificate, and looks up the Salesforce user by
+                      email.
                     </p>
                     <div class="sf-setup-code sf-setup-code--apex">
-                      <code>public class WebAppExtClntAppHandler extends Auth.ExternalClientAppOauthHandler &#123;</code>
+                      <code
+                        >public class WebAppExtClntAppHandler extends
+                        Auth.ExternalClientAppOauthHandler &#123;</code
+                      >
                       <code>&nbsp;</code>
-                      <code>&nbsp; public Auth.TokenValidationResult validateIncomingToken(</code>
-                      <code>&nbsp;&nbsp;&nbsp; String appDeveloperName, Auth.IntegratingAppType appType,</code>
-                      <code>&nbsp;&nbsp;&nbsp; String incomingToken, Auth.OAuth2TokenExchangeType tokenType</code>
+                      <code
+                        >&nbsp; public Auth.TokenValidationResult
+                        validateIncomingToken(</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp; String appDeveloperName,
+                        Auth.IntegratingAppType appType,</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp; String incomingToken,
+                        Auth.OAuth2TokenExchangeType tokenType</code
+                      >
                       <code>&nbsp; ) &#123;</code>
-                      <code>&nbsp;&nbsp;&nbsp; if (tokenType != Auth.OAuth2TokenExchangeType.JWT)</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new Auth.TokenValidationResult(</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; false, null, null, incomingToken, tokenType, 'Expected JWT');</code>
+                      <code
+                        >&nbsp;&nbsp;&nbsp; if (tokenType !=
+                        Auth.OAuth2TokenExchangeType.JWT)</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new
+                        Auth.TokenValidationResult(</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; false, null,
+                        null, incomingToken, tokenType, 'Expected JWT');</code
+                      >
                       <code>&nbsp;</code>
                       <code>&nbsp;&nbsp;&nbsp; String sub;</code>
                       <code>&nbsp;&nbsp;&nbsp; try &#123;</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Auth.JWT jwt = Auth.JWTUtil.validateJWTWithCert(</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; incomingToken, '&lt;certificate_name&gt;');</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sub = jwt.getSub();</code>
-                      <code>&nbsp;&nbsp;&nbsp; &#125; catch (Exception e) &#123;</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new Auth.TokenValidationResult(</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; false, null, null, incomingToken, tokenType,</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'JWT validation failed: ' + e.getMessage());</code>
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Auth.JWT jwt =
+                        Auth.JWTUtil.validateJWTWithCert(</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        incomingToken, '&lt;certificate_name&gt;');</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sub =
+                        jwt.getSub();</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp; &#125; catch (Exception e)
+                        &#123;</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return new
+                        Auth.TokenValidationResult(</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; false, null,
+                        null, incomingToken, tokenType,</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'JWT
+                        validation failed: ' + e.getMessage());</code
+                      >
                       <code>&nbsp;&nbsp;&nbsp; &#125;</code>
                       <code>&nbsp;</code>
-                      <code>&nbsp;&nbsp;&nbsp; Auth.UserData userData = new Auth.UserData(</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; null, null, null, null, sub, null, sub, null, 'WebApp', null, null);</code>
-                      <code>&nbsp;&nbsp;&nbsp; return new Auth.TokenValidationResult(</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; true, null, userData, incomingToken, tokenType, null);</code>
+                      <code
+                        >&nbsp;&nbsp;&nbsp; Auth.UserData userData = new
+                        Auth.UserData(</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; null, null, null, null,
+                        sub, null, sub, null, 'WebApp', null, null);</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp; return new
+                        Auth.TokenValidationResult(</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; true, null, userData,
+                        incomingToken, tokenType, null);</code
+                      >
                       <code>&nbsp; &#125;</code>
                       <code>&nbsp;</code>
                       <code>&nbsp; public User getUserForTokenSubject(</code>
-                      <code>&nbsp;&nbsp;&nbsp; Id networkId, Auth.TokenValidationResult result,</code>
-                      <code>&nbsp;&nbsp;&nbsp; Boolean canCreateUser, String appDeveloperName, Auth.IntegratingAppType appType</code>
+                      <code
+                        >&nbsp;&nbsp;&nbsp; Id networkId,
+                        Auth.TokenValidationResult result,</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp; Boolean canCreateUser, String
+                        appDeveloperName, Auth.IntegratingAppType appType</code
+                      >
                       <code>&nbsp; ) &#123;</code>
-                      <code>&nbsp;&nbsp;&nbsp; String email = result.userData.email;</code>
-                      <code>&nbsp;&nbsp;&nbsp; List&lt;User&gt; users = [SELECT Id FROM User</code>
-                      <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE Email = :email AND IsActive = true LIMIT 1];</code>
-                      <code>&nbsp;&nbsp;&nbsp; return users.isEmpty() ? null : users[0];</code>
+                      <code
+                        >&nbsp;&nbsp;&nbsp; String email =
+                        result.userData.email;</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp; List&lt;User&gt; users = [SELECT Id
+                        FROM User</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE Email = :email AND
+                        IsActive = true LIMIT 1];</code
+                      >
+                      <code
+                        >&nbsp;&nbsp;&nbsp; return users.isEmpty() ? null :
+                        users[0];</code
+                      >
                       <code>&nbsp; &#125;</code>
                       <code>&#125;</code>
                     </div>
@@ -510,90 +710,134 @@ function download(content: string, filename: string) {
                 </div>
 
                 <div class="sf-setup-step">
-                  <span class="sf-setup-step__num">3</span>
-                  <div>
-                    <p class="sf-setup-step__title">Register the Token Exchange Handler</p>
-                    <p class="sf-setup-step__desc">
-                      In Setup → <strong>Token Exchange Handlers</strong> (or via Metadata API),
-                      create an <code class="sf-setup-inline">OauthTokenExchangeHandler</code> record pointing to the Apex class.
-                    </p>
-                    <table class="sf-setup-table"><tbody>
-                      <tr>
-                        <td>Developer Name</td>
-                        <td><code class="sf-setup-inline">WebAppExtClntAppHandler</code></td>
-                      </tr>
-                      <tr>
-                        <td>Master Label</td>
-                        <td>WebApp Ext Client App Handler</td>
-                      </tr>
-                      <tr>
-                        <td>Apex Handler Class</td>
-                        <td><code class="sf-setup-inline">WebAppExtClntAppHandler</code></td>
-                      </tr>
-                      <tr>
-                        <td>Enabled</td>
-                        <td>Checked</td>
-                      </tr>
-                      <tr>
-                        <td>JWT Supported</td>
-                        <td>Checked</td>
-                      </tr>
-                      <tr>
-                        <td>Access Token Supported</td>
-                        <td>Checked</td>
-                      </tr>
-                    </tbody></table>
-                  </div>
-                </div>
-
-                <div class="sf-setup-step">
                   <span class="sf-setup-step__num">4</span>
                   <div>
-                    <p class="sf-setup-step__title">Configure OAuth Policies</p>
-                    <p class="sf-setup-step__desc">
-                      External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → <strong>Edit Policies</strong>
+                    <p class="sf-setup-step__title">
+                      Register the Token Exchange Handler
                     </p>
-                    <table class="sf-setup-table"><tbody>
-                      <tr>
-                        <td>Apex Handler</td>
-                        <td><code class="sf-setup-inline">WebAppExtClntAppHandler</code></td>
-                      </tr>
-                      <tr>
-                        <td>Execute Handler As</td>
-                        <td><code class="sf-setup-inline">&lt;your_process_user&gt;</code> — automated process / integration user</td>
-                      </tr>
-                      <tr>
-                        <td>Permitted Users</td>
-                        <td><strong>Admin approved users are pre-authorized</strong></td>
-                      </tr>
-                      <tr>
-                        <td>IP Relaxation</td>
-                        <td>Relax IP restrictions (Bypass)</td>
-                      </tr>
-                      <tr>
-                        <td>Token Exchange Flow</td>
-                        <td><strong>Enable</strong></td>
-                      </tr>
-                      <tr>
-                        <td>Authorized Users</td>
-                        <td>Add via Profile: <code class="sf-setup-inline">System Administrator</code></td>
-                      </tr>
-                    </tbody></table>
+                    <p class="sf-setup-step__desc">
+                      In Setup → <strong>Token Exchange Handlers</strong> (or
+                      via Metadata API), create an
+                      <code class="sf-setup-inline"
+                        >OauthTokenExchangeHandler</code
+                      >
+                      record pointing to the Apex class.
+                    </p>
+                    <table class="sf-setup-table">
+                      <tbody>
+                        <tr>
+                          <td>Developer Name</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >WebAppExtClntAppHandler</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Master Label</td>
+                          <td>WebApp Ext Client App Handler</td>
+                        </tr>
+                        <tr>
+                          <td>Apex Handler Class</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >WebAppExtClntAppHandler</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Enabled</td>
+                          <td>Checked</td>
+                        </tr>
+                        <tr>
+                          <td>JWT Supported</td>
+                          <td>Checked</td>
+                        </tr>
+                        <tr>
+                          <td>Access Token Supported</td>
+                          <td>Checked</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
                 <div class="sf-setup-step">
                   <span class="sf-setup-step__num">5</span>
                   <div>
-                    <p class="sf-setup-step__title">Copy the Consumer Key &amp; Register</p>
+                    <p class="sf-setup-step__title">Configure OAuth Policies</p>
                     <p class="sf-setup-step__desc">
-                      External Client Apps → <strong>&lt;external_client_app_name&gt;</strong> → copy the <strong>Consumer Key</strong>.
-                      Use <code class="sf-setup-inline">&lt;your_org_login_url&gt;</code> as the Login URL.
-                      No private key is needed — the web app's Auth0 session token is used directly.
+                      External Client Apps →
+                      <strong>&lt;external_client_app_name&gt;</strong> →
+                      <strong>Edit Policies</strong>
                     </p>
+                    <table class="sf-setup-table">
+                      <tbody>
+                        <tr>
+                          <td>Apex Handler</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >WebAppExtClntAppHandler</code
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Execute Handler As</td>
+                          <td>
+                            <code class="sf-setup-inline"
+                              >&lt;your_process_user&gt;</code
+                            >
+                            — automated process / integration user
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Permitted Users</td>
+                          <td>
+                            <strong
+                              >Admin approved users are pre-authorized</strong
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>IP Relaxation</td>
+                          <td>Relax IP restrictions (Bypass)</td>
+                        </tr>
+                        <tr>
+                          <td>Token Exchange Flow</td>
+                          <td><strong>Enable</strong></td>
+                        </tr>
+                        <tr>
+                          <td>Authorized Users</td>
+                          <td>
+                            Add via Profile:
+                            <code class="sf-setup-inline"
+                              >System Administrator</code
+                            >
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
+                <div class="sf-setup-step">
+                  <span class="sf-setup-step__num">6</span>
+                  <div>
+                    <p class="sf-setup-step__title">
+                      Copy the Consumer Key &amp; Register
+                    </p>
+                    <p class="sf-setup-step__desc">
+                      External Client Apps →
+                      <strong>&lt;external_client_app_name&gt;</strong> → copy
+                      the <strong>Consumer Key</strong>. Use
+                      <code class="sf-setup-inline"
+                        >&lt;your_org_login_url&gt;</code
+                      >
+                      as the Login URL. No private key is needed — the web app's
+                      Auth0 session token is used directly.
+                    </p>
+                  </div>
+                </div>
               </div>
             </template>
           </div>
@@ -933,7 +1177,8 @@ function download(content: string, filename: string) {
   margin-top: 0.75rem;
   padding: 0.65rem 0.875rem;
   border-radius: var(--vz-radius-md);
-  border: 1px solid color-mix(in srgb, var(--vz-amber, #f59e0b) 40%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--vz-amber, #f59e0b) 40%, transparent);
   background: color-mix(in srgb, var(--vz-amber, #f59e0b) 8%, transparent);
   font-size: 0.775rem;
   color: var(--vz-text2);
