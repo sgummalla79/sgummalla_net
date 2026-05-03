@@ -4,6 +4,7 @@ import { requireAuth } from "../middleware/requireAuth.js";
 import { appLogger, buildBase } from "../lib/logger.js";
 import { LogRecordType } from "../lib/logTypes.js";
 import type { LogRecord, BlogViewData } from "../lib/logTypes.js";
+import { parseUA } from "../lib/uaParser.js";
 
 const router: import("express").Router = Router();
 
@@ -21,8 +22,6 @@ function buildVisitorData(
   const language =
     (req.headers["accept-language"] ?? "").split(",")[0]?.trim() ?? "unknown";
 
-  const isBot = /bot|crawl|spider|slurp|mediapartners/i.test(ua);
-
   let refererSource: BlogViewData["refererSource"] = "direct";
   if (referer) {
     if (referer.includes(req.hostname)) refererSource = "internal";
@@ -33,12 +32,15 @@ function buildVisitorData(
     else refererSource = "unknown";
   }
 
+  const { browser, os, device } = parseUA(ua);
+  const isBot = device.type === "bot";
+
   return {
     ip,
     userAgent: ua,
-    browser: { name: "unknown", version: "unknown" },
-    os: { name: "unknown", version: "unknown" },
-    device: { type: isBot ? "bot" : "desktop" },
+    browser,
+    os,
+    device,
     referer,
     refererSource,
     language,
