@@ -10,7 +10,7 @@ export class FileSink implements LogSink {
   }
 
   write(record: LogRecord): void {
-    const day  = new Date().toISOString().slice(0, 10);
+    const day = new Date().toISOString().slice(0, 10);
     const path = join(this.logsDir, `${day}.log`);
     appendFileSync(path, JSON.stringify(record) + "\n", "utf8");
   }

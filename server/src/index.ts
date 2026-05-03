@@ -114,7 +114,9 @@ if (!isProd) {
   appLogger.register(new FirestoreSink(30 * 24 * 60 * 60 * 1000));
   console.log("[Logger] FirestoreSink registered (prod 30d)");
 } else {
-  console.warn("[Logger] FIREBASE_SERVICE_ACCOUNT not set — FirestoreSink disabled");
+  console.warn(
+    "[Logger] FIREBASE_SERVICE_ACCOUNT not set — FirestoreSink disabled",
+  );
 }
 
 httpServer.listen(PORT, () => {
