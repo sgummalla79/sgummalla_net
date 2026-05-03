@@ -20,14 +20,14 @@ const auth = useAuthStore();
 type Section = "neon" | "firestore" | "blog" | "fly";
 const active = ref<Section>("neon");
 
-const neon      = ref<NeonUsage | null>(null);
-const fly       = ref<FlyUsage | null>(null);
+const neon = ref<NeonUsage | null>(null);
+const fly = ref<FlyUsage | null>(null);
 const firestore = ref<FirestoreUsage | null>(null);
-const blog      = ref<BlogUsage | null>(null);
-const neonErr   = ref<string | null>(null);
-const flyErr    = ref<string | null>(null);
-const fsErr     = ref<string | null>(null);
-const blogErr   = ref<string | null>(null);
+const blog = ref<BlogUsage | null>(null);
+const neonErr = ref<string | null>(null);
+const flyErr = ref<string | null>(null);
+const fsErr = ref<string | null>(null);
+const blogErr = ref<string | null>(null);
 const loading = ref(true);
 const lastUpdated = ref<Date | null>(null);
 
@@ -62,12 +62,12 @@ function shortDay(iso: string): string {
 // ── Sparkline table ───────────────────────────────────────────────────────────
 
 interface SparkRow {
-  key:     string;
-  label:   string;
-  id?:     string;
-  color:   string;
+  key: string;
+  label: string;
+  id?: string;
+  color: string;
   total7d: number;
-  counts:  Record<string, number>;
+  counts: Record<string, number>;
 }
 
 function truncate(s: string, max: number): string {
@@ -121,9 +121,9 @@ const fsSparkRows = computed((): SparkRow[] => {
     const counts: Record<string, number> = {};
     for (const d of t.activity) counts[d.day] = d.count;
     return {
-      key:     t.logType,
-      label:   t.label,
-      color:   t.color,
+      key: t.logType,
+      label: t.label,
+      color: t.color,
       total7d: SPARK_DAYS.reduce((sum, day) => sum + (counts[day] ?? 0), 0),
       counts,
     };
@@ -131,7 +131,12 @@ const fsSparkRows = computed((): SparkRow[] => {
 });
 
 const fsSparkMax = computed(() =>
-  Math.max(1, ...fsSparkRows.value.flatMap((r) => SPARK_DAYS.map((d) => r.counts[d] ?? 0)))
+  Math.max(
+    1,
+    ...fsSparkRows.value.flatMap((r) =>
+      SPARK_DAYS.map((d) => r.counts[d] ?? 0),
+    ),
+  ),
 );
 
 const fsWritesRow = computed((): SparkRow | null => {
@@ -187,28 +192,54 @@ const fsStoragePct = computed(() => {
 
 // ── Blog stacked bar chart ────────────────────────────────────────────────────
 
-interface BarSegment { slug: string; id: string; title: string; color: string; h: number; count: number }
-interface StackedBar  { day: string; segments: BarSegment[]; total: number }
+interface BarSegment {
+  slug: string;
+  id: string;
+  title: string;
+  color: string;
+  h: number;
+  count: number;
+}
+interface StackedBar {
+  day: string;
+  segments: BarSegment[];
+  total: number;
+}
 
 const BLOG_BAR_H = 80;
 
 const blogChart = computed((): StackedBar[] => {
   if (!blog.value?.series.length) return [];
   const { series } = blog.value;
-  const maxTotal = Math.max(1, ...SPARK_DAYS.map(day =>
-    series.reduce((sum, s) => sum + (s.days.find(d => d.day === day)?.count ?? 0), 0)
-  ));
-  return SPARK_DAYS.map(day => {
-    const total = series.reduce((sum, s) => sum + (s.days.find(d => d.day === day)?.count ?? 0), 0);
+  const maxTotal = Math.max(
+    1,
+    ...SPARK_DAYS.map((day) =>
+      series.reduce(
+        (sum, s) => sum + (s.days.find((d) => d.day === day)?.count ?? 0),
+        0,
+      ),
+    ),
+  );
+  return SPARK_DAYS.map((day) => {
+    const total = series.reduce(
+      (sum, s) => sum + (s.days.find((d) => d.day === day)?.count ?? 0),
+      0,
+    );
     const segments: BarSegment[] = series
-      .filter(s => (s.days.find(d => d.day === day)?.count ?? 0) > 0)
-      .map(s => ({
-        slug:  s.slug,
-        id:    s.id,
+      .filter((s) => (s.days.find((d) => d.day === day)?.count ?? 0) > 0)
+      .map((s) => ({
+        slug: s.slug,
+        id: s.id,
         title: s.title,
         color: s.color,
-        count: s.days.find(d => d.day === day)?.count ?? 0,
-        h:     Math.max(2, Math.round(((s.days.find(d => d.day === day)?.count ?? 0) / maxTotal) * BLOG_BAR_H)),
+        count: s.days.find((d) => d.day === day)?.count ?? 0,
+        h: Math.max(
+          2,
+          Math.round(
+            ((s.days.find((d) => d.day === day)?.count ?? 0) / maxTotal) *
+              BLOG_BAR_H,
+          ),
+        ),
       }));
     return { day, segments, total };
   });
@@ -216,15 +247,27 @@ const blogChart = computed((): StackedBar[] => {
 
 const blogSparkRows = computed((): SparkRow[] => {
   if (!blog.value?.series) return [];
-  return blog.value.series.map(s => {
+  return blog.value.series.map((s) => {
     const counts: Record<string, number> = {};
     for (const d of s.days) counts[d.day] = d.count;
-    return { key: s.slug, label: s.title, id: s.id, color: s.color, total7d: s.total, counts };
+    return {
+      key: s.slug,
+      label: s.title,
+      id: s.id,
+      color: s.color,
+      total7d: s.total,
+      counts,
+    };
   });
 });
 
 const blogSparkMax = computed(() =>
-  Math.max(1, ...blogSparkRows.value.flatMap(r => SPARK_DAYS.map(d => r.counts[d] ?? 0)))
+  Math.max(
+    1,
+    ...blogSparkRows.value.flatMap((r) =>
+      SPARK_DAYS.map((d) => r.counts[d] ?? 0),
+    ),
+  ),
 );
 
 // ── Load ─────────────────────────────────────────────────────────────────────
@@ -240,14 +283,18 @@ async function load() {
     fetchBlogUsage(),
   ]);
 
-  neon.value      = nr.status  === "fulfilled" ? nr.value  : null;
-  fly.value       = fr.status  === "fulfilled" ? fr.value  : null;
+  neon.value = nr.status === "fulfilled" ? nr.value : null;
+  fly.value = fr.status === "fulfilled" ? fr.value : null;
   firestore.value = fsr.status === "fulfilled" ? fsr.value : null;
-  blog.value      = br.status  === "fulfilled" ? br.value  : null;
-  if (nr.status  === "rejected") neonErr.value  = nr.reason  instanceof Error ? nr.reason.message  : "Failed";
-  if (fr.status  === "rejected") flyErr.value   = fr.reason  instanceof Error ? fr.reason.message  : "Failed";
-  if (fsr.status === "rejected") fsErr.value    = fsr.reason instanceof Error ? fsr.reason.message : "Failed";
-  if (br.status  === "rejected") blogErr.value  = br.reason  instanceof Error ? br.reason.message  : "Failed";
+  blog.value = br.status === "fulfilled" ? br.value : null;
+  if (nr.status === "rejected")
+    neonErr.value = nr.reason instanceof Error ? nr.reason.message : "Failed";
+  if (fr.status === "rejected")
+    flyErr.value = fr.reason instanceof Error ? fr.reason.message : "Failed";
+  if (fsr.status === "rejected")
+    fsErr.value = fsr.reason instanceof Error ? fsr.reason.message : "Failed";
+  if (br.status === "rejected")
+    blogErr.value = br.reason instanceof Error ? br.reason.message : "Failed";
 
   loading.value = false;
   lastUpdated.value = new Date();
@@ -307,10 +354,10 @@ onMounted(load);
         <nav class="vz-dash__sidenav">
           <button
             v-for="item in [
-              { key: 'neon',      label: 'NeonDB',    color: '#00e5a0' },
+              { key: 'neon', label: 'NeonDB', color: '#00e5a0' },
               { key: 'firestore', label: 'Firestore', color: '#ffca28' },
-              { key: 'blog',      label: 'Blog',      color: '#f472b6' },
-              { key: 'fly',       label: 'Fly.io',    color: '#8b5cf6' },
+              { key: 'blog', label: 'Blog', color: '#f472b6' },
+              { key: 'fly', label: 'Fly.io', color: '#8b5cf6' },
             ]"
             :key="item.key"
             class="vz-dash__navitem"
@@ -469,7 +516,10 @@ onMounted(load);
                   />
                 </svg>
                 <span class="vz-dash__panel-title">Firestore</span>
-                <span class="vz-dash__panel-badge">sgummallaworks · logs · {{ firestore?.ttlDays ?? 30 }}-day retention</span>
+                <span class="vz-dash__panel-badge"
+                  >sgummallaworks · logs · {{ firestore?.ttlDays ?? 30 }}-day
+                  retention</span
+                >
               </div>
             </div>
 
@@ -506,7 +556,10 @@ onMounted(load);
 
               <!-- Log type breakdown -->
               <div class="vz-dash__section">
-                <p class="vz-dash__section-title">Log types — {{ fmtNum(firestore.totalDocuments) }} total documents</p>
+                <p class="vz-dash__section-title">
+                  Log types — {{ fmtNum(firestore.totalDocuments) }} total
+                  documents
+                </p>
                 <table class="vz-dash__table">
                   <thead>
                     <tr>
@@ -517,10 +570,15 @@ onMounted(load);
                   <tbody>
                     <tr v-for="t in firestore.logTypes" :key="t.logType">
                       <td class="vz-dash__tname">
-                        <span class="vz-dash__tname-dot" :style="{ background: t.color }" />
+                        <span
+                          class="vz-dash__tname-dot"
+                          :style="{ background: t.color }"
+                        />
                         {{ t.label }}
                       </td>
-                      <td class="vz-dash__tc">{{ t.count !== null ? fmtNum(t.count) : "—" }}</td>
+                      <td class="vz-dash__tc">
+                        {{ t.count !== null ? fmtNum(t.count) : "—" }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -678,36 +736,56 @@ onMounted(load);
           <div v-else-if="active === 'blog'" class="vz-dash__panel">
             <div class="vz-dash__panel-header">
               <div class="vz-dash__panel-title-row">
-                <svg class="vz-dash__panel-icon" viewBox="0 0 24 24" fill="currentColor" style="color:#f472b6">
-                  <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                <svg
+                  class="vz-dash__panel-icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="color: #f472b6"
+                >
+                  <path
+                    d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"
+                  />
                 </svg>
                 <span class="vz-dash__panel-title">Blog</span>
-                <span class="vz-dash__panel-badge">Article views · last 7 days</span>
+                <span class="vz-dash__panel-badge"
+                  >Article views · last 7 days</span
+                >
               </div>
             </div>
 
             <div v-if="loading" class="vz-dash__loading">Loading…</div>
             <div v-else-if="blogErr" class="vz-dash__error">{{ blogErr }}</div>
             <template v-else-if="blog">
-
-              <div v-if="!blog.series.length" class="vz-dash__loading">No article views in the last 7 days.</div>
+              <div v-if="!blog.series.length" class="vz-dash__loading">
+                No article views in the last 7 days.
+              </div>
               <template v-else>
-
                 <!-- Stacked bar chart -->
                 <div class="vz-dash__section">
                   <div class="vz-dash__section-header">
                     <p class="vz-dash__section-title">Daily views</p>
-                    <span class="vz-dash__section-badge">{{ fmtNum(blog.totalViews) }} total</span>
+                    <span class="vz-dash__section-badge"
+                      >{{ fmtNum(blog.totalViews) }} total</span
+                    >
                   </div>
                   <div class="vz-blog__chart">
-                    <div v-for="bar in blogChart" :key="bar.day" class="vz-blog__col">
-                      <div class="vz-blog__total">{{ bar.total > 0 ? bar.total : '' }}</div>
+                    <div
+                      v-for="bar in blogChart"
+                      :key="bar.day"
+                      class="vz-blog__col"
+                    >
+                      <div class="vz-blog__total">
+                        {{ bar.total > 0 ? bar.total : "" }}
+                      </div>
                       <div class="vz-blog__stack">
                         <div
                           v-for="seg in bar.segments"
                           :key="seg.slug"
                           class="vz-blog__seg"
-                          :style="{ height: `${seg.h}px`, background: seg.color }"
+                          :style="{
+                            height: `${seg.h}px`,
+                            background: seg.color,
+                          }"
                           :data-tip="`${seg.id} — ${seg.title}: ${seg.count}`"
                         />
                       </div>
@@ -716,8 +794,15 @@ onMounted(load);
                   </div>
                   <!-- Legend: ID + full title -->
                   <div class="vz-blog__legend">
-                    <span v-for="s in blog.series" :key="s.slug" class="vz-blog__legend-item">
-                      <span class="vz-blog__legend-dot" :style="{ background: s.color }" />
+                    <span
+                      v-for="s in blog.series"
+                      :key="s.slug"
+                      class="vz-blog__legend-item"
+                    >
+                      <span
+                        class="vz-blog__legend-dot"
+                        :style="{ background: s.color }"
+                      />
                       <span class="vz-blog__legend-id">{{ s.id }}</span>
                       <span class="vz-blog__legend-title">{{ s.title }}</span>
                     </span>
@@ -732,7 +817,13 @@ onMounted(load);
                       <tr>
                         <th class="vz-spark__th-name">Article</th>
                         <th class="vz-spark__th-total">7d total</th>
-                        <th v-for="day in SPARK_DAYS" :key="day" class="vz-spark__th-day">{{ shortDay(day) }}</th>
+                        <th
+                          v-for="day in SPARK_DAYS"
+                          :key="day"
+                          class="vz-spark__th-day"
+                        >
+                          {{ shortDay(day) }}
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -740,26 +831,37 @@ onMounted(load);
                         <!-- ID + truncated title; full title on native hover -->
                         <td class="vz-spark__td-name" :title="row.label">
                           <div class="vz-spark__name-inner">
-                            <span class="vz-spark__dot" :style="{ background: row.color }" />
+                            <span
+                              class="vz-spark__dot"
+                              :style="{ background: row.color }"
+                            />
                             <span class="vz-blog__art-id">{{ row.id }}</span>
-                            <span class="vz-blog__art-label">{{ truncate(row.label, 24) }}</span>
+                            <span class="vz-blog__art-label">{{
+                              truncate(row.label, 24)
+                            }}</span>
                           </div>
                         </td>
                         <td class="vz-spark__td-total">{{ row.total7d }}</td>
                         <td
-                          v-for="day in SPARK_DAYS" :key="day"
+                          v-for="day in SPARK_DAYS"
+                          :key="day"
                           class="vz-spark__td-day"
                           :data-tip="`${shortDay(day)}: ${row.counts[day] ?? 0}`"
                         >
                           <div class="vz-spark__bar-wrap">
-                            <div class="vz-spark__bar" :style="{ height: `${barPx(row.counts[day] ?? 0, blogSparkMax)}px`, background: row.color }" />
+                            <div
+                              class="vz-spark__bar"
+                              :style="{
+                                height: `${barPx(row.counts[day] ?? 0, blogSparkMax)}px`,
+                                background: row.color,
+                              }"
+                            />
                           </div>
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-
               </template>
             </template>
           </div>
@@ -1366,7 +1468,9 @@ onMounted(load);
   gap: 0.6rem;
   margin-bottom: 0.75rem;
 }
-.vz-dash__section-header .vz-dash__section-title { margin-bottom: 0; }
+.vz-dash__section-header .vz-dash__section-title {
+  margin-bottom: 0;
+}
 .vz-dash__section-badge {
   font-family: var(--vz-font-mono);
   font-size: 0.67rem;
@@ -1468,11 +1572,19 @@ onMounted(load);
   cursor: default;
 }
 
-.vz-blog__seg:first-child { border-radius: 2px 2px 0 0; }
-.vz-blog__seg:last-child  { border-radius: 0 0 2px 2px; }
-.vz-blog__seg:only-child  { border-radius: 2px; }
+.vz-blog__seg:first-child {
+  border-radius: 2px 2px 0 0;
+}
+.vz-blog__seg:last-child {
+  border-radius: 0 0 2px 2px;
+}
+.vz-blog__seg:only-child {
+  border-radius: 2px;
+}
 
-.vz-blog__seg:hover { opacity: 1; }
+.vz-blog__seg:hover {
+  opacity: 1;
+}
 
 .vz-blog__seg::after {
   content: attr(data-tip);
@@ -1493,7 +1605,9 @@ onMounted(load);
   z-index: 20;
 }
 
-.vz-blog__seg:hover::after { opacity: 1; }
+.vz-blog__seg:hover::after {
+  opacity: 1;
+}
 
 .vz-blog__day {
   font-family: var(--vz-font-mono);

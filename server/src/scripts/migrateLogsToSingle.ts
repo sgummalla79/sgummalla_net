@@ -11,17 +11,22 @@ import "dotenv/config";
 import { initializeApp, cert, type ServiceAccount } from "firebase-admin/app";
 import { getFirestore, Timestamp, FieldPath } from "firebase-admin/firestore";
 
-const TTL_MS       = 30 * 24 * 60 * 60 * 1000;
-const BATCH_SIZE   = 400;
+const TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const BATCH_SIZE = 400;
 const OLD_COLLECTIONS = ["api_logs", "page_views", "auth_events", "sf_ops"];
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
-if (!raw) { console.error("FIREBASE_SERVICE_ACCOUNT not set"); process.exit(1); }
+if (!raw) {
+  console.error("FIREBASE_SERVICE_ACCOUNT not set");
+  process.exit(1);
+}
 
-const app = initializeApp({ credential: cert(JSON.parse(raw) as ServiceAccount) });
-const db  = getFirestore(app);
+const app = initializeApp({
+  credential: cert(JSON.parse(raw) as ServiceAccount),
+});
+const db = getFirestore(app);
 db.settings({ ignoreUndefinedProperties: true });
 
 // ── Migration ─────────────────────────────────────────────────────────────────
@@ -30,13 +35,14 @@ async function migrateCollection(
   name: string,
 ): Promise<{ migrated: number; expired: number }> {
   let migrated = 0;
-  let expired  = 0;
+  let expired = 0;
   let cursor: FirebaseFirestore.QueryDocumentSnapshot | undefined;
 
   process.stdout.write(`  ${name.padEnd(14)}`);
 
   for (;;) {
-    let q = db.collection(name)
+    let q = db
+      .collection(name)
       .orderBy(FieldPath.documentId())
       .limit(BATCH_SIZE);
     if (cursor) q = q.startAfter(cursor);
@@ -44,9 +50,9 @@ async function migrateCollection(
     const snap = await q.get();
     if (snap.empty) break;
 
-    const now       = Date.now();
+    const now = Date.now();
     const toMigrate: FirebaseFirestore.DocumentData[] = [];
-    const toDelete:  FirebaseFirestore.DocumentReference[] = [];
+    const toDelete: FirebaseFirestore.DocumentReference[] = [];
 
     for (const doc of snap.docs) {
       const data = doc.data();
@@ -61,7 +67,7 @@ async function migrateCollection(
       toDelete.push(doc.ref);
 
       if (newExpireAt.getTime() <= now) {
-        expired++;       // already past 30 days — delete without copying
+        expired++; // already past 30 days — delete without copying
         continue;
       }
 
@@ -98,12 +104,12 @@ async function main() {
   console.log("\nMigrating Firestore logs → single 'logs' collection\n");
 
   let totalMigrated = 0;
-  let totalExpired  = 0;
+  let totalExpired = 0;
 
   for (const col of OLD_COLLECTIONS) {
     const { migrated, expired } = await migrateCollection(col);
     totalMigrated += migrated;
-    totalExpired  += expired;
+    totalExpired += expired;
   }
 
   console.log(

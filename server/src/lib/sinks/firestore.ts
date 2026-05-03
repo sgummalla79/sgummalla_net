@@ -10,11 +10,13 @@ export class FirestoreSink implements LogSink {
 
   async write(record: LogRecord): Promise<void> {
     const expireAt = Timestamp.fromDate(new Date(Date.now() + TTL_MS));
-    await getDb().collection("logs").add({
-      ...record,
-      timestamp: Timestamp.fromDate(record.timestamp),
-      createdAt: Timestamp.fromDate(record.createdAt),
-      expireAt,
-    });
+    await getDb()
+      .collection("logs")
+      .add({
+        ...record,
+        timestamp: Timestamp.fromDate(record.timestamp),
+        createdAt: Timestamp.fromDate(record.createdAt),
+        expireAt,
+      });
   }
 }

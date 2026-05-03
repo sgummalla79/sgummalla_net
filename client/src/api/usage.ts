@@ -46,26 +46,26 @@ export interface FlyUsage {
 // ── Firestore ─────────────────────────────────────────────────────────────────
 
 export interface FirestoreLogType {
-  logType:  string;
-  label:    string;
-  color:    string;
-  count:    number | null;
+  logType: string;
+  label: string;
+  color: string;
+  count: number | null;
   activity: DailyCount[];
 }
 
 export interface FirestoreUsage {
-  projectId:        string;
-  consoleUrl:       string;
-  logTypes:         FirestoreLogType[];
-  totalDocuments:   number;
-  ttlDays:          number;
+  projectId: string;
+  consoleUrl: string;
+  logTypes: FirestoreLogType[];
+  totalDocuments: number;
+  ttlDays: number;
   usedStorageBytes: number | null;
-  dailyReads:       DailyCount[];
-  dailyWrites:      DailyCount[];
-  monitoringError:  string | null;
+  dailyReads: DailyCount[];
+  dailyWrites: DailyCount[];
+  monitoringError: string | null;
   freeTier: {
-    readsPerDay:       number;
-    writesPerDay:      number;
+    readsPerDay: number;
+    writesPerDay: number;
     storageLimitBytes: number;
   };
 }
@@ -73,16 +73,16 @@ export interface FirestoreUsage {
 // ── Blog ──────────────────────────────────────────────────────────────────────
 
 export interface BlogArticleSeries {
-  id:    string;
-  slug:  string;
+  id: string;
+  slug: string;
   title: string;
   color: string;
   total: number;
-  days:  DailyCount[];
+  days: DailyCount[];
 }
 
 export interface BlogUsage {
-  series:     BlogArticleSeries[];
+  series: BlogArticleSeries[];
   totalViews: number;
 }
 
